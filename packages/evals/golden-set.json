@@ -1,0 +1,369 @@
+{
+  "$schema": "./schema.json",
+  "version": "1.0.0",
+  "created_at": "2026-06-11",
+  "description": "Golden set of 25 Q&A across 5 source documents (4 EN + 1 ES). Used for retrieval metrics (hit@k, MRR), LLM-as-judge scoring (faithfulness / relevance / citation accuracy), and refusal correctness. Designed in M0; runner lands in M5; CI gate from M5.",
+  "documents": [
+    {
+      "id": "paper-attention",
+      "file": "paper-attention.pdf",
+      "source_md": "sources/paper-attention.md",
+      "lang": "en",
+      "type": "academic",
+      "title": "Attention Routing in Sparse Transformer Networks"
+    },
+    {
+      "id": "manual-product",
+      "file": "manual-product.pdf",
+      "source_md": "sources/manual-product.md",
+      "lang": "en",
+      "type": "manual",
+      "title": "Helios H7 Smart Thermostat — Installation and User Guide"
+    },
+    {
+      "id": "report-financial",
+      "file": "report-financial.pdf",
+      "source_md": "sources/report-financial.md",
+      "lang": "en",
+      "type": "financial",
+      "title": "Northwind Logistics — Q1 2026 Financial Summary"
+    },
+    {
+      "id": "doc-legal-tos",
+      "file": "doc-legal-tos.pdf",
+      "source_md": "sources/doc-legal-tos.md",
+      "lang": "en",
+      "type": "legal",
+      "title": "Terms of Service — Lighthouse Analytics"
+    },
+    {
+      "id": "doc-spanish",
+      "file": "doc-spanish.pdf",
+      "source_md": "sources/doc-spanish.md",
+      "lang": "es",
+      "type": "government",
+      "title": "Memorando — Plan Piloto de Movilidad Eléctrica Urbana"
+    }
+  ],
+  "composition": {
+    "factual_single_hop": 8,
+    "multi_hop": 5,
+    "summarization": 3,
+    "no_answer": 4,
+    "numeric": 3,
+    "contradiction_or_cross_doc": 2,
+    "total": 25,
+    "in_spanish": 5
+  },
+  "items": [
+    {
+      "id": "F1",
+      "type": "factual_single_hop",
+      "lang": "en",
+      "doc_id": "paper-attention",
+      "question": "What is Gated Sparse Attention (GSA)?",
+      "expected_chunk_label": "Section 2 — Method",
+      "expected_chunk_match": "GSA uses a sigmoid gate trained jointly with the attention weights",
+      "expected_answer_summary": "A routing variant for sparse transformer attention that uses a learned sigmoid gate at each head to select a soft subset of keys per query, trained end-to-end with attention.",
+      "notes": "Definition-style. Answer should cite Section 2."
+    },
+    {
+      "id": "F3",
+      "type": "factual_single_hop",
+      "lang": "en",
+      "doc_id": "manual-product",
+      "question": "What Wi-Fi frequencies does the Helios H7 support?",
+      "expected_chunk_label": "Section 5 — Wi-Fi setup",
+      "expected_chunk_match": "2.4 GHz Wi-Fi (802.11 b/g/n). It does not support 5 GHz",
+      "expected_answer_summary": "Only 2.4 GHz (802.11 b/g/n). It does not support 5 GHz Wi-Fi or Wi-Fi 6.",
+      "notes": "Tests negation handling — model must not invent 5 GHz support."
+    },
+    {
+      "id": "F4",
+      "type": "factual_single_hop",
+      "lang": "en",
+      "doc_id": "manual-product",
+      "question": "What is the operating temperature range of the Helios H7?",
+      "expected_chunk_label": "Section 9 — Specifications",
+      "expected_chunk_match": "-10°C to 50°C (14°F to 122°F)",
+      "expected_answer_summary": "-10°C to 50°C (14°F to 122°F).",
+      "notes": "Spec lookup."
+    },
+    {
+      "id": "F5_ES",
+      "type": "factual_single_hop",
+      "lang": "es",
+      "doc_id": "manual-product",
+      "question": "¿Qué incluye la caja del Helios H7?",
+      "expected_chunk_label": "Section 2 — What's in the box",
+      "expected_chunk_match": "Helios H7 thermostat unit, Wall mounting plate, Four #6 screws",
+      "expected_answer_summary": "El termostato Helios H7, una placa de montaje en pared, cuatro tornillos #6 con anclajes para drywall, el Power Extender Kit (PEK), una tarjeta de inicio rápido (inglés y español) y un cable USB-C (solo para actualizaciones de firmware).",
+      "notes": "Cross-lingual: question in Spanish, doc in English. Model must translate or paraphrase the contents list."
+    },
+    {
+      "id": "F6",
+      "type": "factual_single_hop",
+      "lang": "en",
+      "doc_id": "report-financial",
+      "question": "Who audited the Q1 2026 report?",
+      "expected_chunk_label": "Section 7 — Auditor's note",
+      "expected_chunk_match": "Greenfield & Associates",
+      "expected_answer_summary": "Greenfield & Associates reviewed the report; the full audited statements will be in the Q1 10-Q filing.",
+      "notes": "Single-fact lookup."
+    },
+    {
+      "id": "F7",
+      "type": "factual_single_hop",
+      "lang": "en",
+      "doc_id": "report-financial",
+      "question": "When did the Indianapolis distribution center close?",
+      "expected_chunk_label": "Section 6 — Notable events",
+      "expected_chunk_match": "February 14, 2026",
+      "expected_answer_summary": "February 14, 2026.",
+      "notes": "Date lookup."
+    },
+    {
+      "id": "F9_ES",
+      "type": "factual_single_hop",
+      "lang": "es",
+      "doc_id": "doc-spanish",
+      "question": "¿Cuántos autobuses eléctricos se incorporarán en el plan piloto?",
+      "expected_chunk_label": "Sección 3.1 — Flota eléctrica",
+      "expected_chunk_match": "doce autobuses eléctricos",
+      "expected_answer_summary": "Doce (12) autobuses eléctricos, con capacidad para 38 pasajeros sentados y 22 de pie.",
+      "notes": "Numeric in Spanish."
+    },
+    {
+      "id": "F10_ES",
+      "type": "factual_single_hop",
+      "lang": "es",
+      "doc_id": "doc-spanish",
+      "question": "¿Cuándo entra en vigencia el plan piloto?",
+      "expected_chunk_label": "Sección 7 — Disposiciones finales",
+      "expected_chunk_match": "1 de abril de 2026",
+      "expected_answer_summary": "El 1 de abril de 2026.",
+      "notes": "Date lookup in Spanish."
+    },
+    {
+      "id": "MH1",
+      "type": "multi_hop",
+      "lang": "en",
+      "doc_id": "paper-attention",
+      "question": "Why doesn't Gated Sparse Attention reduce memory usage even though it reduces FLOPs?",
+      "expected_chunk_label": "Section 2 (Method) + Section 4 (Limitations)",
+      "expected_chunk_match": "the full K and V matrices must still be materialized",
+      "expected_answer_summary": "Because GSA only changes how attention weights are computed and routed; the full K and V matrices must still be materialized. Memory savings require a separate technique like paged attention or sliding-window attention, which the paper did not combine with GSA.",
+      "notes": "Requires Section 2 (method materializes K, V) + Section 4 (limitation explicit)."
+    },
+    {
+      "id": "MH2",
+      "type": "multi_hop",
+      "lang": "en",
+      "doc_id": "manual-product",
+      "question": "If my existing thermostat wiring has no C-wire, what does Helios recommend and what symptom would tell me I have the problem?",
+      "expected_chunk_label": "Section 1 (Safety) + Section 7 (Troubleshooting)",
+      "expected_chunk_match": "Power Extender Kit (PEK)",
+      "expected_answer_summary": "Helios includes a Power Extender Kit (PEK) in the box, which is installed at the furnace control board. If you skip it, the symptom is a blank screen because the H7 has no continuous power.",
+      "notes": "Requires Section 1 (PEK exists for no-C-wire case) + Section 7 (blank screen → no C-wire)."
+    },
+    {
+      "id": "MH3",
+      "type": "multi_hop",
+      "lang": "en",
+      "doc_id": "report-financial",
+      "question": "Why did Northwind's warehousing revenue decline in Q1 2026?",
+      "expected_chunk_label": "Section 1 (Revenue table note) + Section 6 (Notable events)",
+      "expected_chunk_match": "planned closure of the Indianapolis distribution center",
+      "expected_answer_summary": "Warehousing revenue declined 2.7% because the Indianapolis distribution center was closed on February 14, 2026. The closure was planned, eliminating 86 positions and incurring $1.6 million in severance and transition costs in Q1.",
+      "notes": "Section 1 explains the decline; Section 6 gives the date and impact."
+    },
+    {
+      "id": "MH4",
+      "type": "multi_hop",
+      "lang": "en",
+      "doc_id": "doc-legal-tos",
+      "question": "Under what circumstances can a Lighthouse Analytics customer get a refund?",
+      "expected_chunk_label": "Section 6 (Service availability) + Section 7 (Subscription and billing)",
+      "expected_chunk_match": "service credit",
+      "expected_answer_summary": "Three cases: (1) a service credit per Section 6 when uptime drops below 99.5% — credit is 5% of monthly fee per full hour of additional downtime, capped at 30% of the monthly fee; (2) a billing error confirmed by support; (3) cancellation within 14 days of initial subscription, prorated to days used.",
+      "notes": "Section 6 gives one case, Section 7 enumerates all three."
+    },
+    {
+      "id": "MH5_ES",
+      "type": "multi_hop",
+      "lang": "es",
+      "doc_id": "doc-spanish",
+      "question": "¿Qué puede hacer la Secretaría de Movilidad si las metas trimestrales del plan no se alcanzan?",
+      "expected_chunk_label": "Sección 4 (Indicadores) + Sección 6 (Excepciones y salvaguardas)",
+      "expected_chunk_match": "ajustar la tarifa de circulación o ampliar las zonas",
+      "expected_answer_summary": "Puede ajustar la tarifa de circulación (actualmente 1.500 pesos por día) o ampliar las zonas de bajas emisiones, previa notificación al Consejo Municipal con al menos sesenta días de anticipación.",
+      "notes": "Multi-hop in Spanish: indicadores section + salvaguardas section."
+    },
+    {
+      "id": "S1",
+      "type": "summarization",
+      "lang": "en",
+      "doc_id": "paper-attention",
+      "question": "Summarize the contribution of this paper in one sentence.",
+      "expected_chunk_label": "Section 5 — Conclusion + Abstract",
+      "expected_chunk_match": "Gated Sparse Attention offers a 38% FLOPs reduction",
+      "expected_answer_summary": "Gated Sparse Attention reduces transformer attention FLOPs by ~38% with minimal quality cost (within 0.4 BLEU on WMT-22 EN-ES) by introducing a per-head sigmoid gate that is end-to-end differentiable and adds negligible parameters.",
+      "notes": "Tests synthesis — should not invent claims beyond the source."
+    },
+    {
+      "id": "S2",
+      "type": "summarization",
+      "lang": "en",
+      "doc_id": "report-financial",
+      "question": "Summarize the key financial highlights of Q1 2026 for Northwind Logistics in 3 bullet points.",
+      "expected_chunk_label": "Executive summary + Section 3",
+      "expected_chunk_match": "revenue of $148.2 million",
+      "expected_answer_summary": "Revenue grew 12.4% YoY to $148.2M; operating income reached $19.7M (margin 13.3%, highest since Q2 2023); free cash flow returned to positive at $11.4M after a negative Q4 2025.",
+      "notes": "Concise synthesis from two related sections."
+    },
+    {
+      "id": "S3",
+      "type": "summarization",
+      "lang": "en",
+      "doc_id": "doc-legal-tos",
+      "question": "Summarize the data ownership terms in two sentences.",
+      "expected_chunk_label": "Section 5 — Data ownership",
+      "expected_chunk_match": "You retain all rights to data you upload",
+      "expected_answer_summary": "Users retain all rights to data they upload; Lighthouse Analytics receives a non-exclusive, royalty-free license to process the data only to provide the Service. Lighthouse does not use uploaded data to train ML models without the user's explicit written consent.",
+      "notes": "Tests faithful summarization of legal text."
+    },
+    {
+      "id": "NA1",
+      "type": "no_answer",
+      "lang": "en",
+      "doc_id": "manual-product",
+      "question": "Does the Helios H7 support Apple HomeKit?",
+      "expected_chunk_label": "(none — refusal expected)",
+      "expected_refusal_patterns": [
+        "i don't",
+        "i do not",
+        "not mentioned",
+        "no information",
+        "the document does not",
+        "the manual does not",
+        "isn't mentioned",
+        "is not mentioned"
+      ],
+      "expected_answer_summary": "The manual does not mention Apple HomeKit support. (Refusal expected — do NOT invent yes/no.)",
+      "notes": "Anti-hallucination: HomeKit is plausibly relevant but not in the doc."
+    },
+    {
+      "id": "NA2",
+      "type": "no_answer",
+      "lang": "en",
+      "doc_id": "report-financial",
+      "question": "Who is the CEO of Northwind Logistics?",
+      "expected_chunk_label": "(none — refusal expected)",
+      "expected_refusal_patterns": [
+        "i don't",
+        "i do not",
+        "not mentioned",
+        "no information",
+        "the document does not",
+        "the report does not",
+        "isn't mentioned",
+        "is not mentioned"
+      ],
+      "expected_answer_summary": "The report does not name the CEO. (Refusal expected.)",
+      "notes": "Anti-hallucination on company personnel."
+    },
+    {
+      "id": "NA3",
+      "type": "no_answer",
+      "lang": "en",
+      "doc_id": "doc-legal-tos",
+      "question": "What is the price of the Lighthouse Analytics service?",
+      "expected_chunk_label": "(none — refusal expected)",
+      "expected_refusal_patterns": [
+        "i don't",
+        "i do not",
+        "not mentioned",
+        "no information",
+        "the document does not",
+        "the terms do not",
+        "isn't mentioned",
+        "is not mentioned"
+      ],
+      "expected_answer_summary": "The Terms of Service do not state the price. (Refusal expected.)",
+      "notes": "Anti-hallucination: ToS doc never mentions pricing."
+    },
+    {
+      "id": "NA4_ES",
+      "type": "no_answer",
+      "lang": "es",
+      "doc_id": "doc-spanish",
+      "question": "¿Cuántas estaciones de carga habrá en zonas residenciales?",
+      "expected_chunk_label": "(none — refusal expected)",
+      "expected_refusal_patterns": [
+        "no se menciona",
+        "no se especifica",
+        "no aparece",
+        "el documento no",
+        "el memorando no",
+        "no se indica"
+      ],
+      "expected_answer_summary": "El memorando menciona cuatro estaciones de carga en terminales específicos (Las Tortugas, Plaza Mayor, Estación Norte, Parque Industrial), pero no menciona zonas residenciales. (Rechazo esperado.)",
+      "notes": "Anti-hallucination in Spanish: doc mentions 4 stations but not 'residenciales' — tests careful reading."
+    },
+    {
+      "id": "N1",
+      "type": "numeric",
+      "lang": "en",
+      "doc_id": "paper-attention",
+      "question": "What BLEU score does GSA achieve on the WMT-22 EN-ES benchmark?",
+      "expected_chunk_label": "Section 3.1 — Machine translation",
+      "expected_chunk_match": "34.4 BLEU, 62% FLOPs",
+      "expected_answer_summary": "34.4 BLEU (versus 34.8 for the dense baseline), at 62% of the FLOPs.",
+      "notes": "Numeric + table-style data."
+    },
+    {
+      "id": "N2",
+      "type": "numeric",
+      "lang": "en",
+      "doc_id": "manual-product",
+      "question": "How many heating and cooling stages does the Helios H7 support at maximum?",
+      "expected_chunk_label": "Section 3 — Compatibility",
+      "expected_chunk_match": "Up to 2 heating stages + 2 cooling stages",
+      "expected_answer_summary": "Up to 2 heating stages and 2 cooling stages.",
+      "notes": "Specific-number lookup."
+    },
+    {
+      "id": "N3",
+      "type": "numeric",
+      "lang": "en",
+      "doc_id": "report-financial",
+      "question": "What was Northwind's total revenue in Q1 2026?",
+      "expected_chunk_label": "Section 1 — Revenue by segment",
+      "expected_chunk_match": "148.2",
+      "expected_answer_summary": "$148.2 million, a 12.4% increase year-over-year.",
+      "notes": "Table extraction."
+    },
+    {
+      "id": "C1",
+      "type": "contradiction_or_cross_doc",
+      "lang": "en",
+      "doc_ids": ["manual-product", "doc-legal-tos"],
+      "question": "Both the Helios H7 manual and the Lighthouse Analytics Terms of Service describe data the company collects from users. How do their data-ownership terms compare?",
+      "expected_chunk_label": "manual Section 6 (Energy report) + ToS Section 5 (Data ownership)",
+      "expected_chunk_match": "non-exclusive, royalty-free license",
+      "expected_answer_summary": "The Helios manual describes data the device collects (runtime, kWh, savings score) and where it appears (in-app + emailed report), but does not state who owns it or how Helios may use it. The Lighthouse ToS is explicit: users retain all rights, Lighthouse gets a non-exclusive royalty-free license to process the data only to provide the Service, and ML training requires explicit consent. The ToS is materially more protective and explicit; the manual leaves data-ownership terms unspecified.",
+      "notes": "Cross-doc comparison; M6 agent territory."
+    },
+    {
+      "id": "C2",
+      "type": "contradiction_or_cross_doc",
+      "lang": "en",
+      "doc_ids": ["report-financial", "doc-spanish"],
+      "question": "The Northwind report mentions improved route optimization. The Valdivia Norte plan mentions reducing CO emissions. Do both documents describe the same kind of operational change, and what is the key difference in scope?",
+      "expected_chunk_label": "Northwind Section 2 (Operating expenses) + Valdivia Norte Sections 1-3",
+      "expected_chunk_match": "FleetSmart",
+      "expected_answer_summary": "Both target fewer kilometers and lower fuel/emissions per trip, but the scope differs sharply. Northwind's change is a software route-optimization deployment (FleetSmart) inside an existing diesel fleet, motivated by reducing fuel cost as a percent of revenue. The Valdivia Norte plan is a regulatory + infrastructure shift: 12 new electric buses, 4 charging stations, and low-emission zones with circulation fees, motivated by public health and air quality.",
+      "notes": "Cross-doc comparison + Spanish source; M6 agent territory."
+    }
+  ]
+}

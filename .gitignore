@@ -1,0 +1,43 @@
+# dependencies
+node_modules/
+.pnpm-store/
+
+# build output
+dist/
+build/
+.next/
+.turbo/
+*.tsbuildinfo
+
+# test output
+coverage/
+playwright-report/
+test-results/
+
+# env files (never commit secrets)
+.env
+.env.local
+.env.*.local
+
+# editor / OS
+.DS_Store
+desktop.ini
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# Local tooling config
+.claude/
+
+# golden set fixtures (PDFs not committed — see packages/evals/fixtures/README.md)
+packages/evals/fixtures/*.pdf
+
+# local Fly.io state
+.fly/

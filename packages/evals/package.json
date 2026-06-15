@@ -1,0 +1,18 @@
+{
+  "name": "@doc-ai-chat/evals",
+  "private": true,
+  "version": "0.0.0",
+  "description": "Golden set, eval runner, LLM-as-judge. CI gate for prompt changes from M5 onward.",
+  "type": "module",
+  "main": "./src/index.ts",
+  "scripts": {
+    "typecheck": "echo 'scaffolded in M5'",
+    "eval:run": "echo 'scaffolded in M5'",
+    "eval:validate-golden-set": "echo 'scaffolded in M5'",
+    "build:fixtures": "node scripts/build-fixtures.mjs"
+  },
+  "devDependencies": {
+    "pdf-parse": "^2.4.5",
+    "pdfkit": "^0.19.1"
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "name": "@doc-ai-chat/web",
+  "private": true,
+  "version": "0.0.0",
+  "description": "DocAI frontend + API route handlers (Next.js 16 App Router).",
+  "type": "module",
+  "scripts": {
+    "dev": "echo 'scaffolded in M1'",
+    "build": "echo 'scaffolded in M1'",
+    "start": "echo 'scaffolded in M1'",
+    "typecheck": "echo 'scaffolded in M1'"
+  }
+}

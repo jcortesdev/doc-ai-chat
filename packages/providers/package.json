@@ -1,0 +1,11 @@
+{
+  "name": "@doc-ai-chat/providers",
+  "private": true,
+  "version": "0.0.0",
+  "description": "ModelProvider adapter (Anthropic / OpenAI / DeepSeek). M3-M6 use Anthropic-first; M7 activates multi-provider switching and the benchmark.",
+  "type": "module",
+  "main": "./src/index.ts",
+  "scripts": {
+    "typecheck": "echo 'scaffolded in M3'"
+  }
+}

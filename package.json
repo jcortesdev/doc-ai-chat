@@ -1,0 +1,19 @@
+{
+  "name": "doc-ai-chat",
+  "private": true,
+  "version": "0.0.0",
+  "description": "DocAI — RAG chat over PDFs with citations, BYOK, evals, and an agent loop.",
+  "packageManager": "pnpm@11.0.0",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "lint": "biome check .",
+    "format": "biome format --write .",
+    "typecheck": "pnpm -r --parallel typecheck"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^1.9.4",
+    "typescript": "^5.6.0"
+  }
+}

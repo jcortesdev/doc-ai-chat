@@ -1,0 +1,14 @@
+{
+  "name": "@doc-ai-chat/db",
+  "private": true,
+  "version": "0.0.0",
+  "description": "Database schema (Drizzle), migrations, and typed client for Neon Postgres + pgvector.",
+  "type": "module",
+  "main": "./src/index.ts",
+  "scripts": {
+    "typecheck": "echo 'scaffolded in M1'",
+    "db:generate": "echo 'scaffolded in M1'",
+    "db:migrate": "echo 'scaffolded in M1'",
+    "db:studio": "echo 'scaffolded in M1'"
+  }
+}

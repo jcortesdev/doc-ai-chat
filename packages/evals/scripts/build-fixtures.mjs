@@ -17,7 +17,7 @@
  * of the golden set evolves.
  */
 
-import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import PDFDocument from 'pdfkit';
@@ -37,144 +37,6 @@ const SOURCES = [
 const FONT_REGULAR = 'Helvetica';
 const FONT_BOLD = 'Helvetica-Bold';
 const FONT_ITALIC = 'Helvetica-Oblique';
-const FONT_MONO = 'Courier';
-
-function renderMarkdownToPdf(markdown, outPath) {
-  const doc = new PDFDocument({
-    size: 'LETTER',
-    margins: { top: 72, bottom: 72, left: 72, right: 72 },
-    info: {
-      Producer: 'DocAI fixture builder',
-      Creator: 'DocAI fixture builder',
-    },
-  });
-
-  doc.pipe(writeStreamToFile(outPath));
-
-  const lines = markdown.split('\n');
-  let i = 0;
-
-  while (i < lines.length) {
-    const line = lines[i];
-
-    // H1
-    if (line.startsWith('# ') && !line.startsWith('## ')) {
-      doc.moveDown(0.3);
-      doc.font(FONT_BOLD).fontSize(20).text(line.slice(2), { paragraphGap: 6 });
-      doc.moveDown(0.4);
-      i++;
-      continue;
-    }
-
-    // H2
-    if (line.startsWith('## ')) {
-      doc.moveDown(0.6);
-      doc.font(FONT_BOLD).fontSize(15).text(line.slice(3), { paragraphGap: 4 });
-      doc.moveDown(0.25);
-      i++;
-      continue;
-    }
-
-    // H3
-    if (line.startsWith('### ')) {
-      doc.moveDown(0.4);
-      doc.font(FONT_BOLD).fontSize(12).text(line.slice(4), { paragraphGap: 3 });
-      doc.moveDown(0.2);
-      i++;
-      continue;
-    }
-
-    // Bold metadata line at top of doc: **Key:** value
-    if (line.startsWith('**') && line.includes(':**')) {
-      const inner = line;
-      // strip ** ... ** wrapping piece by piece
-      doc.font(FONT_BOLD).fontSize(10);
-      const parts = inner.split(/\*\*/);
-      // parts: ['', 'Key:', ' value', ...] for "**Key:** value"
-      let x = doc.x;
-      const y = doc.y;
-      let isBold = false;
-      const out = [];
-      for (const part of parts) {
-        if (part.length === 0) {
-          isBold = !isBold;
-          continue;
-        }
-        out.push({ text: part, bold: isBold });
-        isBold = !isBold;
-      }
-      // simple: just render as a single italic-meta line
-      doc.font(FONT_ITALIC).fontSize(10).fillColor('#444');
-      const joined = out.map((p) => p.text).join('');
-      doc.text(joined, { paragraphGap: 2 });
-      doc.fillColor('#000');
-      i++;
-      continue;
-    }
-
-    // Table: a line starting with | and the next line also a | with --- (separator)
-    if (line.trim().startsWith('|') && i + 1 < lines.length && /^\s*\|[-:\s|]+\|\s*$/.test(lines[i + 1])) {
-      const tableLines = [line];
-      i += 2; // skip separator
-      while (i < lines.length && lines[i].trim().startsWith('|')) {
-        tableLines.push(lines[i]);
-        i++;
-      }
-      renderTable(doc, tableLines);
-      doc.moveDown(0.5);
-      continue;
-    }
-
-    // Unordered list
-    if (/^\s*-\s+/.test(line)) {
-      const items = [];
-      while (i < lines.length && /^\s*-\s+/.test(lines[i])) {
-        items.push(lines[i].replace(/^\s*-\s+/, ''));
-        i++;
-      }
-      doc.font(FONT_REGULAR).fontSize(11);
-      for (const item of items) {
-        doc.text('• ' + stripInlineMarkdown(item), { indent: 18, paragraphGap: 2 });
-      }
-      doc.moveDown(0.3);
-      continue;
-    }
-
-    // Ordered list
-    if (/^\s*\d+\.\s+/.test(line)) {
-      const items = [];
-      while (i < lines.length && /^\s*\d+\.\s+/.test(lines[i])) {
-        items.push(lines[i].replace(/^\s*(\d+)\.\s+/, '$1. '));
-        i++;
-      }
-      doc.font(FONT_REGULAR).fontSize(11);
-      for (const item of items) {
-        doc.text(stripInlineMarkdown(item), { indent: 18, paragraphGap: 2 });
-      }
-      doc.moveDown(0.3);
-      continue;
-    }
-
-    // Empty line
-    if (line.trim() === '') {
-      i++;
-      continue;
-    }
-
-    // Default: paragraph (collect multi-line until empty)
-    const para = [line];
-    i++;
-    while (i < lines.length && lines[i].trim() !== '' && !lines[i].startsWith('#') && !lines[i].trim().startsWith('|') && !/^\s*-\s+/.test(lines[i]) && !/^\s*\d+\.\s+/.test(lines[i])) {
-      para.push(lines[i]);
-      i++;
-    }
-    doc.font(FONT_REGULAR).fontSize(11);
-    doc.text(stripInlineMarkdown(para.join(' ')), { paragraphGap: 4, align: 'left' });
-    doc.moveDown(0.2);
-  }
-
-  doc.end();
-}
 
 function renderTable(doc, tableLines) {
   // Parse rows
@@ -263,11 +125,6 @@ function stripInlineMarkdown(text) {
     .replace(/\*(.+?)\*/g, '$1');
 }
 
-function writeStreamToFile(path) {
-  // pdfkit's doc.pipe expects a Writable. Use Node fs.createWriteStream.
-  return import('node:fs').then((fs) => fs.createWriteStream(path));
-}
-
 // Run
 
 async function main() {
@@ -316,7 +173,11 @@ function renderInline(doc, markdown) {
 
     if (line.startsWith('# ') && !line.startsWith('## ')) {
       doc.moveDown(0.3);
-      doc.font(FONT_BOLD).fontSize(20).fillColor('#000').text(stripInlineMarkdown(line.slice(2)), { width: pageWidth, paragraphGap: 6 });
+      doc
+        .font(FONT_BOLD)
+        .fontSize(20)
+        .fillColor('#000')
+        .text(stripInlineMarkdown(line.slice(2)), { width: pageWidth, paragraphGap: 6 });
       doc.moveDown(0.4);
       i++;
       continue;
@@ -324,7 +185,10 @@ function renderInline(doc, markdown) {
 
     if (line.startsWith('## ')) {
       doc.moveDown(0.6);
-      doc.font(FONT_BOLD).fontSize(15).text(stripInlineMarkdown(line.slice(3)), { width: pageWidth, paragraphGap: 4 });
+      doc
+        .font(FONT_BOLD)
+        .fontSize(15)
+        .text(stripInlineMarkdown(line.slice(3)), { width: pageWidth, paragraphGap: 4 });
       doc.moveDown(0.25);
       i++;
       continue;
@@ -332,20 +196,31 @@ function renderInline(doc, markdown) {
 
     if (line.startsWith('### ')) {
       doc.moveDown(0.4);
-      doc.font(FONT_BOLD).fontSize(12).text(stripInlineMarkdown(line.slice(4)), { width: pageWidth, paragraphGap: 3 });
+      doc
+        .font(FONT_BOLD)
+        .fontSize(12)
+        .text(stripInlineMarkdown(line.slice(4)), { width: pageWidth, paragraphGap: 3 });
       doc.moveDown(0.2);
       i++;
       continue;
     }
 
     if (line.startsWith('**') && line.includes(':**')) {
-      doc.font(FONT_ITALIC).fontSize(10).fillColor('#444').text(stripInlineMarkdown(line), { width: pageWidth, paragraphGap: 2 });
+      doc
+        .font(FONT_ITALIC)
+        .fontSize(10)
+        .fillColor('#444')
+        .text(stripInlineMarkdown(line), { width: pageWidth, paragraphGap: 2 });
       doc.fillColor('#000');
       i++;
       continue;
     }
 
-    if (line.trim().startsWith('|') && i + 1 < lines.length && /^\s*\|[-:\s|]+\|\s*$/.test(lines[i + 1])) {
+    if (
+      line.trim().startsWith('|') &&
+      i + 1 < lines.length &&
+      /^\s*\|[-:\s|]+\|\s*$/.test(lines[i + 1])
+    ) {
       const tableLines = [line];
       i += 2;
       while (i < lines.length && lines[i].trim().startsWith('|')) {
@@ -365,7 +240,11 @@ function renderInline(doc, markdown) {
       }
       doc.font(FONT_REGULAR).fontSize(11);
       for (const item of items) {
-        doc.text('• ' + stripInlineMarkdown(item), { width: pageWidth, indent: 18, paragraphGap: 2 });
+        doc.text(`• ${stripInlineMarkdown(item)}`, {
+          width: pageWidth,
+          indent: 18,
+          paragraphGap: 2,
+        });
       }
       doc.moveDown(0.3);
       continue;
@@ -404,7 +283,11 @@ function renderInline(doc, markdown) {
       i++;
     }
     doc.font(FONT_REGULAR).fontSize(11);
-    doc.text(stripInlineMarkdown(para.join(' ')), { width: pageWidth, paragraphGap: 4, align: 'left' });
+    doc.text(stripInlineMarkdown(para.join(' ')), {
+      width: pageWidth,
+      paragraphGap: 4,
+      align: 'left',
+    });
     doc.moveDown(0.2);
   }
 }

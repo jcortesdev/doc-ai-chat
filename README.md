@@ -17,7 +17,7 @@ Designed deliberately as an AI-Engineer-shaped project: built without LangChain,
 |---|---|---|
 | Frontend | Next.js 16 App Router · React 19 · TypeScript strict · Tailwind v4 · next-intl (en/es) | Recruiter-recognizable + i18n for LATAM + US markets. |
 | API | Next.js Route Handlers (in `apps/web`) | Lean for ~10 endpoints; no NestJS overhead. |
-| Worker | Node.js + BullMQ on Fly.io (in `apps/worker`) | Async jobs for ingest + eval runs. |
+| Background jobs | Inngest functions, served from `/api/inngest` | Managed queue + retry + cron; no separate worker host. |
 | Database | Neon Postgres + pgvector with HNSW | Hybrid search (BM25 via tsvector + cosine via pgvector + RRF) hand-built — no vendor lock-in. |
 | File storage | Cloudflare R2 (project-scoped quota, LRU eviction) | No egress fees; PDFs power the click-to-source UX. |
 | Auth | Clerk (GitHub + Google + magic link) | Multi-provider, en/es email templates. |
@@ -27,7 +27,7 @@ Designed deliberately as an AI-Engineer-shaped project: built without LangChain,
 | Chat (dev) | DeepSeek V4-Flash | 10× cheaper for iteration. |
 | Eval judge | OpenAI GPT-5-mini | Capable for structured rubrics, 75% cheaper than Opus. |
 | Observability | Langfuse cloud + custom `/usage` dashboard | Industry-standard plus a from-scratch view. |
-| Rate limit + queue | Upstash Redis (deferred to M4) | Sub-5ms rate limit + BullMQ. |
+| Rate limit | Upstash Redis (deferred to M4) | Sub-5ms atomic counters for the chat hot path. |
 | Tests | Vitest + Playwright + @axe-core/playwright + Lighthouse | Same bar as the rest of the portfolio. |
 
 ## How it works

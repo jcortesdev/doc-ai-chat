@@ -18,17 +18,17 @@ For *why* each piece was chosen, see [DECISIONS.md](DECISIONS.md). For threat mo
        │                      │                      │
        ▼                      ▼                      ▼
 ┌──────────────┐       ┌──────────────┐       ┌──────────────┐
-│   Vercel     │       │   Fly.io     │       │  Cloudflare  │
-│  (apps/web)  │       │ (apps/worker)│       │      R2      │
+│   Vercel     │       │   Inngest    │       │  Cloudflare  │
+│  (apps/web)  │       │   (cloud)    │       │      R2      │
 │              │       │              │       │              │
-│  Next.js 16  │       │  BullMQ      │       │  PDF blobs   │
-│  Frontend +  │       │  consumer    │       │  quota cap   │
-│  Route Hdrs  │       │  ingest +    │       │  LRU evict   │
-│              │       │  evals jobs  │       │              │
-└──────┬───────┘       └──────┬───────┘       └──────────────┘
-       │                      │
-       └──────────┬───────────┘
-                  ▼
+│  Next.js 16  │       │  event bus + │       │  PDF blobs   │
+│  Frontend +  │       │  cron + retry│       │  quota cap   │
+│  Route Hdrs  │       │  → invokes   │       │  LRU evict   │
+│  + /api/     │◄──────┤  /api/inngest│       │              │
+│    inngest   │       │              │       │              │
+└──────┬───────┘       └──────────────┘       └──────────────┘
+       │
+       ▼
         ┌─────────────────┐
         │      Neon       │
         │   Postgres +    │
@@ -41,8 +41,9 @@ For *why* each piece was chosen, see [DECISIONS.md](DECISIONS.md). For threat mo
         ┌─────────────────┐         ┌─────────────────┐
         │  Upstash Redis  │         │     Clerk       │
         │  (from M4)      │         │  Auth + users   │
-        │  Rate limit +   │         │  webhook sync   │
-        │  BullMQ queue   │         │                 │
+        │  Rate limit     │         │  webhook sync   │
+        │  (atomic        │         │                 │
+        │   counters)     │         │                 │
         └─────────────────┘         └─────────────────┘
 
         ┌─────────────────────────────────────────────┐
@@ -61,9 +62,9 @@ For *why* each piece was chosen, see [DECISIONS.md](DECISIONS.md). For threat mo
                         └───────────────┘
 ```
 
-**Repository.** Single pnpm monorepo with two apps (`web`, `worker`) and four packages (`db`, `prompts`, `providers`, `evals`).
+**Repository.** Single pnpm monorepo with one app (`web`) and four packages (`db`, `prompts`, `providers`, `evals`). Inngest functions live inside `apps/web/src/inngest/` and are exposed via the `/api/inngest` Route Handler — no separate worker process or host.
 
-**Fly.io billing consolidation (future).** When sibling apps land, create a `jcortes-portfolio` Fly org and move all apps under it. One invoice, one card. `fly apps move` makes the migration straightforward.
+**Why no separate worker host.** ADR-001 originally provisioned a Node/BullMQ worker on Fly.io. Fly.io's 2024 policy change requiring a $25 prepay to activate accounts moved the choice to Inngest, which offers managed queue + retry + cron + observability on a free tier large enough to cover portfolio traffic indefinitely. The trade-off is event-driven rather than process-driven background work — well-suited to RAG ingest, which is naturally a per-document job.
 
 ---
 
@@ -193,21 +194,20 @@ Exact cap values live in private operational docs — publishing the precise thr
 ```
 doc-ai-chat/
 ├─ apps/
-│  ├─ web/           Next.js 16 App Router — frontend + API route handlers
-│  └─ worker/        Node.js + BullMQ — ingest + eval + retention jobs
+│  └─ web/                  Next.js 16 App Router — frontend, route handlers,
+│     └─ src/inngest/       and Inngest functions (ingest, evals, retention cron)
 ├─ packages/
-│  ├─ db/            Drizzle schema + migrations + typed client (Postgres + pgvector)
-│  ├─ prompts/       Versioned prompts per file (no inline strings)
-│  ├─ providers/     ChatProvider adapter (Anthropic / OpenAI / DeepSeek)
-│  └─ evals/         Golden set + runner + LLM-as-judge
+│  ├─ db/                   Drizzle schema + migrations + typed client (Postgres + pgvector)
+│  ├─ prompts/              Versioned prompts per file (no inline strings)
+│  ├─ providers/            ChatProvider adapter (Anthropic / OpenAI / DeepSeek)
+│  └─ evals/                Golden set + runner + LLM-as-judge
 ├─ docs/
-│  ├─ ARCHITECTURE.md   (this file)
-│  ├─ DECISIONS.md      ADR-001..ADR-016
-│  └─ SECURITY.md       Threat model + BYOK architecture + data handling
+│  ├─ ARCHITECTURE.md       (this file)
+│  ├─ DECISIONS.md          ADR-001..ADR-016
+│  └─ SECURITY.md           Threat model + BYOK architecture + data handling
 ├─ messages/
-│  ├─ en.json        UI strings (English)
-│  └─ es.json        UI strings (Spanish)
-├─ fly.toml          Fly.io app config (web + worker as separate processes)
+│  ├─ en.json               UI strings (English)
+│  └─ es.json               UI strings (Spanish)
 ├─ biome.json
 ├─ tsconfig.base.json
 ├─ pnpm-workspace.yaml
@@ -245,21 +245,23 @@ Streaming latency budget: p95 ≤ 3s from user submit to first token. Violations
 
 ---
 
-## Background jobs (apps/worker)
+## Background jobs (Inngest functions in `apps/web/src/inngest/`)
 
-| Job | Module | Trigger | What it does |
+| Function | Module | Trigger | What it does |
 |---|---|---|---|
-| `ingest-pdf` | M1 | API enqueues after R2 upload | Parse PDF, chunk, embed, store; emit status events to Postgres for the `/ingest/[id]` UI to poll |
-| `run-evals` | M5 | API or CI | Run golden set against a `ChatProvider`; judge results with GPT-5-mini; write scorecard to `eval_runs` + `eval_results` |
-| `cleanup-retention` | M4 | Cron 03:00 UTC | Delete expired PDFs (R2) + chunks (Postgres) per retention windows + LRU eviction if R2 > 90% cap |
+| `ingest-pdf` | M1 | Inngest event `pdf.uploaded` sent by `/api/ingest` after R2 upload | Parse PDF, chunk, embed, store; write status events to `documents` table for the `/ingest/[id]` UI to poll |
+| `run-evals` | M5 | Inngest event `evals.run-requested` from API or CI | Run golden set against a `ChatProvider`; score with judge; write scorecard to `eval_runs` + `eval_results` |
+| `cleanup-retention` | M4 | Inngest cron `0 3 * * *` (03:00 UTC daily) | Delete expired PDFs (R2) + chunks (Postgres) per retention windows + LRU eviction if R2 > soft cap |
+
+Inngest functions are TypeScript modules colocated with the Next.js app. The `/api/inngest` endpoint exposes them; Inngest cloud calls in whenever an event fires. Retries, dead-letter handling, and observability are managed by Inngest. No queue admin code lives in our repo.
 
 ---
 
 ## What this architecture *deliberately doesn't have*
 
-- **No microservices.** One web app, one worker. Splitting earlier is premature.
+- **No microservices.** One web app, Inngest functions, that's it. Splitting earlier is premature.
+- **No self-hosted job queue.** Inngest manages queue + retry + cron; we focus on the pipeline.
 - **No GraphQL / tRPC.** Route handlers return JSON. The contract is the URL, the body, and a Zod schema next to it.
-- **No serverless functions beyond Vercel.** Long-running work goes to the worker.
 - **No managed vector DB.** Pgvector with hybrid search by hand (ADR-002).
 - **No agent framework.** The agent loop in M6 is a hand-written `while` with explicit tools.
 - **No streaming framework.** Vercel AI SDK as a thin SSE helper; no LangChain or LlamaIndex (ADR-005).

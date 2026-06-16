@@ -17,8 +17,6 @@ importers:
 
   apps/web: {}
 
-  apps/worker: {}
-
   packages/db: {}
 
   packages/evals:

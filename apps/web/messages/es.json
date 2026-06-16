@@ -1,0 +1,8 @@
+{
+  "landing": {
+    "title": "Bienvenido a DocAI",
+    "subtitle": "Chat RAG sobre tus PDFs — con citas, control de costos y evals que podés ver de verdad.",
+    "footer": "Un proyecto de portafolio de Josue Cortes.",
+    "localeLabel": "Cambiar idioma"
+  }
+}

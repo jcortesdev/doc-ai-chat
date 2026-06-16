@@ -1,0 +1,34 @@
+import { LocaleSwitcher } from '@/components/locale-switcher';
+import { getTranslations, setRequestLocale } from 'next-intl/server';
+
+type Props = {
+  params: Promise<{ locale: string }>;
+};
+
+export default async function LandingPage({ params }: Props) {
+  const { locale } = await params;
+  setRequestLocale(locale);
+  const t = await getTranslations('landing');
+
+  return (
+    <main className="flex flex-1 flex-col">
+      <header className="flex items-center justify-between px-6 py-4 sm:px-10">
+        <span className="font-mono text-sm font-semibold tracking-tight">DocAI</span>
+        <LocaleSwitcher />
+      </header>
+
+      <section className="flex flex-1 flex-col items-center justify-center gap-6 px-6 text-center">
+        <h1 className="max-w-2xl text-balance text-4xl font-bold tracking-tight sm:text-6xl">
+          {t('title')}
+        </h1>
+        <p className="max-w-xl text-balance text-base text-foreground/70 sm:text-lg">
+          {t('subtitle')}
+        </p>
+      </section>
+
+      <footer className="px-6 py-6 text-center text-xs text-foreground/50 sm:px-10">
+        {t('footer')}
+      </footer>
+    </main>
+  );
+}

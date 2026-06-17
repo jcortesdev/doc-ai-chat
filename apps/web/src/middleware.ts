@@ -16,6 +16,10 @@ const isPublicRoute = createRouteMatcher([
   '/sign-in(.*)',
   '/sign-up(.*)',
   '/api/webhooks(.*)',
+  // Inngest calls this endpoint server-to-server (signed, no Clerk session).
+  '/api/inngest(.*)',
+  // Temporary dev trigger (removed after M1).
+  '/api/dev(.*)',
 ]);
 
 export default clerkMiddleware(async (auth, req) => {

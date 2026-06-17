@@ -1,4 +1,7 @@
+import { Topbar } from '@/components/topbar';
 import { routing } from '@/i18n/routing';
+import { enUS, esES } from '@clerk/localizations';
+import { ClerkProvider } from '@clerk/nextjs';
 import type { Metadata } from 'next';
 import { NextIntlClientProvider, hasLocale } from 'next-intl';
 import { setRequestLocale } from 'next-intl/server';
@@ -32,13 +35,22 @@ export default async function LocaleLayout({ children, params }: Props) {
   setRequestLocale(locale);
 
   return (
-    <html
-      lang={locale}
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+    <ClerkProvider
+      localization={locale === 'es' ? esES : enUS}
+      signInUrl={`/${locale}/sign-in`}
+      signUpUrl={`/${locale}/sign-up`}
     >
-      <body className="min-h-full flex flex-col font-sans">
-        <NextIntlClientProvider>{children}</NextIntlClientProvider>
-      </body>
-    </html>
+      <html
+        lang={locale}
+        className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      >
+        <body className="min-h-full flex flex-col font-sans">
+          <NextIntlClientProvider>
+            <Topbar />
+            {children}
+          </NextIntlClientProvider>
+        </body>
+      </html>
+    </ClerkProvider>
   );
 }

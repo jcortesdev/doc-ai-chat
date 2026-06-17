@@ -5,12 +5,14 @@
   "description": "DocAI frontend + API route handlers (Next.js 16 App Router).",
   "type": "module",
   "scripts": {
-    "dev": "next dev",
+    "dev": "dotenv -e ../../.env.local -- next dev",
     "build": "next build",
     "start": "next start",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@clerk/localizations": "^4.8.2",
+    "@clerk/nextjs": "^7.5.3",
     "next": "16.2.9",
     "next-intl": "^4.3.4",
     "react": "19.2.4",
@@ -21,6 +23,7 @@
     "@types/node": "^22",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "dotenv-cli": "^11.0.0",
     "tailwindcss": "^4",
     "typescript": "^5"
   }

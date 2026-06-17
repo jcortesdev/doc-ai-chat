@@ -39,6 +39,9 @@ pnpm-debug.log*
 # Local tooling config
 .claude/
 
+# Clerk keyless-mode artifacts
+.clerk/
+
 # golden set fixtures (PDFs not committed — see packages/evals/fixtures/README.md)
 packages/evals/fixtures/*.pdf
 

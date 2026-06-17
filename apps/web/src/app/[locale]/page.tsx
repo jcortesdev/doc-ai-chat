@@ -1,4 +1,3 @@
-import { LocaleSwitcher } from '@/components/locale-switcher';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 
 type Props = {
@@ -12,11 +11,6 @@ export default async function LandingPage({ params }: Props) {
 
   return (
     <main className="flex flex-1 flex-col">
-      <header className="flex items-center justify-between px-6 py-4 sm:px-10">
-        <span className="font-mono text-sm font-semibold tracking-tight">DocAI</span>
-        <LocaleSwitcher />
-      </header>
-
       <section className="flex flex-1 flex-col items-center justify-center gap-6 px-6 text-center">
         <h1 className="max-w-2xl text-balance text-4xl font-bold tracking-tight sm:text-6xl">
           {t('title')}

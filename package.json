@@ -10,7 +10,9 @@
   "scripts": {
     "lint": "biome check .",
     "format": "biome format --write .",
-    "typecheck": "pnpm -r --parallel typecheck"
+    "typecheck": "pnpm -r --parallel typecheck",
+    "test": "pnpm -r --if-present run test",
+    "test:e2e": "pnpm --filter @doc-ai-chat/web test:e2e"
   },
   "devDependencies": {
     "@biomejs/biome": "^1.9.4",

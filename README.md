@@ -2,7 +2,7 @@
 
 > Ask questions of your PDFs. Get answers grounded in the documents, with clickable citations that open the exact passage.
 
-**Status:** 🟡 M0 pre-flight — architecture and decisions documented, no app code yet.
+**Status:** 🟢 M1 shipped — ingest pipeline live: sign in, drag-and-drop a PDF, and watch it parse → chunk → embed → land on a status page with chunks, tokens, cost, and latency. M2 (hybrid search) next.
 **Demo:** `demo-docai.jcortes.dev` (coming with M3)
 
 ## What this is
@@ -17,7 +17,7 @@ Designed deliberately as an AI-Engineer-shaped project: built without LangChain,
 |---|---|---|
 | Frontend | Next.js 16 App Router · React 19 · TypeScript strict · Tailwind v4 · next-intl (en/es) | Recruiter-recognizable + i18n for LATAM + US markets. |
 | API | Next.js Route Handlers (in `apps/web`) | Lean for ~10 endpoints; no NestJS overhead. |
-| Worker | Node.js + BullMQ on Fly.io (in `apps/worker`) | Async jobs for ingest + eval runs. |
+| Background jobs | Inngest functions, served from `/api/inngest` | Managed queue + retry + cron; no separate worker host. |
 | Database | Neon Postgres + pgvector with HNSW | Hybrid search (BM25 via tsvector + cosine via pgvector + RRF) hand-built — no vendor lock-in. |
 | File storage | Cloudflare R2 (project-scoped quota, LRU eviction) | No egress fees; PDFs power the click-to-source UX. |
 | Auth | Clerk (GitHub + Google + magic link) | Multi-provider, en/es email templates. |
@@ -27,13 +27,13 @@ Designed deliberately as an AI-Engineer-shaped project: built without LangChain,
 | Chat (dev) | DeepSeek V4-Flash | 10× cheaper for iteration. |
 | Eval judge | OpenAI GPT-5-mini | Capable for structured rubrics, 75% cheaper than Opus. |
 | Observability | Langfuse cloud + custom `/usage` dashboard | Industry-standard plus a from-scratch view. |
-| Rate limit + queue | Upstash Redis (deferred to M4) | Sub-5ms rate limit + BullMQ. |
+| Rate limit | Upstash Redis (deferred to M4) | Sub-5ms atomic counters for the chat hot path. |
 | Tests | Vitest + Playwright + @axe-core/playwright + Lighthouse | Same bar as the rest of the portfolio. |
 
 ## How it works
 
 ```
-1. INGEST    upload PDF → parse → chunk → Voyage-3 embed → Postgres + R2
+1. INGEST ✅ upload PDF → parse → chunk → Voyage-3 embed → Postgres + R2
 2. RETRIEVE  question → hybrid search (BM25 + cosine + RRF) → Cohere rerank → top-5
 3. ANSWER    LLM with retrieved context in <retrieved_context> tags → streamed → citations
 4. EVAL      golden set (25 Q&A, en+es) → GPT-5-mini judge → scorecard, CI-gated
@@ -64,7 +64,26 @@ Need higher quotas, custom ingestion pipelines, or a tailored RAG build for your
 
 ## Local development
 
-Not scaffolded yet. M1 will land instructions.
+Requires pnpm 11 and Node 22+.
+
+```bash
+pnpm install
+cp .env.example .env.local            # fill in the values
+
+# Database (Neon): run the one-time privileged bootstrap, then migrate.
+# See packages/db/README.md for the bootstrap SQL and the two-role setup.
+pnpm --filter @doc-ai-chat/db db:migrate
+
+# App + Inngest dev server (two terminals).
+pnpm --filter @doc-ai-chat/web dev
+npx inngest-cli@latest dev -u http://localhost:3000/api/inngest
+
+# Checks.
+pnpm lint && pnpm typecheck && pnpm test
+pnpm test:e2e                          # Playwright + axe; needs both servers above
+```
+
+`/[locale]/` (en/es) is the upload entry point; `/[locale]/ingest/[id]` is the status page.
 
 ## License
 

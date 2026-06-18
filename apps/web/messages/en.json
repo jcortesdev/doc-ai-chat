@@ -1,0 +1,41 @@
+{
+  "landing": {
+    "title": "Welcome to DocAI",
+    "subtitle": "RAG chat over your PDFs — with citations, cost tracking, and evals you can actually see.",
+    "footer": "A portfolio project by Josue Cortes.",
+    "localeLabel": "Change language",
+    "signInToUpload": "Sign in to upload a PDF."
+  },
+  "nav": {
+    "signIn": "Sign in"
+  },
+  "upload": {
+    "cta": "Drop a PDF here or click to upload",
+    "hint": "Max 10 MB · text-based PDF",
+    "uploading": "Uploading…",
+    "errorType": "Only PDF files are supported.",
+    "errorSize": "That file is larger than 10 MB.",
+    "errorGeneric": "Upload failed. Please try again."
+  },
+  "ingest": {
+    "title": "Ingest status",
+    "processingHint": "This updates automatically.",
+    "timeoutHint": "Still processing — refresh to check.",
+    "failedHint": "We couldn't process this PDF. It may be scanned, image-only, or not a valid PDF.",
+    "failedFileTooLarge": "This file exceeds the page limit for your plan.",
+    "status": {
+      "uploading": "Uploading",
+      "processing": "Processing",
+      "ready": "Ready",
+      "failed": "Failed"
+    },
+    "metric": {
+      "pages": "Pages",
+      "chunks": "Chunks",
+      "embeddings": "Embeddings",
+      "tokens": "Tokens",
+      "cost": "Cost (USD)",
+      "latencyPerChunk": "Latency / chunk"
+    }
+  }
+}

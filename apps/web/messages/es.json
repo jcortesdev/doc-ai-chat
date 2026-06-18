@@ -1,0 +1,41 @@
+{
+  "landing": {
+    "title": "Bienvenido a DocAI",
+    "subtitle": "Chat RAG sobre tus PDFs — con citas, control de costos y evals que podés ver de verdad.",
+    "footer": "Un proyecto de portafolio de Josue Cortes.",
+    "localeLabel": "Cambiar idioma",
+    "signInToUpload": "Iniciá sesión para subir un PDF."
+  },
+  "nav": {
+    "signIn": "Iniciar sesión"
+  },
+  "upload": {
+    "cta": "Suelta un archivo PDF acá o haz clic para subirlo",
+    "hint": "Máx 10 MB · PDF con texto",
+    "uploading": "Subiendo…",
+    "errorType": "Solo se admiten archivos PDF.",
+    "errorSize": "Ese archivo supera los 10 MB.",
+    "errorGeneric": "Falló la subida. Probá de nuevo."
+  },
+  "ingest": {
+    "title": "Estado de ingesta",
+    "processingHint": "Esto se actualiza solo.",
+    "timeoutHint": "Sigue procesando — recargá para chequear.",
+    "failedHint": "No pudimos procesar este PDF. Puede ser escaneado, solo imagen, o no ser un PDF válido.",
+    "failedFileTooLarge": "Este archivo supera el límite de páginas de tu plan.",
+    "status": {
+      "uploading": "Subiendo",
+      "processing": "Procesando",
+      "ready": "Listo",
+      "failed": "Falló"
+    },
+    "metric": {
+      "pages": "Páginas",
+      "chunks": "Chunks",
+      "embeddings": "Embeddings",
+      "tokens": "Tokens",
+      "cost": "Costo (USD)",
+      "latencyPerChunk": "Latencia / chunk"
+    }
+  }
+}

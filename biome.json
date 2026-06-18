@@ -15,7 +15,8 @@
       "coverage",
       "playwright-report",
       "test-results",
-      "*.tsbuildinfo"
+      "*.tsbuildinfo",
+      "packages/db/migrations"
     ]
   },
   "organizeImports": {

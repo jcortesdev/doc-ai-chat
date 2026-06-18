@@ -6,22 +6,29 @@ The numbering reflects authoring order in M0 pre-flight, not implementation orde
 
 ---
 
-## ADR-001 — Next.js Route Handlers + worker, not NestJS
+## ADR-001 — Next.js Route Handlers + Inngest functions, not NestJS + self-hosted worker
 
-**Status:** accepted, 2026-06-11
+**Status:** accepted, 2026-06-11. Revised 2026-06-12 (worker host: Fly.io → Inngest).
 
-**Context.** The project needs a backend with ~10 endpoints (ingest, chat-stream, evals, BYOK validation, usage). The original sketch used NestJS on Railway for "structure". The portfolio framing changed to AI Engineer, where the signal is in pipeline design, not backend framework choice.
+**Context.** The project needs a backend with ~10 endpoints (ingest, chat-stream, evals, BYOK validation, usage) plus background jobs (PDF ingest, eval runs, retention cron). The original sketch used NestJS on Railway. The portfolio framing changed to AI Engineer, where the signal is in pipeline design, not backend framework choice. The first revision picked Next.js Route Handlers + a Node/BullMQ worker on Fly.io. After hitting Fly.io's new $25 minimum prepay during account setup, the worker host was reconsidered.
 
-**Decision.** Use Next.js Route Handlers in `apps/web` for the public API. Move long-running jobs (PDF embedding, eval runs) into a separate Node.js + BullMQ worker process in `apps/worker`, deployed alongside on Fly.io.
+**Decision.** Use Next.js Route Handlers in `apps/web` for the public API. Move long-running and scheduled work (PDF ingest pipeline, eval runs, retention cron) to **Inngest functions** that live alongside the web app and are invoked via the `/api/inngest` endpoint. No separate worker process; no separate host.
 
 **Alternatives considered.**
-- **NestJS on Railway.** Brings module/decorator/DI boilerplate (~200 LOC of structure before first business line) that doesn't pay off at this scope. Distracts from the AI Engineer story.
-- **Hono on Fly.io.** Modern, edge-friendly, lean. Reasonable but adds a framework when Next already covers it.
+- **NestJS on Railway.** Boilerplate-heavy for ~10 endpoints; distracts from the AI Engineer story.
+- **Hono on Fly.io.** Modern and lean, but adds a framework when Next already covers it.
+- **BullMQ + worker process on Fly.io.** Original choice. Killed by the $25 prepay floor that arrived in 2024.
+- **BullMQ + worker process on Railway** ($5/month). Viable fallback. Costs $60/year and ties the queue lifecycle to a single VM. Rejected in favor of Inngest's free tier + observability.
+- **Vercel Functions only, no queue.** Works for M1-M3 (single-shot ingest under the 60s Hobby timeout) but breaks down in M4 when retry/backoff/cron get serious.
+- **Trigger.dev.** Comparable to Inngest. Inngest has marginally better DX for AI workflows in 2026 and slightly larger free tier.
 
 **Consequences.**
-- Single Vercel deploy for frontend + API; one worker process on Fly.io.
-- "Backend separation" comes from the queue boundary, not framework boundary.
-- If the API grows past ~25 endpoints, revisit moving to Hono.
+- Single Vercel deploy for frontend + API + Inngest function endpoint.
+- "Backend separation" now lives at the *event* boundary (event-driven function invocation), not a process boundary.
+- Inngest provides queue + retry + cron + observability out of the box — code surface in our repo stays small.
+- Free tier (50k function steps/mo) covers portfolio traffic indefinitely.
+- Signal stays strong: Inngest is widely adopted in 2026 AI Eng job listings.
+- `apps/worker/` is removed; Inngest functions live in `apps/web/src/inngest/`.
 
 ---
 
@@ -114,7 +121,7 @@ The numbering reflects authoring order in M0 pre-flight, not implementation orde
 | Free-tier with no payment method | Provider blocks instead of billing at limit | Vercel, Neon, Upstash, Clerk dev mode, Cloudflare R2, Langfuse cloud |
 | Pay-as-you-go with hard spend cap | Provider dashboard cap fires at low single-digit USD ceiling per month | Anthropic, OpenAI |
 | Prepaid with auto-recharge OFF | Account balance is the cap; provider stops responding when balance empties | DeepSeek, Voyage AI |
-| Pay-as-you-go without native cap | Process settings + bank alert above a low threshold | Fly.io |
+| Pay-as-you-go without native cap | Bank alert above a low threshold | (none currently — Vercel Hobby caps at $0, Inngest free tier same) |
 
 Three absolute rules:
 1. No payment method on free-tier services while in free plan — they block instead of bill.
@@ -129,18 +136,18 @@ Exact dollar values per service are recorded in private operational docs and syn
 
 ---
 
-## ADR-007 — Redis deferred to M4, not on day one
+## ADR-007 — Redis deferred to M4, scope reduced to rate limit only
 
-**Status:** accepted, 2026-06-11
+**Status:** accepted, 2026-06-11. Revised 2026-06-12 (queue responsibility moved to Inngest, ADR-001).
 
-**Context.** A "production" RAG stack normally includes Redis for rate limiting and job queueing. M1-M3 don't strictly need either: one developer testing, sync ingest jobs.
+**Context.** A "production" RAG stack normally includes Redis for rate limiting AND job queueing. After ADR-001's revision moved queueing to Inngest, Redis is now only needed for one job: sub-5ms rate limit checks.
 
-**Decision.** Skip Upstash Redis until M4. M1-M3 use synchronous ingest in the Route Handler. M4 introduces Redis as part of the BYOK + rate limit + observability module, where it's now justified.
+**Decision.** Skip Upstash Redis until M4. M1-M3 don't need rate limiting (single-developer testing). M4 introduces Redis solely for the token-bucket rate limit on the chat endpoint.
 
 **Consequences.**
-- One fewer service to configure in M0.
-- "Why did you add Redis when you did" becomes a real story in interviews ("for rate-limit sub-5ms latency once BYOK landed").
-- If Fly.io scales the API past 1 replica before M4, in-memory state becomes unsafe — Redis arrives at the right time.
+- Redis scope is narrower than originally planned — no BullMQ, no pub/sub, no queue admin UI to learn.
+- The "why Redis" interview answer is sharper: "for in-memory atomic counters on the hot path, where 30-50ms of Postgres round-trip per request would blow the latency budget."
+- If we ever need it, the queue is already in Inngest — adding Redis pub/sub would be redundant.
 
 ---
 
@@ -357,7 +364,7 @@ Default values per role live in private operational docs — they are intentiona
 **Alternatives considered.**
 - **Hardcoded constants.** Simple but requires a redeploy for every model change. Rejected.
 - **Database-backed config table.** Maximum flexibility (per-workspace overrides, live UI) but adds a query to every request and a UI surface. Overkill for portfolio scope.
-- **Single `MODELS_JSON` env var.** Compact but harder to override one role at a time across Vercel / Fly.io environments. Rejected for ergonomic reasons.
+- **Single `MODELS_JSON` env var.** Compact but harder to override one role at a time across Vercel and Inngest environment configs. Rejected for ergonomic reasons.
 
 **Consequences.**
 - Production rollouts of new models (e.g., a successor to the current frontier tier) are a Vercel env-var change + redeploy of the running pod — no PR, no code review for the model swap itself.

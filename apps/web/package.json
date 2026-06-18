@@ -8,7 +8,8 @@
     "dev": "dotenv -e ../../.env.local -- next dev",
     "build": "next build",
     "start": "next start",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test:e2e": "dotenv -e ../../.env.local -- playwright test"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1069.0",
@@ -27,6 +28,9 @@
     "zod": "^4.4.3"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.11.3",
+    "@clerk/testing": "^2.1.2",
+    "@playwright/test": "^1.61.0",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^22",
     "@types/react": "^19",

@@ -36,13 +36,34 @@ export const ingestPdf = inngest.createFunction(
   async ({ event, step }) => {
     const { documentId, r2Key, workspaceId, startedAt, maxPages } = event.data as PdfUploadedData;
 
-    // 1. Fetch the PDF from R2 and extract text per page.
+    // 1. Fetch the PDF from R2, verify it's really a PDF, and extract text.
     const parsed = await step.run('fetch-and-parse', async () => {
       const bytes = await getObjectBytes(r2Key);
+      // Magic bytes: a real PDF starts with `%PDF`. Don't trust the client's
+      // extension or MIME type (SECURITY.md #9).
+      const header = new TextDecoder().decode(bytes.slice(0, 5));
+      if (!header.startsWith('%PDF')) {
+        return { ok: false as const };
+      }
       const pdf = await getDocumentProxy(bytes);
       const { totalPages, text } = await extractText(pdf, { mergePages: false });
-      return { pageCount: totalPages, pages: Array.isArray(text) ? text : [text] };
+      return {
+        ok: true as const,
+        pageCount: totalPages,
+        pages: Array.isArray(text) ? text : [text],
+      };
     });
+
+    // Reject non-PDFs (extension/MIME spoofing) without retrying.
+    if (!parsed.ok) {
+      await step.run('reject-not-pdf', async () => {
+        await db
+          .update(documents)
+          .set({ status: 'failed', errorVariant: 'pdf_unparseable', updatedAt: new Date() })
+          .where(eq(documents.id, documentId));
+      });
+      return { rejected: 'not_pdf' };
+    }
 
     // Enforce the per-tier page-count limit before spending any embedding cost.
     if (parsed.pageCount > maxPages) {

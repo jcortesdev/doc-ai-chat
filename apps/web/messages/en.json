@@ -7,7 +7,26 @@
     "signInToUpload": "Sign in to upload a PDF."
   },
   "nav": {
-    "signIn": "Sign in"
+    "signIn": "Sign in",
+    "search": "Search"
+  },
+  "search": {
+    "title": "Search",
+    "hint": "Search your ingested PDFs. No chat — just retrieval, with the score behind every result.",
+    "placeholder": "Ask something about your documents…",
+    "submit": "Search",
+    "searching": "Searching…",
+    "empty": "No matching passages.",
+    "errorGeneric": "Search failed. Please try again.",
+    "cost": "Retrieve cost",
+    "page": "Page {n}",
+    "noPage": "No page",
+    "score": {
+      "rerank": "Rerank",
+      "rrf": "RRF",
+      "cosine": "Cosine",
+      "bm25": "BM25"
+    }
   },
   "upload": {
     "cta": "Drop a PDF here or click to upload",

@@ -1,4 +1,5 @@
 import { LocaleSwitcher } from '@/components/locale-switcher';
+import { Link } from '@/i18n/navigation';
 import { Show, SignInButton, UserButton } from '@clerk/nextjs';
 import { getTranslations } from 'next-intl/server';
 
@@ -9,6 +10,14 @@ export async function Topbar() {
     <header className="flex items-center justify-between px-6 py-4 sm:px-10">
       <span className="font-mono text-sm font-semibold tracking-tight">DocAI</span>
       <div className="flex items-center gap-3">
+        <Show when="signed-in">
+          <Link
+            href="/search"
+            className="text-xs font-medium text-foreground/70 transition-colors hover:text-foreground"
+          >
+            {t('search')}
+          </Link>
+        </Show>
         <LocaleSwitcher />
         <Show
           when="signed-in"

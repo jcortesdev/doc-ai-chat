@@ -81,3 +81,24 @@ export async function embed(texts: string[], context: EmbedContext = {}): Promis
 
   return { embeddings, totalTokens, costUsd };
 }
+
+// Single-query embedding for retrieval (M2). Reuses `embed` so batching, model
+// resolution, and usage_events logging stay in one place — only difference is
+// it returns the lone vector instead of an array.
+export type EmbedQueryResult = {
+  embedding: number[];
+  totalTokens: number;
+  costUsd: number;
+};
+
+export async function embedQuery(
+  query: string,
+  context: EmbedContext = {},
+): Promise<EmbedQueryResult> {
+  const { embeddings, totalTokens, costUsd } = await embed([query], context);
+  const embedding = embeddings[0];
+  if (!embedding) {
+    throw new Error('embedQuery: Voyage returned no embedding for the query');
+  }
+  return { embedding, totalTokens, costUsd };
+}

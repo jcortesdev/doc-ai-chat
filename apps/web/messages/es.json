@@ -22,6 +22,7 @@
     "processingHint": "Esto se actualiza solo.",
     "timeoutHint": "Sigue procesando — recargá para chequear.",
     "failedHint": "No pudimos procesar este PDF. Puede ser escaneado, solo imagen, o no ser un PDF válido.",
+    "failedFileTooLarge": "Este archivo supera el límite de páginas de tu plan.",
     "status": {
       "uploading": "Subiendo",
       "processing": "Procesando",

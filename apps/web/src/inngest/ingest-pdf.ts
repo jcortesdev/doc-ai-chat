@@ -13,6 +13,7 @@ type PdfUploadedData = {
   workspaceId: string;
   uploaderId: string;
   startedAt: number;
+  maxPages: number;
 };
 
 export const ingestPdf = inngest.createFunction(
@@ -33,7 +34,7 @@ export const ingestPdf = inngest.createFunction(
     },
   },
   async ({ event, step }) => {
-    const { documentId, r2Key, workspaceId, startedAt } = event.data as PdfUploadedData;
+    const { documentId, r2Key, workspaceId, startedAt, maxPages } = event.data as PdfUploadedData;
 
     // 1. Fetch the PDF from R2 and extract text per page.
     const parsed = await step.run('fetch-and-parse', async () => {
@@ -42,6 +43,22 @@ export const ingestPdf = inngest.createFunction(
       const { totalPages, text } = await extractText(pdf, { mergePages: false });
       return { pageCount: totalPages, pages: Array.isArray(text) ? text : [text] };
     });
+
+    // Enforce the per-tier page-count limit before spending any embedding cost.
+    if (parsed.pageCount > maxPages) {
+      await step.run('reject-too-many-pages', async () => {
+        await db
+          .update(documents)
+          .set({
+            status: 'failed',
+            errorVariant: 'file_too_large',
+            pageCount: parsed.pageCount,
+            updatedAt: new Date(),
+          })
+          .where(eq(documents.id, documentId));
+      });
+      return { rejected: 'too_many_pages', pageCount: parsed.pageCount, maxPages };
+    }
 
     // 2. Chunk each page so every chunk keeps its source page number.
     const chunked = await step.run('chunk', () => {

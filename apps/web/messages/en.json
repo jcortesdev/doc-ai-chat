@@ -22,6 +22,7 @@
     "processingHint": "This updates automatically.",
     "timeoutHint": "Still processing — refresh to check.",
     "failedHint": "We couldn't process this PDF. It may be scanned, image-only, or not a valid PDF.",
+    "failedFileTooLarge": "This file exceeds the page limit for your plan.",
     "status": {
       "uploading": "Uploading",
       "processing": "Processing",

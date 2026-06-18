@@ -1,5 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { getSignedUploadUrl } from '@/lib/r2';
+import { getTierLimits } from '@/lib/tiers';
 import { ensureWorkspace } from '@/lib/workspace';
 import { auth, currentUser } from '@clerk/nextjs/server';
 import { db } from '@doc-ai-chat/db/client';
@@ -7,16 +8,14 @@ import { documents } from '@doc-ai-chat/db/schema';
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 
-// Logged-in tier defaults. Full per-tier enforcement (anon/logged/byok) lands in
-// task 10; page-count is validated post-upload (needs the bytes) in task 10/11.
-const MAX_BYTES = 10 * 1024 * 1024;
+// Logged-in default retention (full per-tier retention windows land in M4).
 const RETENTION_DAYS = 7;
 const PRESIGN_TTL_SECONDS = 5 * 60;
 
 const presignSchema = z.object({
   filename: z.string().min(1).max(255),
   contentType: z.literal('application/pdf'),
-  size: z.number().int().positive().max(MAX_BYTES),
+  size: z.number().int().positive(),
 });
 
 export async function POST(request: Request) {
@@ -28,19 +27,26 @@ export async function POST(request: Request) {
   const body = await request.json().catch(() => null);
   const parsed = presignSchema.safeParse(body);
   if (!parsed.success) {
-    const tooLarge = parsed.error.issues.some((issue) => issue.path[0] === 'size');
     return NextResponse.json(
-      {
-        error: tooLarge ? 'file_too_large' : 'invalid_request',
-        issues: parsed.error.issues,
-      },
-      { status: tooLarge ? 413 : 400 },
+      { error: 'invalid_request', issues: parsed.error.issues },
+      { status: 400 },
     );
   }
 
   const user = await currentUser();
-  const email = user?.primaryEmailAddress?.emailAddress ?? `${userId}@users.noreply`;
-  const workspaceId = await ensureWorkspace(userId, email);
+  const email = user?.primaryEmailAddress?.emailAddress ?? null;
+  const limits = getTierLimits(email);
+
+  // File-size limit per tier (ADR-009). Page count is enforced post-upload in
+  // the ingest worker, which needs the parsed PDF.
+  if (parsed.data.size > limits.maxBytes) {
+    return NextResponse.json(
+      { error: 'file_too_large', variant: 'file_too_large', maxBytes: limits.maxBytes },
+      { status: 413 },
+    );
+  }
+
+  const workspaceId = await ensureWorkspace(userId, email ?? `${userId}@users.noreply`);
 
   const documentId = randomUUID();
   const r2Key = `${workspaceId}/${documentId}.pdf`;

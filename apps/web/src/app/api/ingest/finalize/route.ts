@@ -1,5 +1,6 @@
 import { inngest } from '@/inngest/client';
-import { auth } from '@clerk/nextjs/server';
+import { getTierLimits } from '@/lib/tiers';
+import { auth, currentUser } from '@clerk/nextjs/server';
 import { db } from '@doc-ai-chat/db/client';
 import { documents, workspaces } from '@doc-ai-chat/db/schema';
 import { eq } from 'drizzle-orm';
@@ -44,6 +45,9 @@ export async function POST(request: Request) {
     .set({ status: 'processing', updatedAt: new Date() })
     .where(eq(documents.id, doc.id));
 
+  const user = await currentUser();
+  const limits = getTierLimits(user?.primaryEmailAddress?.emailAddress ?? null);
+
   await inngest.send({
     name: 'pdf.uploaded',
     data: {
@@ -52,6 +56,7 @@ export async function POST(request: Request) {
       workspaceId: doc.workspaceId,
       uploaderId: doc.uploaderId ?? userId,
       startedAt: Date.now(),
+      maxPages: limits.maxPages,
     },
   });
 

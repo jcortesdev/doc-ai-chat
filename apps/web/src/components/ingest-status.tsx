@@ -123,7 +123,7 @@ export function IngestStatus({ initial }: { initial: DocumentStatus }) {
 
       {doc.status === 'failed' ? (
         <p className="rounded-lg border border-foreground/10 p-4 text-sm text-foreground/70">
-          {t('failedHint')}
+          {doc.errorVariant === 'file_too_large' ? t('failedFileTooLarge') : t('failedHint')}
         </p>
       ) : (
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">

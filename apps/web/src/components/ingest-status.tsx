@@ -23,7 +23,7 @@ function pollDelay(attempt: number): number {
 function Metric({ label, value }: { label: string; value: string }) {
   return (
     <div className="rounded-lg border border-foreground/10 p-4">
-      <div className="text-xs uppercase tracking-wide text-foreground/50">{label}</div>
+      <div className="text-xs uppercase tracking-wide text-foreground/70">{label}</div>
       <div className="mt-1 font-mono text-lg font-semibold tabular-nums">{value}</div>
     </div>
   );
@@ -97,7 +97,7 @@ export function IngestStatus({ initial }: { initial: DocumentStatus }) {
   return (
     <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-6 px-6 py-10">
       <div className="flex flex-col gap-1">
-        <span className="text-xs uppercase tracking-wide text-foreground/50">{t('title')}</span>
+        <span className="text-xs uppercase tracking-wide text-foreground/70">{t('title')}</span>
         <h1 className="break-all font-mono text-xl font-semibold">{doc.filename}</h1>
       </div>
 
@@ -115,7 +115,7 @@ export function IngestStatus({ initial }: { initial: DocumentStatus }) {
           />
         )}
         {!isTerminal && (
-          <span className="text-sm text-foreground/50">
+          <span className="text-sm text-foreground/70">
             {timedOut ? t('timeoutHint') : t('processingHint')}
           </span>
         )}

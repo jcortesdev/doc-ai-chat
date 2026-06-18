@@ -29,6 +29,7 @@
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.11.3",
+    "@clerk/backend": "^3.7.1",
     "@clerk/testing": "^2.1.2",
     "@playwright/test": "^1.61.0",
     "@tailwindcss/postcss": "^4",

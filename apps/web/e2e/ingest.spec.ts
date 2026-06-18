@@ -3,6 +3,7 @@ import { fileURLToPath } from 'node:url';
 import AxeBuilder from '@axe-core/playwright';
 import { clerk, setupClerkTestingToken } from '@clerk/testing/playwright';
 import { expect, test } from '@playwright/test';
+import { TEST_EMAIL } from './test-user';
 
 const fixturePath = join(
   dirname(fileURLToPath(import.meta.url)),
@@ -12,11 +13,12 @@ const fixturePath = join(
 test('uploads a PDF, reaches ready, and passes the axe sweep', async ({ page }) => {
   await setupClerkTestingToken({ page });
 
-  // Sign in with a Clerk test email (code 424242 is mocked on dev instances).
+  // Sign in as the self-provisioned test user (created in global setup). The
+  // `+clerk_test` email uses the mocked code 424242 on dev instances.
   await page.goto('/en');
   await clerk.signIn({
     page,
-    signInParams: { strategy: 'email_code', identifier: 'e2e+clerk_test@example.com' },
+    signInParams: { strategy: 'email_code', identifier: TEST_EMAIL },
   });
 
   // Upload a fixture PDF through the uploader's (hidden) file input.

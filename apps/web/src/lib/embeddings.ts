@@ -26,9 +26,15 @@ function embeddingsModel(): string {
 
 // Embeds `texts` with Voyage, batching at 128, and logs one usage_events row
 // per call (aggregating token usage across batches).
-export async function embed(texts: string[], context: EmbedContext = {}): Promise<number[][]> {
+export type EmbedResult = {
+  embeddings: number[][];
+  totalTokens: number;
+  costUsd: number;
+};
+
+export async function embed(texts: string[], context: EmbedContext = {}): Promise<EmbedResult> {
   if (texts.length === 0) {
-    return [];
+    return { embeddings: [], totalTokens: 0, costUsd: 0 };
   }
 
   const apiKey = process.env.VOYAGE_API_KEY;
@@ -73,5 +79,5 @@ export async function embed(texts: string[], context: EmbedContext = {}): Promis
     isPrivileged: context.isPrivileged ?? false,
   });
 
-  return embeddings;
+  return { embeddings, totalTokens, costUsd };
 }

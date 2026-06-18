@@ -1,4 +1,4 @@
-import { PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
+import { GetObjectCommand, PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 
 function requireEnv(name: string): string {
@@ -50,4 +50,13 @@ export async function getSignedUploadUrl({
     ContentType: contentType,
   });
   return getSignedUrl(r2Client(), command, { expiresIn: expiresInSeconds });
+}
+
+// Downloads an object's bytes (used by the ingest pipeline to read the PDF).
+export async function getObjectBytes(key: string): Promise<Uint8Array> {
+  const response = await r2Client().send(new GetObjectCommand({ Bucket: r2Bucket(), Key: key }));
+  if (!response.Body) {
+    throw new Error(`R2 object not found: ${key}`);
+  }
+  return response.Body.transformToByteArray();
 }

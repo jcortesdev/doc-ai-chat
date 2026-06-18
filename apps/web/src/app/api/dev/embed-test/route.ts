@@ -10,7 +10,7 @@ export async function GET() {
       'RAG retrieves relevant chunks before answering.',
       'Voyage-3 turns text into 1024-dimension vectors.',
     ];
-    const vectors = await embed(texts);
+    const { embeddings: vectors } = await embed(texts);
     const dimensions = vectors.map((vector) => vector.length);
     console.log('[embed-test] dimensions:', dimensions);
     console.log('[embed-test] first vector head:', vectors[0]?.slice(0, 5));

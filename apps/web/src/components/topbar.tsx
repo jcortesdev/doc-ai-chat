@@ -12,6 +12,12 @@ export async function Topbar() {
       <div className="flex items-center gap-3">
         <Show when="signed-in">
           <Link
+            href="/chat"
+            className="text-xs font-medium text-foreground/70 transition-colors hover:text-foreground"
+          >
+            {t('chat')}
+          </Link>
+          <Link
             href="/search"
             className="text-xs font-medium text-foreground/70 transition-colors hover:text-foreground"
           >

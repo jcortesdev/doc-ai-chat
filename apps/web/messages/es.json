@@ -8,7 +8,21 @@
   },
   "nav": {
     "signIn": "Iniciar sesión",
-    "search": "Búsqueda"
+    "search": "Búsqueda",
+    "chat": "Chat"
+  },
+  "chat": {
+    "title": "Chat",
+    "hint": "Preguntá sobre tus PDFs ingestados — las respuestas se basan en tus documentos, con citas.",
+    "placeholder": "Preguntá sobre tus documentos…",
+    "send": "Enviar",
+    "thinking": "Pensando…",
+    "empty": "Hacé una pregunta para empezar.",
+    "errorGeneric": "Algo salió mal. Probá de nuevo.",
+    "you": "Vos",
+    "assistant": "DocAI",
+    "citationAria": "Fuente {label}, página {page}",
+    "citationAriaNoPage": "Fuente {label}"
   },
   "search": {
     "title": "Búsqueda",

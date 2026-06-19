@@ -37,7 +37,7 @@ function Score({
     <div
       className={`rounded-lg border p-2 ${primary ? 'border-foreground/30' : 'border-foreground/10'}`}
     >
-      <dt className="text-[10px] uppercase tracking-wide text-foreground/50">{label}</dt>
+      <dt className="text-[10px] uppercase tracking-wide text-foreground/70">{label}</dt>
       <dd className="mt-0.5 font-mono text-sm tabular-nums">{value}</dd>
     </div>
   );
@@ -105,7 +105,7 @@ export function SearchBox() {
             <p className="text-sm text-foreground/70">{t('empty')}</p>
           ) : (
             <>
-              <p className="text-xs text-foreground/50">
+              <p className="text-xs text-foreground/70">
                 {t('cost')}:{' '}
                 <span className="font-mono tabular-nums">${response.costUsd.toFixed(6)}</span>
               </p>
@@ -116,7 +116,7 @@ export function SearchBox() {
                     className="flex flex-col gap-3 rounded-xl border border-foreground/10 p-4"
                   >
                     <div className="flex items-center justify-between gap-2">
-                      <span className="text-xs font-medium text-foreground/50">#{index + 1}</span>
+                      <span className="text-xs font-medium text-foreground/70">#{index + 1}</span>
                       <span className="rounded-full border border-foreground/15 px-2.5 py-0.5 text-xs text-foreground/70">
                         {result.page === null ? t('noPage') : t('page', { n: result.page })}
                       </span>

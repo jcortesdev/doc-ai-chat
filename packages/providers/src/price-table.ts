@@ -9,6 +9,11 @@ export type ModelPrice = {
 const PRICE_TABLE: Record<string, ModelPrice> = {
   // Voyage AI embeddings — output tokens are not billed.
   'voyage-3': { inputPerMillion: 0.06, outputPerMillion: 0 },
+  // Chat models (M3). Verify against each provider's pricing page when adding.
+  // Anthropic Sonnet 4.6 — prod demo default.
+  'claude-sonnet-4-6': { inputPerMillion: 3.0, outputPerMillion: 15.0 },
+  // DeepSeek V4-Flash — dev iteration (and currently prod while benchmarking).
+  'deepseek-v4-flash': { inputPerMillion: 0.14, outputPerMillion: 0.28 },
 };
 
 export function getModelPrice(model: string): ModelPrice {

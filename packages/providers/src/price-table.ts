@@ -28,3 +28,21 @@ export function computeCostUsd(model: string, inputTokens: number, outputTokens 
     (outputTokens / 1_000_000) * price.outputPerMillion
   );
 }
+
+// Rerank models bill per "search unit" (one query + up to 100 docs), not per
+// token. Cohere PAYG rate is $2.00 / 1K searches; the public pricing page now
+// foregrounds Model Vault hourly tiers, so this is the standard usage-based rate
+// (cohere.com/pricing). Verify if Cohere changes their pricing model.
+const RERANK_PRICE_TABLE: Record<string, { perThousandSearches: number }> = {
+  'rerank-v3.5': { perThousandSearches: 2.0 },
+};
+
+export function computeRerankCostUsd(model: string, searchUnits: number): number {
+  const price = RERANK_PRICE_TABLE[model];
+  if (!price) {
+    throw new Error(
+      `No rerank price entry for model "${model}" — add it to packages/providers price-table.`,
+    );
+  }
+  return (searchUnits / 1000) * price.perThousandSearches;
+}

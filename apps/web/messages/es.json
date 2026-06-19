@@ -7,7 +7,26 @@
     "signInToUpload": "Iniciá sesión para subir un PDF."
   },
   "nav": {
-    "signIn": "Iniciar sesión"
+    "signIn": "Iniciar sesión",
+    "search": "Búsqueda"
+  },
+  "search": {
+    "title": "Búsqueda",
+    "hint": "Buscá en tus PDFs ingestados. Sin chat — solo retrieval, con el score detrás de cada resultado.",
+    "placeholder": "Preguntá algo sobre tus documentos…",
+    "submit": "Buscar",
+    "searching": "Buscando…",
+    "empty": "No hay pasajes que coincidan.",
+    "errorGeneric": "Falló la búsqueda. Probá de nuevo.",
+    "cost": "Costo del retrieve",
+    "page": "Página {n}",
+    "noPage": "Sin página",
+    "score": {
+      "rerank": "Rerank",
+      "rrf": "RRF",
+      "cosine": "Cosine",
+      "bm25": "BM25"
+    }
   },
   "upload": {
     "cta": "Suelta un archivo PDF acá o haz clic para subirlo",

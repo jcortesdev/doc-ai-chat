@@ -7,7 +7,9 @@
   "exports": {
     "./client": "./src/client.ts",
     "./schema": "./src/schema.ts",
-    "./chunker": "./src/chunker.ts"
+    "./chunker": "./src/chunker.ts",
+    "./vector-literal": "./src/vector-literal.ts",
+    "./rrf": "./src/rrf.ts"
   },
   "scripts": {
     "typecheck": "tsc --noEmit",

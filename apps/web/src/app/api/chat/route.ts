@@ -3,7 +3,11 @@ import { retrieveChatContext } from '@/lib/chat-retrieve';
 import { resolveTier } from '@/lib/tiers';
 import { ensureWorkspace } from '@/lib/workspace';
 import { auth, currentUser } from '@clerk/nextjs/server';
-import { PROMPT_RAG_ANSWER_V1, buildRagUserTurn } from '@doc-ai-chat/prompts/rag-answer';
+import {
+  type CitationSource,
+  PROMPT_RAG_ANSWER_V1,
+  buildRagUserTurn,
+} from '@doc-ai-chat/prompts/rag-answer';
 import type { ModelMessage } from 'ai';
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
@@ -50,12 +54,23 @@ export async function POST(request: Request) {
     const workspaceId = await ensureWorkspace(userId, email);
     const isPrivileged = resolveTier(email) === 'privileged';
 
-    const { contextChunks } = await retrieveChatContext(message, workspaceId, { isPrivileged });
+    const { contextChunks, hits } = await retrieveChatContext(message, workspaceId, {
+      isPrivileged,
+    });
 
     const messages: ModelMessage[] = [
       ...history,
       { role: 'user', content: buildRagUserTurn(message, contextChunks) },
     ];
+
+    // Citation sources in label order — [N] in the answer resolves to sources[N-1].
+    // Sent to the client as message metadata so a citation chip can open the cited
+    // PDF page (task 7); the client parses the markers with resolveCitations.
+    const sources: CitationSource[] = hits.map((hit) => ({
+      chunkId: hit.chunkId,
+      documentId: hit.documentId,
+      page: hit.page,
+    }));
 
     const result = streamChat({
       system: PROMPT_RAG_ANSWER_V1,
@@ -63,7 +78,9 @@ export async function POST(request: Request) {
       context: { workspaceId, isPrivileged },
     });
 
-    return result.toUIMessageStreamResponse();
+    return result.toUIMessageStreamResponse({
+      messageMetadata: ({ part }) => (part.type === 'start' ? { sources } : undefined),
+    });
   } catch {
     // Don't leak provider/internal error detail from the production endpoint.
     return NextResponse.json({ error: 'chat_failed' }, { status: 502 });

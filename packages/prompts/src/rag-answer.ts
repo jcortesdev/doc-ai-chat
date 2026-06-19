@@ -62,3 +62,38 @@ export function wrapUserMessage(question: string): string {
 export function buildRagUserTurn(question: string, chunks: ContextChunk[]): string {
   return `${renderRetrievedContext(chunks)}\n\n${wrapUserMessage(question)}`;
 }
+
+// One retrieved passage's identity, in citation-label order: sources[N-1] is the
+// passage the model cites as [N]. The route builds this from the M2 HybridHits
+// and sends it to the client (as message metadata) so a chip can open the right
+// PDF page. Kept next to the prompt so the citation format and its parser never
+// drift apart.
+export type CitationSource = {
+  chunkId: string;
+  documentId: string;
+  page: number | null;
+};
+
+export type Citation = CitationSource & { label: number };
+
+// Parses [n] markers out of the answer and resolves each to its source. Labels
+// are 1-based and index into `sources` (the rerank order). Out-of-range labels —
+// a model citing [9] when only 3 passages exist — are dropped: we surface only
+// citations that ground to a real passage. Deduped, in first-appearance order.
+export function resolveCitations(text: string, sources: CitationSource[]): Citation[] {
+  const seen = new Set<number>();
+  const citations: Citation[] = [];
+  for (const match of text.matchAll(/\[(\d+)\]/g)) {
+    const raw = match[1];
+    if (raw === undefined) {
+      continue;
+    }
+    const label = Number(raw);
+    const source = sources[label - 1];
+    if (source && !seen.has(label)) {
+      seen.add(label);
+      citations.push({ label, ...source });
+    }
+  }
+  return citations;
+}

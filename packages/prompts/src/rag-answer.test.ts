@@ -3,8 +3,14 @@ import {
   PROMPT_RAG_ANSWER_V1,
   buildRagUserTurn,
   renderRetrievedContext,
+  resolveCitations,
   wrapUserMessage,
 } from './rag-answer';
+
+const SOURCES = [
+  { chunkId: 'c1', documentId: 'd1', page: 1 },
+  { chunkId: 'c2', documentId: 'd2', page: 2 },
+];
 
 describe('PROMPT_RAG_ANSWER_V1', () => {
   it('declares the data-isolation and citation invariants', () => {
@@ -53,5 +59,22 @@ describe('buildRagUserTurn', () => {
   it('places the context block before the delimited question', () => {
     const out = buildRagUserTurn('q?', [{ page: 1, content: 'x' }]);
     expect(out.indexOf('<retrieved_context>')).toBeLessThan(out.indexOf('<user_message>'));
+  });
+});
+
+describe('resolveCitations', () => {
+  it('resolves [n] markers to their sources, deduped in first-appearance order', () => {
+    expect(resolveCitations('Foo [1]. Bar [2][1].', SOURCES)).toEqual([
+      { label: 1, chunkId: 'c1', documentId: 'd1', page: 1 },
+      { label: 2, chunkId: 'c2', documentId: 'd2', page: 2 },
+    ]);
+  });
+
+  it('drops out-of-range labels (hallucinated citations)', () => {
+    expect(resolveCitations('Foo [9].', SOURCES)).toEqual([]);
+  });
+
+  it('returns empty when there are no markers (e.g. a refusal)', () => {
+    expect(resolveCitations("I couldn't find that in your documents.", SOURCES)).toEqual([]);
   });
 });

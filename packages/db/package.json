@@ -9,7 +9,8 @@
     "./schema": "./src/schema.ts",
     "./chunker": "./src/chunker.ts",
     "./vector-literal": "./src/vector-literal.ts",
-    "./rrf": "./src/rrf.ts"
+    "./rrf": "./src/rrf.ts",
+    "./relevance": "./src/relevance.ts"
   },
   "scripts": {
     "typecheck": "tsc --noEmit",

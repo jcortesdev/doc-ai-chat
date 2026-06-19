@@ -32,6 +32,9 @@ importers:
       '@doc-ai-chat/db':
         specifier: workspace:*
         version: link:../../packages/db
+      '@doc-ai-chat/prompts':
+        specifier: workspace:*
+        version: link:../../packages/prompts
       '@doc-ai-chat/providers':
         specifier: workspace:*
         version: link:../../packages/providers

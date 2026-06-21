@@ -72,6 +72,9 @@ export type CitationSource = {
   chunkId: string;
   documentId: string;
   page: number | null;
+  // The passage text, so the citation panel can show the cited source without an
+  // extra round-trip and derive a search phrase for the PDF deep-link.
+  content: string;
 };
 
 export type Citation = CitationSource & { label: number };
@@ -96,4 +99,13 @@ export function resolveCitations(text: string, sources: CitationSource[]): Citat
     }
   }
   return citations;
+}
+
+// Derives a short, single-line phrase from a passage to feed the native PDF
+// viewer's `#search=` deep-link (best-effort in-PDF highlight). Collapses
+// whitespace and caps to the first few words so the match is distinctive but not
+// so long it fails to match across the viewer's line wrapping.
+export function citationSearchPhrase(content: string, maxWords = 8): string {
+  const words = content.replace(/\s+/g, ' ').trim().split(' ').filter(Boolean);
+  return words.slice(0, maxWords).join(' ');
 }

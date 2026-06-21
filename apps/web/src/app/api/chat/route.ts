@@ -70,6 +70,8 @@ export async function POST(request: Request) {
       chunkId: hit.chunkId,
       documentId: hit.documentId,
       page: hit.page,
+      // Passage text for the citation panel; trimmed so the metadata stays small.
+      content: hit.content.slice(0, 600),
     }));
 
     const result = streamChat({

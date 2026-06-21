@@ -22,7 +22,13 @@
     "you": "Vos",
     "assistant": "DocAI",
     "citationAria": "Fuente {label}, página {page}",
-    "citationAriaNoPage": "Fuente {label}"
+    "citationAriaNoPage": "Fuente {label}",
+    "sourcePassage": "Pasaje citado",
+    "openPdf": "Abrir PDF (página {page})",
+    "openPdfNoPage": "Abrir PDF",
+    "close": "Cerrar",
+    "pdfError": "No se pudo abrir el PDF.",
+    "pdfHighlightNote": "Salta a la página citada. El resaltado dentro del PDF funciona en Chrome, Edge y otros navegadores Chromium."
   },
   "search": {
     "title": "Búsqueda",

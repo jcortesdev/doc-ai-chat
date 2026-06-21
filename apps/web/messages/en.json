@@ -22,7 +22,13 @@
     "you": "You",
     "assistant": "DocAI",
     "citationAria": "Source {label}, page {page}",
-    "citationAriaNoPage": "Source {label}"
+    "citationAriaNoPage": "Source {label}",
+    "sourcePassage": "Cited passage",
+    "openPdf": "Open PDF (page {page})",
+    "openPdfNoPage": "Open PDF",
+    "close": "Close",
+    "pdfError": "Couldn't open the PDF.",
+    "pdfHighlightNote": "Jumps to the cited page. In-PDF highlight is supported in Chrome, Edge and other Chromium browsers."
   },
   "search": {
     "title": "Search",

@@ -2,14 +2,15 @@ import { describe, expect, it } from 'vitest';
 import {
   PROMPT_RAG_ANSWER_V1,
   buildRagUserTurn,
+  citationSearchPhrase,
   renderRetrievedContext,
   resolveCitations,
   wrapUserMessage,
 } from './rag-answer';
 
 const SOURCES = [
-  { chunkId: 'c1', documentId: 'd1', page: 1 },
-  { chunkId: 'c2', documentId: 'd2', page: 2 },
+  { chunkId: 'c1', documentId: 'd1', page: 1, content: 'alpha' },
+  { chunkId: 'c2', documentId: 'd2', page: 2, content: 'beta' },
 ];
 
 describe('PROMPT_RAG_ANSWER_V1', () => {
@@ -65,8 +66,8 @@ describe('buildRagUserTurn', () => {
 describe('resolveCitations', () => {
   it('resolves [n] markers to their sources, deduped in first-appearance order', () => {
     expect(resolveCitations('Foo [1]. Bar [2][1].', SOURCES)).toEqual([
-      { label: 1, chunkId: 'c1', documentId: 'd1', page: 1 },
-      { label: 2, chunkId: 'c2', documentId: 'd2', page: 2 },
+      { label: 1, chunkId: 'c1', documentId: 'd1', page: 1, content: 'alpha' },
+      { label: 2, chunkId: 'c2', documentId: 'd2', page: 2, content: 'beta' },
     ]);
   });
 
@@ -76,5 +77,17 @@ describe('resolveCitations', () => {
 
   it('returns empty when there are no markers (e.g. a refusal)', () => {
     expect(resolveCitations("I couldn't find that in your documents.", SOURCES)).toEqual([]);
+  });
+});
+
+describe('citationSearchPhrase', () => {
+  it('collapses whitespace/newlines and caps to the first words', () => {
+    expect(citationSearchPhrase('  A partir\ndel 1 de julio de 2026 se delimitarán  ', 8)).toBe(
+      'A partir del 1 de julio de 2026',
+    );
+  });
+
+  it('returns empty for blank content', () => {
+    expect(citationSearchPhrase('   \n  ')).toBe('');
   });
 });

@@ -1,8 +1,9 @@
 'use client';
 
+import { CitationPanel } from '@/components/citation-panel';
 import { rehypeCitations } from '@/lib/rehype-citations';
 import { useChat } from '@ai-sdk/react';
-import type { CitationSource } from '@doc-ai-chat/prompts/rag-answer';
+import type { Citation, CitationSource } from '@doc-ai-chat/prompts/rag-answer';
 import { DefaultChatTransport, type UIMessage } from 'ai';
 import { useTranslations } from 'next-intl';
 import { type FormEvent, useState } from 'react';
@@ -39,33 +40,53 @@ const transport = new DefaultChatTransport<ChatUIMessage>({
   },
 });
 
-function CitationChip({ label, source }: { label: number; source: CitationSource }) {
+function CitationChip({
+  citation,
+  onOpen,
+}: {
+  citation: Citation;
+  onOpen: (citation: Citation) => void;
+}) {
   const t = useTranslations('chat');
   const aria =
-    source.page === null
-      ? t('citationAriaNoPage', { label })
-      : t('citationAria', { label, page: source.page });
+    citation.page === null
+      ? t('citationAriaNoPage', { label: citation.label })
+      : t('citationAria', { label: citation.label, page: citation.page });
   return (
-    <span
+    <button
+      type="button"
+      onClick={() => onOpen(citation)}
       title={aria}
       aria-label={aria}
-      className="mx-0.5 inline-flex cursor-help select-none items-center rounded border border-foreground/25 px-1 align-super font-medium text-[10px] text-foreground/70"
+      className="mx-0.5 inline-flex cursor-pointer select-none items-center rounded border border-foreground/25 px-1 align-super font-medium text-[10px] text-foreground/70 transition-colors hover:bg-foreground/10"
     >
-      {label}
-    </span>
+      {citation.label}
+    </button>
   );
 }
 
 // Renders an assistant answer as markdown (bold, lists, paragraphs) with the [n]
 // citation markers turned into chips. rehypeCitations rewrites each [n] into a
 // <cite data-label> node; the `cite` component below resolves it to its source.
-function AssistantAnswer({ text, sources }: { text: string; sources: CitationSource[] }) {
+function AssistantAnswer({
+  text,
+  sources,
+  onOpenCitation,
+}: {
+  text: string;
+  sources: CitationSource[];
+  onOpenCitation: (citation: Citation) => void;
+}) {
   const components: Components = {
     cite: ({ node }) => {
       const raw = node?.properties?.dataLabel;
       const label = Number(raw);
       const source = Number.isInteger(label) ? sources[label - 1] : undefined;
-      return source ? <CitationChip label={label} source={source} /> : <>{`[${raw ?? ''}]`}</>;
+      return source ? (
+        <CitationChip citation={{ label, ...source }} onOpen={onOpenCitation} />
+      ) : (
+        <>{`[${raw ?? ''}]`}</>
+      );
     },
     p: ({ children }) => <p className="mb-2 last:mb-0">{children}</p>,
     ul: ({ children }) => <ul className="mb-2 list-disc space-y-1 pl-5 last:mb-0">{children}</ul>,
@@ -131,6 +152,7 @@ export function ChatBox() {
   const t = useTranslations('chat');
   const { messages, sendMessage, status, error } = useChat<ChatUIMessage>({ transport });
   const [input, setInput] = useState('');
+  const [activeCitation, setActiveCitation] = useState<Citation | null>(null);
   const busy = status === 'submitted' || status === 'streaming';
   const lastMessage = messages.at(-1);
   const awaitingAnswer =
@@ -177,7 +199,11 @@ export function ChatBox() {
                 {isUser ? (
                   text
                 ) : (
-                  <AssistantAnswer text={text} sources={message.metadata?.sources ?? []} />
+                  <AssistantAnswer
+                    text={text}
+                    sources={message.metadata?.sources ?? []}
+                    onOpenCitation={setActiveCitation}
+                  />
                 )}
               </div>
             </div>
@@ -205,6 +231,8 @@ export function ChatBox() {
           {busy ? t('thinking') : t('send')}
         </button>
       </form>
+
+      <CitationPanel citation={activeCitation} onClose={() => setActiveCitation(null)} />
     </div>
   );
 }

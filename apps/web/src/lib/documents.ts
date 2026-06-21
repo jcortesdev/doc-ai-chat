@@ -56,3 +56,29 @@ export async function getOwnedDocument(id: string, userId: string): Promise<Docu
     errorVariant: doc.errorVariant,
   };
 }
+
+// Same tenant-isolation check as getOwnedDocument, but returns the R2 key needed
+// to serve the original PDF. Kept separate so r2Key never leaks into the public
+// status response (DocumentStatus). Returns null when missing or not owned.
+export async function getOwnedDocumentForPdf(
+  id: string,
+  userId: string,
+): Promise<{ r2Key: string; filename: string } | null> {
+  const doc = await db.query.documents.findFirst({
+    where: eq(documents.id, id),
+    columns: { r2Key: true, filename: true, workspaceId: true },
+  });
+  if (!doc) {
+    return null;
+  }
+
+  const workspace = await db.query.workspaces.findFirst({
+    where: eq(workspaces.id, doc.workspaceId),
+    columns: { ownerId: true },
+  });
+  if (!workspace || workspace.ownerId !== userId) {
+    return null;
+  }
+
+  return { r2Key: doc.r2Key, filename: doc.filename };
+}

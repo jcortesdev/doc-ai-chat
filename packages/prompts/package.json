@@ -5,7 +5,8 @@
   "description": "Versioned prompts. Every prompt lives in its own file with a tagged version, not as inline strings.",
   "type": "module",
   "exports": {
-    "./rag-answer": "./src/rag-answer.ts"
+    "./rag-answer": "./src/rag-answer.ts",
+    "./refusal-detector": "./src/refusal-detector.ts"
   },
   "scripts": {
     "typecheck": "tsc --noEmit",

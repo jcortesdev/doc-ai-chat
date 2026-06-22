@@ -4,7 +4,7 @@ import { auth } from '@clerk/nextjs/server';
 import { NextResponse } from 'next/server';
 
 // Same-origin authenticated proxy for the original PDF (M3 task 7). The citation
-// panel opens `/api/documents/[id]/pdf#page=N&search=...` in a new tab; being
+// panel opens `/api/documents/[id]/pdf#page=N&:~:text=...` in a new tab; being
 // same-origin, the request carries the Clerk session cookie. Every request
 // re-authenticates and re-checks ownership (tenant isolation, SECURITY.md #4) —
 // there is no shareable presigned URL to leak. The `#...` fragment is client-side

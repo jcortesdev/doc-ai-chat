@@ -91,20 +91,21 @@ The numbering reflects authoring order in M0 pre-flight, not implementation orde
 
 ## ADR-005 — No LangChain, no LlamaIndex
 
-**Status:** accepted, 2026-06-11
+**Status:** accepted, 2026-06-11. Refined 2026-06-19 (M3): the Vercel AI SDK is the chat generation + streaming layer (`streamText` + `useChat`) across providers; embeddings, rerank, and the retrieval pipeline stay hand-built.
 
 **Context.** LangChain and LlamaIndex are the most-mentioned "RAG frameworks." Their use is also the most-questioned pattern in mid-2026 AI Engineer interviews.
 
-**Decision.** Build directly on the Anthropic SDK. Use Vercel AI SDK only for the SSE streaming primitive on the client (`useChat`, `streamText`). Write the rest by hand.
+**Decision.** No RAG framework. The retrieval pipeline (chunking, hybrid search, RRF), embeddings (Voyage), and rerank (Cohere) are written by hand against the providers' HTTP APIs. For chat **generation + streaming** the Vercel AI SDK is the transport layer: `streamText` in the route handler and `useChat` on the client, with the provider packages (`@ai-sdk/anthropic`, `@ai-sdk/deepseek`) behind an env-driven `provider:model_id` resolver in `packages/providers` (ADR-016). The AI SDK is a streaming + provider-abstraction utility here, not a RAG framework — prompt assembly, retrieval, citation grounding, guardrails, and cost logging all stay in our code.
 
 **Alternatives considered.**
 - **LangChain.** Leaky abstractions; production AI shops have largely migrated off. "Built without LangChain" reads as a positive signal in 2026.
 - **LlamaIndex.** More defensible for complex ingest. For a portfolio, writing your own chunker + retriever is the better artifact.
+- **Route embeddings + rerank through the AI SDK too** (`@ai-sdk/cohere` reranking, a community Voyage provider). Rejected: there is no first-party `@ai-sdk/voyage` (only a single-maintainer community package), the AI SDK offers no advantage for our per-token (embeddings) / per-search-unit (rerank) cost logging, and the hand-written M1/M2 code is already shipped, tested, and a deliberate interview artifact.
 
 **Consequences.**
-- Smaller dependency surface, faster builds, no version-upgrade churn from the framework.
+- Smaller dependency surface, faster builds, no version-upgrade churn from a RAG framework.
 - The repo can show the actual pipeline code in interviews; nothing is hidden behind a chain.
-- Vercel AI SDK as a streaming-only utility (not a framework) is explicit in `packages/providers/README.md`.
+- The AI SDK earns its place only as the chat transport (`streamText` + `useChat`) and the multi-provider abstraction the M7 benchmark needs — swapping the chat model is an env-var change, same code path. Documented in `packages/providers/README.md`.
 
 ---
 

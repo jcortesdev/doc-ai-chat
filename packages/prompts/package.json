@@ -4,8 +4,16 @@
   "version": "0.0.0",
   "description": "Versioned prompts. Every prompt lives in its own file with a tagged version, not as inline strings.",
   "type": "module",
-  "main": "./src/index.ts",
+  "exports": {
+    "./rag-answer": "./src/rag-answer.ts",
+    "./refusal-detector": "./src/refusal-detector.ts"
+  },
   "scripts": {
-    "typecheck": "echo 'scaffolded in M3'"
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.3",
+    "vitest": "^4.1.9"
   }
 }

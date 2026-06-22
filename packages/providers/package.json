@@ -5,12 +5,20 @@
   "description": "ModelProvider adapter (Anthropic / OpenAI / DeepSeek) + per-provider price table. M3-M6 use Anthropic-first; M7 activates multi-provider switching and the benchmark.",
   "type": "module",
   "exports": {
-    "./price-table": "./src/price-table.ts"
+    "./price-table": "./src/price-table.ts",
+    "./chat-model": "./src/chat-model.ts"
   },
   "scripts": {
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
   },
   "devDependencies": {
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^4.1.9"
+  },
+  "dependencies": {
+    "@ai-sdk/anthropic": "^3.0.85",
+    "@ai-sdk/deepseek": "^2.0.39",
+    "ai": "^6.0.208"
   }
 }

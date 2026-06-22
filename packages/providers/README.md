@@ -1,6 +1,16 @@
 # @doc-ai-chat/providers
 
-Thin adapter over the three model providers used in the project. Designed so M3-M6 use only Anthropic without leaking the interface; M7 swaps providers behind the same interface and runs the tier-matched benchmark.
+Chat model resolution + the per-provider price table. The Vercel AI SDK is the
+chat generation + streaming layer (ADR-005): this package parses the env-driven
+`provider:model_id` ref (ADR-016) into an AI SDK `LanguageModel`, and owns the
+cost math. Prompt assembly, retrieval, citations, and `usage_events` logging live
+in `apps/web`. M3 ships Anthropic + DeepSeek behind one resolver; M7 adds OpenAI
+and runs the tier-matched benchmark — swapping a chat model is an env-var change,
+same code path.
+
+Embeddings (Voyage) and rerank (Cohere) do **not** go through this package or the
+AI SDK — they are hand-written `fetch` clients in `apps/web` (M1/M2). See ADR-005
+for why.
 
 ## Providers
 
@@ -12,29 +22,33 @@ Thin adapter over the three model providers used in the project. Designed so M3-
 
 Specific model IDs per role are configured at runtime through environment variables (see ADR-016) and live in private operational docs — they are intentionally not enumerated in source so a public-repo reader cannot pre-target a specific model for prompt-injection optimization.
 
-## Interface (planned)
+## Interface
 
 ```ts
-// chat completion (streaming + non-streaming)
-interface ChatProvider {
-  name: string;
-  complete(args: ChatArgs): Promise<ChatResult>;
-  stream(args: ChatArgs): AsyncIterable<ChatChunk>;
-}
+// chat-model.ts — env ref → AI SDK model
+parseModelRef('deepseek:deepseek-v4-flash'); // → { provider, modelId } (pure, unit-tested)
+resolveChatModel('anthropic:claude-sonnet-4-6'); // → LanguageModel (anthropic() | deepseek())
 
-// where ChatArgs unifies system / messages / tools / temperature / max_tokens
-// and ChatResult includes usage (input/output tokens) + cost_usd computed from a price table
+// price-table.ts — cost math (ADR-016: cost math is code, model choice is config)
+computeCostUsd('claude-sonnet-4-6', inputTokens, outputTokens); // → cost_usd
 ```
 
-What leaks (deliberate):
-- Tool-use schemas: Anthropic and OpenAI use different shapes. The interface forces the caller to declare tool schemas in a normalized form; the adapter translates.
-- Streaming format: each provider streams differently; the adapter normalizes to a single async iterable of typed chunks.
+The caller (`apps/web/src/lib/chat.ts`) feeds the resolved model to the AI SDK's
+`streamText` and, on finish, computes cost from the price table and writes one
+`usage_events` row. The client consumes the stream with the AI SDK's `useChat`.
 
-What does not leak:
-- Authentication: each provider has its own client; the user just picks `'anthropic'` / `'openai'` / `'deepseek'`.
-- Pricing: the cost calculation happens inside the adapter using a per-provider price table.
-- Retries / 429 handling: adapter does exponential backoff with jitter, surfacing only fatal errors.
+What this package owns:
+- **Model resolution:** `provider:model_id` → the right AI SDK provider package.
+- **Pricing:** per-model USD/1M-token table; the single source of truth for `cost_usd`.
 
-## Why no LangChain
+What the AI SDK owns (so we don't hand-roll it):
+- Per-provider auth (each provider reads its own `*_API_KEY` from the env).
+- Streaming normalization + retries/backoff across Anthropic and DeepSeek.
 
-ADR-005 in `docs/DECISIONS.md`. Short version: leaky abstractions, slow-moving, recruiter signal trends negative in 2026. The Anthropic SDK + a couple of helpers cover everything we need with much less rope.
+## Why no LangChain (and why the AI SDK only for chat)
+
+ADR-005 in `docs/DECISIONS.md`. Short version: no RAG framework. The AI SDK earns
+its place only as the chat transport (`streamText` + `useChat`) and the
+multi-provider abstraction the M7 benchmark needs. Embeddings, rerank, and the
+whole retrieval pipeline stay hand-written `fetch` — there is no first-party
+`@ai-sdk/voyage`, and that code is a deliberate interview artifact.

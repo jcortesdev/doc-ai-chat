@@ -8,7 +8,27 @@
   },
   "nav": {
     "signIn": "Sign in",
-    "search": "Search"
+    "search": "Search",
+    "chat": "Chat"
+  },
+  "chat": {
+    "title": "Chat",
+    "hint": "Ask about your ingested PDFs — answers are grounded in your documents, with citations.",
+    "placeholder": "Ask about your documents…",
+    "send": "Send",
+    "thinking": "Thinking…",
+    "empty": "Ask a question to get started.",
+    "errorGeneric": "Something went wrong. Please try again.",
+    "you": "You",
+    "assistant": "DocAI",
+    "citationAria": "Source {label}, page {page}",
+    "citationAriaNoPage": "Source {label}",
+    "sourcePassage": "Cited passage",
+    "openPdf": "Open PDF (page {page})",
+    "openPdfNoPage": "Open PDF",
+    "close": "Close",
+    "pdfError": "Couldn't open the PDF.",
+    "pdfHighlightNote": "Jumps to the cited page. In-PDF highlight is supported in Chrome, Edge and other Chromium browsers."
   },
   "search": {
     "title": "Search",

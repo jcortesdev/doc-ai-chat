@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { getSignedUploadUrl } from '@/lib/r2';
-import { getTierLimits } from '@/lib/tiers';
+import { getTierLimits, isTrialExpired } from '@/lib/tiers';
 import { ensureWorkspace } from '@/lib/workspace';
 import { auth, currentUser } from '@clerk/nextjs/server';
 import { db } from '@doc-ai-chat/db/client';
@@ -46,7 +46,16 @@ export async function POST(request: Request) {
     );
   }
 
-  const workspaceId = await ensureWorkspace(userId, email ?? `${userId}@users.noreply`);
+  const { id: workspaceId, userCreatedAt } = await ensureWorkspace(
+    userId,
+    email ?? `${userId}@users.noreply`,
+  );
+
+  // Weekly trial lock (ADR-009): after day 7 the free tier locks uploads too, not
+  // just chat. Owners bypass (ADR-010).
+  if (limits.tier !== 'privileged' && isTrialExpired(userCreatedAt)) {
+    return NextResponse.json({ error: 'weekly_lock' }, { status: 403 });
+  }
 
   const documentId = randomUUID();
   const r2Key = `${workspaceId}/${documentId}.pdf`;

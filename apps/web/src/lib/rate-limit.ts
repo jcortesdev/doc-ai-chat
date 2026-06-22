@@ -107,13 +107,10 @@ function getLimiter(scope: RateScope): Ratelimit | null {
   return limiter;
 }
 
-// Consumes one token for `identifier` in the given scope. Returns `ok: false`
-// when the bucket is empty (caller should respond 429). Never throws.
-export async function enforceRateLimit(
-  scope: RateScope,
-  identifier: string,
-): Promise<RateLimitResult> {
-  const limiter = getLimiter(scope);
+// Runs a limiter with the fail-open contract: a null limiter (no Redis) or a
+// thrown error (Redis unreachable) both resolve to `ok: true`. The budget kill
+// switch (task 3) is the cost backstop; availability of the hot path wins here.
+async function runLimiter(limiter: Ratelimit | null, identifier: string): Promise<RateLimitResult> {
   if (!limiter) {
     return { ok: true, limit: 0, remaining: 0, reset: 0, failedOpen: true };
   }
@@ -121,11 +118,51 @@ export async function enforceRateLimit(
     const { success, limit, remaining, reset } = await limiter.limit(identifier);
     return { ok: success, limit, remaining, reset };
   } catch (error) {
-    // Redis unreachable → fail-open. The budget kill switch (task 3) is the cost
-    // backstop; availability of the hot path wins here.
     console.warn('[rate-limit] limiter error, failing open:', error);
     return { ok: true, limit: 0, remaining: 0, reset: 0, failedOpen: true };
   }
+}
+
+// Consumes one token for `identifier` in the given scope. Returns `ok: false`
+// when the bucket is empty (caller should respond 429). Never throws.
+export async function enforceRateLimit(
+  scope: RateScope,
+  identifier: string,
+): Promise<RateLimitResult> {
+  return runLimiter(getLimiter(scope), identifier);
+}
+
+// Per-user daily chat quota (ADR-009): logged-in free users get N messages/day.
+// A fixed window of '1 d' aligns to the Unix epoch, so it resets at 00:00 UTC
+// (matching the project budget reset, ADR-015). Owners bypass at the call site.
+const DEFAULT_CHAT_DAILY_QUOTA = 10;
+
+let dailyChatLimiter: Ratelimit | null | undefined;
+
+function getDailyChatLimiter(): Ratelimit | null {
+  if (dailyChatLimiter !== undefined) {
+    return dailyChatLimiter;
+  }
+  const redis = getRedis();
+  if (!redis) {
+    dailyChatLimiter = null;
+    return null;
+  }
+  const quota = envInt('CHAT_DAILY_QUOTA', DEFAULT_CHAT_DAILY_QUOTA);
+  dailyChatLimiter = new Ratelimit({
+    redis,
+    limiter: Ratelimit.fixedWindow(quota, '1 d'),
+    prefix: 'quota:chat',
+    analytics: false,
+    ephemeralCache,
+  });
+  return dailyChatLimiter;
+}
+
+// Consumes one of today's chat messages for `identifier`. `ok: false` → the user
+// hit the daily quota (caller responds 429 `daily_limit`). Never throws.
+export async function enforceDailyChatQuota(identifier: string): Promise<RateLimitResult> {
+  return runLimiter(getDailyChatLimiter(), identifier);
 }
 
 // Standard rate-limit response headers. `Retry-After` (seconds) is only set when

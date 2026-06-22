@@ -1,7 +1,7 @@
 import { streamChat } from '@/lib/chat';
 import { retrieveChatContext } from '@/lib/chat-retrieve';
-import { enforceRateLimit, rateLimitHeaders } from '@/lib/rate-limit';
-import { resolveTier } from '@/lib/tiers';
+import { enforceDailyChatQuota, enforceRateLimit, rateLimitHeaders } from '@/lib/rate-limit';
+import { isTrialExpired, resolveTier } from '@/lib/tiers';
 import { ensureWorkspace } from '@/lib/workspace';
 import { auth, currentUser } from '@clerk/nextjs/server';
 import {
@@ -17,8 +17,9 @@ import { z } from 'zod';
 // grounded context (task 3), assemble the versioned prompt (task 2), and stream
 // the answer through the env-selected model (task 1). History lives client-side
 // (sessionStorage) and is sent with each request; retrieval keys off the latest
-// message only. M4 task 1 adds a token-bucket rate limit (owner-exempt); BYOK and
-// the budget kill switch land in later M4 tasks.
+// message only. M4 adds free-tier gates (owner-exempt): a burst token bucket
+// (task 1), the daily quota + weekly trial lock (task 2); BYOK and the budget
+// kill switch land in later M4 tasks.
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
 
@@ -53,17 +54,30 @@ export async function POST(request: Request) {
     const email = user?.primaryEmailAddress?.emailAddress ?? '';
     // Tenant isolation: scope retrieval to the caller's own workspace (from the
     // session, never the body).
-    const workspaceId = await ensureWorkspace(userId, email);
+    const { id: workspaceId, userCreatedAt } = await ensureWorkspace(userId, email);
     const isPrivileged = resolveTier(email) === 'privileged';
 
-    // Burst limiter on the model hot path. Owners bypass (ADR-010). Keyed by the
-    // Clerk userId; fail-open if Redis is down.
+    // Free-tier gates (ADR-009). Owners bypass all of them (ADR-010). Ordered
+    // most-terminal first so the user gets the most informative error:
+    //   1. weekly_lock  — the 7-day trial has ended (403).
+    //   2. daily_limit  — out of today's chat messages (429).
+    //   3. rate_limit   — burst token bucket on the hot path (task 1, 429).
     if (!isPrivileged) {
-      const rl = await enforceRateLimit('chat', userId);
-      if (!rl.ok) {
+      if (isTrialExpired(userCreatedAt)) {
+        return NextResponse.json({ error: 'weekly_lock' }, { status: 403 });
+      }
+      const daily = await enforceDailyChatQuota(userId);
+      if (!daily.ok) {
+        return NextResponse.json(
+          { error: 'daily_limit' },
+          { status: 429, headers: rateLimitHeaders(daily) },
+        );
+      }
+      const burst = await enforceRateLimit('chat', userId);
+      if (!burst.ok) {
         return NextResponse.json(
           { error: 'rate_limit_exceeded' },
-          { status: 429, headers: rateLimitHeaders(rl) },
+          { status: 429, headers: rateLimitHeaders(burst) },
         );
       }
     }

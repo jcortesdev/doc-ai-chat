@@ -39,3 +39,24 @@ export function getTierLimits(email: string | null): TierLimits {
   const tier = resolveTier(email);
   return { tier, ...LIMITS[tier] };
 }
+
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+// Length of the logged-in free trial (ADR-009): free access (chat 10/day, search,
+// uploads) is available for this many days from first use, then the tier locks
+// (ADR-013 `weekly_lock`). Override via env to exercise the lock without waiting.
+export function trialDays(): number {
+  const raw = process.env.CHAT_TRIAL_DAYS;
+  if (raw === undefined || raw === '') {
+    return 7;
+  }
+  const parsed = Number.parseInt(raw, 10);
+  return Number.isFinite(parsed) && parsed >= 0 ? parsed : 7;
+}
+
+// True once the free trial has elapsed (first use + trialDays in the past). The
+// anchor is the user's `created_at` (first authenticated activity). Owners never
+// reach this check (resolveTier === 'privileged' bypasses it at the call site).
+export function isTrialExpired(trialStartedAt: Date, now: Date = new Date()): boolean {
+  return now.getTime() - trialStartedAt.getTime() > trialDays() * DAY_MS;
+}

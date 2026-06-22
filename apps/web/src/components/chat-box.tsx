@@ -135,7 +135,7 @@ function TypingIndicator() {
   const t = useTranslations('chat');
   return (
     <div className="flex flex-col gap-1">
-      <span className="font-medium text-foreground/50 text-xs">{t('assistant')}</span>
+      <span className="font-medium text-foreground/70 text-xs">{t('assistant')}</span>
       <div
         aria-label={t('thinking')}
         className="flex w-fit items-center gap-1 self-start rounded-xl border border-foreground/10 px-4 py-3.5"
@@ -186,7 +186,7 @@ export function ChatBox() {
           const isUser = message.role === 'user';
           return (
             <div key={message.id} className="flex flex-col gap-1">
-              <span className="font-medium text-foreground/50 text-xs">
+              <span className="font-medium text-foreground/70 text-xs">
                 {isUser ? t('you') : t('assistant')}
               </span>
               <div

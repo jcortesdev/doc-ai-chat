@@ -81,7 +81,7 @@ export function CitationPanel({
           </div>
 
           <div className="flex flex-col gap-2">
-            <span className="font-medium text-foreground/50 text-xs">{t('sourcePassage')}</span>
+            <span className="font-medium text-foreground/70 text-xs">{t('sourcePassage')}</span>
             <blockquote className="whitespace-pre-wrap rounded-lg border border-foreground/10 border-l-2 border-l-foreground/40 bg-foreground/5 p-4 text-foreground/80 text-sm leading-relaxed">
               {citation.content}
             </blockquote>
@@ -96,7 +96,7 @@ export function CitationPanel({
             {citation.page === null ? t('openPdfNoPage') : t('openPdf', { page: citation.page })}
           </a>
 
-          <p className="text-foreground/50 text-xs">{t('pdfHighlightNote')}</p>
+          <p className="text-foreground/70 text-xs">{t('pdfHighlightNote')}</p>
         </div>
       )}
     </dialog>

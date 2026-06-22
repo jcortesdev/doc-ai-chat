@@ -1,5 +1,6 @@
 import { streamChat } from '@/lib/chat';
 import { retrieveChatContext } from '@/lib/chat-retrieve';
+import { enforceRateLimit, rateLimitHeaders } from '@/lib/rate-limit';
 import { resolveTier } from '@/lib/tiers';
 import { ensureWorkspace } from '@/lib/workspace';
 import { auth, currentUser } from '@clerk/nextjs/server';
@@ -16,7 +17,8 @@ import { z } from 'zod';
 // grounded context (task 3), assemble the versioned prompt (task 2), and stream
 // the answer through the env-selected model (task 1). History lives client-side
 // (sessionStorage) and is sent with each request; retrieval keys off the latest
-// message only. Rate limit, BYOK, and the budget kill switch land in M4.
+// message only. M4 task 1 adds a token-bucket rate limit (owner-exempt); BYOK and
+// the budget kill switch land in later M4 tasks.
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
 
@@ -53,6 +55,18 @@ export async function POST(request: Request) {
     // session, never the body).
     const workspaceId = await ensureWorkspace(userId, email);
     const isPrivileged = resolveTier(email) === 'privileged';
+
+    // Burst limiter on the model hot path. Owners bypass (ADR-010). Keyed by the
+    // Clerk userId; fail-open if Redis is down.
+    if (!isPrivileged) {
+      const rl = await enforceRateLimit('chat', userId);
+      if (!rl.ok) {
+        return NextResponse.json(
+          { error: 'rate_limit_exceeded' },
+          { status: 429, headers: rateLimitHeaders(rl) },
+        );
+      }
+    }
 
     const { contextChunks, hits } = await retrieveChatContext(message, workspaceId, {
       isPrivileged,

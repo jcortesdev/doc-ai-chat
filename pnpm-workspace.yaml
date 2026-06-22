@@ -1,10 +1,14 @@
 packages:
   - "apps/*"
   - "packages/*"
-allowBuilds:
-  '@biomejs/biome': set this to true or false
-  '@parcel/watcher': set this to true or false
-  '@swc/core': set this to true or false
-  esbuild: set this to true or false
-  protobufjs: set this to true or false
-  sharp: set this to true or false
+# Dependencies with install build scripts that we intentionally do NOT run. The
+# repo has worked without building these since M0; pnpm 11 requires the decision
+# to be recorded (otherwise ERR_PNPM_IGNORED_BUILDS fails the deps-status check
+# before any script). protobufjs arrived transitively with @upstash/* in M4.
+ignoredBuiltDependencies:
+  - "@biomejs/biome"
+  - "@parcel/watcher"
+  - "@swc/core"
+  - esbuild
+  - protobufjs
+  - sharp

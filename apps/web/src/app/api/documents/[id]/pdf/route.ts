@@ -1,5 +1,6 @@
 import { getOwnedDocumentForPdf } from '@/lib/documents';
 import { getObjectBytes } from '@/lib/r2';
+import { enforceRateLimit, rateLimitHeaders } from '@/lib/rate-limit';
 import { auth } from '@clerk/nextjs/server';
 import { NextResponse } from 'next/server';
 
@@ -15,6 +16,18 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
   const { userId } = await auth();
   if (!userId) {
     return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
+  }
+
+  // Burst limiter on the R2 byte-streaming proxy (scrape protection). Applied to
+  // all callers (no owner bypass): resolving the tier here would add a currentUser()
+  // round-trip to the hot path, and the generous bucket never bothers a human
+  // opening citations. Keyed by userId; fail-open if Redis is down.
+  const rl = await enforceRateLimit('pdf', userId);
+  if (!rl.ok) {
+    return NextResponse.json(
+      { error: 'rate_limit_exceeded' },
+      { status: 429, headers: rateLimitHeaders(rl) },
+    );
   }
 
   const { id } = await params;

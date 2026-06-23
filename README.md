@@ -2,8 +2,8 @@
 
 > Ask questions of your PDFs. Get answers grounded in the documents, with clickable citations that open the exact passage.
 
-**Status:** 🟢 M1 shipped — ingest pipeline live: sign in, drag-and-drop a PDF, and watch it parse → chunk → embed → land on a status page with chunks, tokens, cost, and latency. M2 (hybrid search) next.
-**Demo:** `demo-docai.jcortes.dev` (coming with M3)
+**Status:** 🚧 **Under construction** — actively being built in public. Shipped: M1 ingest pipeline · M2 hybrid search · M3 RAG chat (streaming + citations + guardrails). In review: M4 (BYOK, rate limiting, cost/latency dashboard, retention, error states). Next: M5 evals · M6 agent loop · M7 multi-provider benchmark.
+**Demo:** coming soon.
 
 ## What this is
 
@@ -27,7 +27,7 @@ Designed deliberately as an AI-Engineer-shaped project: built without LangChain,
 | Chat (dev) | DeepSeek V4-Flash | 10× cheaper for iteration. |
 | Eval judge | OpenAI GPT-5-mini | Capable for structured rubrics, 75% cheaper than Opus. |
 | Observability | Langfuse cloud + custom `/usage` dashboard | Industry-standard plus a from-scratch view. |
-| Rate limit | Upstash Redis (deferred to M4) | Sub-5ms atomic counters for the chat hot path. |
+| Rate limit | Upstash Redis | Sub-5ms atomic counters for the chat hot path. |
 | Tests | Vitest + Playwright + @axe-core/playwright + Lighthouse | Same bar as the rest of the portfolio. |
 
 ## How it works

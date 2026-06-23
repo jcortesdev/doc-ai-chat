@@ -24,14 +24,14 @@ export default async function LandingPage({ params }: Props) {
         <div className="mt-4 flex w-full justify-center">
           <Show
             when="signed-in"
-            fallback={<p className="text-sm text-foreground/50">{t('signInToUpload')}</p>}
+            fallback={<p className="text-sm text-foreground/70">{t('signInToUpload')}</p>}
           >
             <PdfUploader />
           </Show>
         </div>
       </section>
 
-      <footer className="px-6 py-6 text-center text-xs text-foreground/50 sm:px-10">
+      <footer className="px-6 py-6 text-center text-xs text-foreground/70 sm:px-10">
         {t('footer')}
       </footer>
     </main>

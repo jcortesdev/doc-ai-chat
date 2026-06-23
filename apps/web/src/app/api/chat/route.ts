@@ -38,6 +38,25 @@ const chatSchema = z.object({
     .optional(),
 });
 
+// Maps a provider/API error to an ErrorState code (best-effort, M4 task 6). The
+// AI SDK's APICallError carries the HTTP status from the provider.
+function providerErrorCode(error: unknown, isByok: boolean): string {
+  const status =
+    typeof error === 'object' && error !== null && 'statusCode' in error
+      ? (error as { statusCode?: number }).statusCode
+      : undefined;
+  if (status === 402) {
+    return 'out_of_credit';
+  }
+  if (status === 529) {
+    return 'model_overload';
+  }
+  if (status === 401) {
+    return isByok ? 'invalid_byok' : 'chat_failed';
+  }
+  return 'network_error';
+}
+
 export async function POST(request: Request) {
   const { userId } = await auth();
   if (!userId) {
@@ -125,6 +144,10 @@ export async function POST(request: Request) {
 
     return result.toUIMessageStreamResponse({
       messageMetadata: ({ part }) => (part.type === 'start' ? { sources } : undefined),
+      // Map a mid-stream provider failure to an ErrorState code the client can
+      // render. Returning a controlled string (not the raw error) avoids leaking
+      // provider/internal detail.
+      onError: (error) => providerErrorCode(error, isByok),
     });
   } catch {
     // Don't leak provider/internal error detail from the production endpoint.

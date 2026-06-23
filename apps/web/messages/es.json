@@ -54,7 +54,6 @@
     "hint": "Máx 10 MB · PDF con texto",
     "uploading": "Subiendo…",
     "errorType": "Solo se admiten archivos PDF.",
-    "errorSize": "Ese archivo supera los 10 MB.",
     "errorGeneric": "Falló la subida. Probá de nuevo."
   },
   "ingest": {

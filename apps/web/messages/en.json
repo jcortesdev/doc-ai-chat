@@ -54,7 +54,6 @@
     "hint": "Max 10 MB · text-based PDF",
     "uploading": "Uploading…",
     "errorType": "Only PDF files are supported.",
-    "errorSize": "That file is larger than 10 MB.",
     "errorGeneric": "Upload failed. Please try again."
   },
   "ingest": {

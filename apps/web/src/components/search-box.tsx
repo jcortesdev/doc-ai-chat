@@ -1,5 +1,6 @@
 'use client';
 
+import { ErrorState, type ErrorVariant } from '@/components/error-state';
 import { useTranslations } from 'next-intl';
 import { type FormEvent, useState } from 'react';
 
@@ -47,7 +48,8 @@ export function SearchBox() {
   const t = useTranslations('search');
   const [query, setQuery] = useState('');
   const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  // 'generic' falls back to the plain message; a known variant renders ErrorState.
+  const [error, setError] = useState<ErrorVariant | 'generic' | null>(null);
   const [response, setResponse] = useState<SearchResponse | null>(null);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -66,11 +68,15 @@ export function SearchBox() {
         body: JSON.stringify({ query: trimmed }),
       });
       if (!res.ok) {
-        throw new Error('search');
+        const body = (await res.json().catch(() => null)) as { error?: string } | null;
+        const code = body?.error;
+        setError(code === 'weekly_lock' || code === 'project_over_capacity' ? code : 'generic');
+        setResponse(null);
+        return;
       }
       setResponse((await res.json()) as SearchResponse);
     } catch {
-      setError(t('errorGeneric'));
+      setError('generic');
       setResponse(null);
     } finally {
       setBusy(false);
@@ -97,7 +103,8 @@ export function SearchBox() {
         </button>
       </form>
 
-      {error && <p className="text-sm text-red-500">{error}</p>}
+      {error === 'generic' && <p className="text-sm text-red-500">{t('errorGeneric')}</p>}
+      {error && error !== 'generic' && <ErrorState variant={error} />}
 
       {response && !error && (
         <div className="flex flex-col gap-4">

@@ -1,6 +1,7 @@
 'use client';
 
 import { CitationPanel } from '@/components/citation-panel';
+import { ErrorState, type ErrorVariant } from '@/components/error-state';
 import { BYOK_STORAGE_KEY } from '@/lib/byok';
 import { rehypeCitations } from '@/lib/rehype-citations';
 import { useChat } from '@ai-sdk/react';
@@ -14,6 +15,36 @@ import remarkGfm from 'remark-gfm';
 // The route sends the citation sources (label -> chunk/page) as message metadata.
 type ChatMetadata = { sources?: CitationSource[] };
 type ChatUIMessage = UIMessage<ChatMetadata>;
+
+// Server error codes that map to an ErrorState variant. The route returns the
+// code in the response body (gate errors) or via the stream's onError (provider
+// errors); both reach useChat's `error.message`, so a substring scan covers both.
+// `rate_limit_exceeded`/`chat_failed` have no dedicated variant → generic fallback.
+const CHAT_ERROR_CODES: ErrorVariant[] = [
+  'out_of_credit',
+  'invalid_byok',
+  'model_overload',
+  'project_over_capacity',
+  'weekly_lock',
+  'daily_limit',
+  'network_error',
+];
+
+function mapChatError(error: Error | undefined): ErrorVariant | null {
+  if (!error) {
+    return null;
+  }
+  const message = (error.message ?? '').toLowerCase();
+  for (const code of CHAT_ERROR_CODES) {
+    if (message.includes(code)) {
+      return code;
+    }
+  }
+  if (message.includes('failed to fetch') || message.includes('network')) {
+    return 'network_error';
+  }
+  return null;
+}
 
 // Joins a message's text parts; reasoning and other parts are not rendered.
 function messageText(message: ChatUIMessage): string {
@@ -160,10 +191,13 @@ function TypingIndicator() {
 
 export function ChatBox() {
   const t = useTranslations('chat');
-  const { messages, sendMessage, status, error } = useChat<ChatUIMessage>({ transport });
+  const { messages, sendMessage, status, error, regenerate } = useChat<ChatUIMessage>({
+    transport,
+  });
   const [input, setInput] = useState('');
   const [activeCitation, setActiveCitation] = useState<Citation | null>(null);
   const busy = status === 'submitted' || status === 'streaming';
+  const errorVariant = mapChatError(error);
   const lastMessage = messages.at(-1);
   const awaitingAnswer =
     busy &&
@@ -221,7 +255,12 @@ export function ChatBox() {
         })}
 
         {awaitingAnswer && <TypingIndicator />}
-        {error && <p className="text-red-500 text-sm">{t('errorGeneric')}</p>}
+        {error &&
+          (errorVariant ? (
+            <ErrorState variant={errorVariant} onRetry={() => regenerate()} />
+          ) : (
+            <p className="text-red-500 text-sm">{t('errorGeneric')}</p>
+          ))}
       </div>
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-2 sm:flex-row">

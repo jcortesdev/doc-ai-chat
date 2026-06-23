@@ -64,6 +64,7 @@
     "title": "Estado de ingesta",
     "processingHint": "Esto se actualiza solo.",
     "timeoutHint": "Sigue procesando — recargá para chequear.",
+    "failedTimeout": "Esta subida expiró antes de terminar de procesarse. Probá subirla de nuevo.",
     "status": {
       "uploading": "Subiendo",
       "processing": "Procesando",

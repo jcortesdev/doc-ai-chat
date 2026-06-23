@@ -9,8 +9,6 @@ import { documents } from '@doc-ai-chat/db/schema';
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 
-// Logged-in default retention (full per-tier retention windows land in M4).
-const RETENTION_DAYS = 7;
 const PRESIGN_TTL_SECONDS = 5 * 60;
 
 const presignSchema = z.object({
@@ -64,7 +62,7 @@ export async function POST(request: Request) {
 
   const documentId = randomUUID();
   const r2Key = `${workspaceId}/${documentId}.pdf`;
-  const expiresAt = new Date(Date.now() + RETENTION_DAYS * 24 * 60 * 60 * 1000);
+  const expiresAt = new Date(Date.now() + limits.retentionDays * 24 * 60 * 60 * 1000);
 
   await db.insert(documents).values({
     id: documentId,

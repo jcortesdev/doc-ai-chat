@@ -8,16 +8,20 @@ export type TierLimits = {
   maxBytes: number;
   maxPages: number;
   maxFiles: number;
+  // PDF + chunk retention window (ADR-009). The cleanup cron (task 9) deletes
+  // documents past this window from upload time.
+  retentionDays: number;
 };
 
 const LIMITS: Record<Tier, Omit<TierLimits, 'tier'>> = {
-  anonymous: { maxBytes: 5 * 1024 * 1024, maxPages: 25, maxFiles: 1 },
-  logged_in: { maxBytes: 10 * 1024 * 1024, maxPages: 50, maxFiles: 3 },
-  byok: { maxBytes: 10 * 1024 * 1024, maxPages: 50, maxFiles: 5 },
+  anonymous: { maxBytes: 5 * 1024 * 1024, maxPages: 25, maxFiles: 1, retentionDays: 1 },
+  logged_in: { maxBytes: 10 * 1024 * 1024, maxPages: 50, maxFiles: 3, retentionDays: 7 },
+  byok: { maxBytes: 10 * 1024 * 1024, maxPages: 50, maxFiles: 5, retentionDays: 30 },
   privileged: {
     maxBytes: Number.MAX_SAFE_INTEGER,
     maxPages: Number.MAX_SAFE_INTEGER,
     maxFiles: Number.MAX_SAFE_INTEGER,
+    retentionDays: 30,
   },
 };
 

@@ -64,6 +64,7 @@
     "title": "Ingest status",
     "processingHint": "This updates automatically.",
     "timeoutHint": "Still processing — refresh to check.",
+    "failedTimeout": "This upload timed out before it finished processing. Try uploading it again.",
     "status": {
       "uploading": "Uploading",
       "processing": "Processing",

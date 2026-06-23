@@ -123,9 +123,15 @@ export function IngestStatus({ initial }: { initial: DocumentStatus }) {
       </div>
 
       {doc.status === 'failed' ? (
-        <ErrorState
-          variant={doc.errorVariant === 'file_too_large' ? 'file_too_large' : 'pdf_unparseable'}
-        />
+        doc.errorVariant === 'processing_timeout' ? (
+          <p className="rounded-lg border border-foreground/10 p-4 text-foreground/70 text-sm">
+            {t('failedTimeout')}
+          </p>
+        ) : (
+          <ErrorState
+            variant={doc.errorVariant === 'file_too_large' ? 'file_too_large' : 'pdf_unparseable'}
+          />
+        )
       ) : (
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
           <Metric label={t('metric.pages')} value={doc.pageCount?.toString() ?? '—'} />

@@ -1,3 +1,4 @@
+import { checkProjectBudget } from '@/lib/budget';
 import { streamChat } from '@/lib/chat';
 import { retrieveChatContext } from '@/lib/chat-retrieve';
 import { enforceDailyChatQuota, enforceRateLimit, rateLimitHeaders } from '@/lib/rate-limit';
@@ -57,11 +58,12 @@ export async function POST(request: Request) {
     const { id: workspaceId, userCreatedAt } = await ensureWorkspace(userId, email);
     const isPrivileged = resolveTier(email) === 'privileged';
 
-    // Free-tier gates (ADR-009). Owners bypass all of them (ADR-010). Ordered
-    // most-terminal first so the user gets the most informative error:
-    //   1. weekly_lock  — the 7-day trial has ended (403).
-    //   2. daily_limit  — out of today's chat messages (429).
-    //   3. rate_limit   — burst token bucket on the hot path (task 1, 429).
+    // Free-tier gates. Owners bypass all of them (ADR-010). Ordered most-terminal
+    // first so the user gets the most informative error:
+    //   1. weekly_lock          — the 7-day trial has ended (ADR-009, 403).
+    //   2. daily_limit          — out of today's chat messages (ADR-009, 429).
+    //   3. rate_limit           — burst token bucket on the hot path (task 1, 429).
+    //   4. project_over_capacity — project budget kill switch hit (ADR-015, 403).
     if (!isPrivileged) {
       if (isTrialExpired(userCreatedAt)) {
         return NextResponse.json({ error: 'weekly_lock' }, { status: 403 });
@@ -79,6 +81,9 @@ export async function POST(request: Request) {
           { error: 'rate_limit_exceeded' },
           { status: 429, headers: rateLimitHeaders(burst) },
         );
+      }
+      if ((await checkProjectBudget()).over) {
+        return NextResponse.json({ error: 'project_over_capacity' }, { status: 403 });
       }
     }
 

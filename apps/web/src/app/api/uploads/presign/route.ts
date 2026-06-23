@@ -1,4 +1,5 @@
 import { randomUUID } from 'node:crypto';
+import { checkProjectBudget } from '@/lib/budget';
 import { getSignedUploadUrl } from '@/lib/r2';
 import { getTierLimits, isTrialExpired } from '@/lib/tiers';
 import { ensureWorkspace } from '@/lib/workspace';
@@ -51,10 +52,14 @@ export async function POST(request: Request) {
     email ?? `${userId}@users.noreply`,
   );
 
-  // Weekly trial lock (ADR-009): after day 7 the free tier locks uploads too, not
-  // just chat. Owners bypass (ADR-010).
-  if (limits.tier !== 'privileged' && isTrialExpired(userCreatedAt)) {
-    return NextResponse.json({ error: 'weekly_lock' }, { status: 403 });
+  // Free-tier gates uploads too, not just chat. Owners bypass (ADR-010).
+  if (limits.tier !== 'privileged') {
+    if (isTrialExpired(userCreatedAt)) {
+      return NextResponse.json({ error: 'weekly_lock' }, { status: 403 });
+    }
+    if ((await checkProjectBudget()).over) {
+      return NextResponse.json({ error: 'project_over_capacity' }, { status: 403 });
+    }
   }
 
   const documentId = randomUUID();

@@ -1,3 +1,4 @@
+import { recordProjectSpend } from '@/lib/budget';
 import { db } from '@doc-ai-chat/db/client';
 import { usageEvents } from '@doc-ai-chat/db/schema';
 import { parseModelRef, resolveChatModel } from '@doc-ai-chat/providers/chat-model';
@@ -7,6 +8,9 @@ import { type ModelMessage, streamText } from 'ai';
 type ChatContext = {
   workspaceId?: string;
   isPrivileged?: boolean;
+  // BYOK calls are paid by the user's own key, so they never count toward the
+  // project budget (ADR-015). Set by the route when X-User-API-Key is present.
+  isByok?: boolean;
 };
 
 // Dev iteration runs CHAT_DEV_MODEL; the prod demo runs CHAT_PROD_MODEL. Both are
@@ -57,6 +61,10 @@ export function streamChat({ system, messages, context = {} }: StreamChatArgs) {
         latencyMs: Date.now() - startedAt,
         isPrivileged: context.isPrivileged ?? false,
       });
+      // Count toward the project budget kill switch, unless paid by a BYOK key.
+      if (!context.isByok) {
+        await recordProjectSpend(costUsd);
+      }
     },
   });
 }

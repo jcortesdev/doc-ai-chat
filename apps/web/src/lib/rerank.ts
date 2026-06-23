@@ -1,3 +1,4 @@
+import { recordProjectSpend } from '@/lib/budget';
 import { db } from '@doc-ai-chat/db/client';
 import { usageEvents } from '@doc-ai-chat/db/schema';
 import { computeRerankCostUsd } from '@doc-ai-chat/providers/price-table';
@@ -92,6 +93,8 @@ export async function rerank(
     costUsd: costUsd.toFixed(6),
     isPrivileged: context.isPrivileged ?? false,
   });
+  // Rerank always runs on the project's Cohere key (BYOK only covers chat).
+  await recordProjectSpend(costUsd);
 
   return { results, searchUnits, costUsd };
 }

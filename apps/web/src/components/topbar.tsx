@@ -23,6 +23,12 @@ export async function Topbar() {
           >
             {t('search')}
           </Link>
+          <Link
+            href="/settings"
+            className="text-xs font-medium text-foreground/70 transition-colors hover:text-foreground"
+          >
+            {t('settings')}
+          </Link>
         </Show>
         <LocaleSwitcher />
         <Show

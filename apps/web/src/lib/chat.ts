@@ -29,22 +29,31 @@ function chatModelRef(): string {
   return ref;
 }
 
+// BYOK (M4 task 4): when the user supplies their own Anthropic key, run a
+// dedicated Anthropic model on it instead of the env-selected project model
+// (which may be DeepSeek). `provider:model_id`, ADR-016.
+function byokModelRef(): string {
+  return process.env.CHAT_BYOK_MODEL ?? 'anthropic:claude-sonnet-4-6';
+}
+
 export type StreamChatArgs = {
   system: string;
   messages: ModelMessage[];
   context?: ChatContext;
+  // BYOK key (from X-User-API-Key); selects the BYOK model and pays for the call.
+  userApiKey?: string;
 };
 
-// Streams a chat completion through the env-selected model (AI SDK as transport,
+// Streams a chat completion through the selected model (AI SDK as transport,
 // ADR-005) and logs one usage_events row with cost on finish. Returns the raw
 // streamText result so the route handler (M3 task 4) pipes it to SSE.
-export function streamChat({ system, messages, context = {} }: StreamChatArgs) {
-  const ref = chatModelRef();
+export function streamChat({ system, messages, context = {}, userApiKey }: StreamChatArgs) {
+  const ref = userApiKey ? byokModelRef() : chatModelRef();
   const { modelId } = parseModelRef(ref);
   const startedAt = Date.now();
 
   return streamText({
-    model: resolveChatModel(ref),
+    model: resolveChatModel(ref, userApiKey),
     system,
     messages,
     onFinish: async ({ totalUsage }) => {

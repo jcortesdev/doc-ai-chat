@@ -1,4 +1,4 @@
-import { anthropic } from '@ai-sdk/anthropic';
+import { anthropic, createAnthropic } from '@ai-sdk/anthropic';
 import { deepseek } from '@ai-sdk/deepseek';
 import type { LanguageModel } from 'ai';
 
@@ -44,12 +44,14 @@ export function parseModelRef(value: string): ModelRef {
 }
 
 // Resolves a `provider:model_id` ref to an AI SDK LanguageModel. Anthropic reads
-// ANTHROPIC_API_KEY, DeepSeek reads DEEPSEEK_API_KEY from the environment.
-export function resolveChatModel(value: string): LanguageModel {
+// ANTHROPIC_API_KEY, DeepSeek reads DEEPSEEK_API_KEY from the environment. When
+// `userApiKey` is given (BYOK, M4 task 4), the Anthropic provider runs on that
+// key for this request only — never persisted, never logged.
+export function resolveChatModel(value: string, userApiKey?: string): LanguageModel {
   const { provider, modelId } = parseModelRef(value);
   switch (provider) {
     case 'anthropic':
-      return anthropic(modelId);
+      return userApiKey ? createAnthropic({ apiKey: userApiKey })(modelId) : anthropic(modelId);
     case 'deepseek':
       return deepseek(modelId);
     default: {

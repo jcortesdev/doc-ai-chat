@@ -9,7 +9,8 @@
   "nav": {
     "signIn": "Iniciar sesión",
     "search": "Búsqueda",
-    "chat": "Chat"
+    "chat": "Chat",
+    "settings": "Ajustes"
   },
   "chat": {
     "title": "Chat",
@@ -76,5 +77,17 @@
       "cost": "Costo (USD)",
       "latencyPerChunk": "Latencia / chunk"
     }
+  },
+  "settings": {
+    "title": "Ajustes",
+    "hint": "Usá tu propia key de Anthropic para chatear sin los límites del free-tier.",
+    "byokTitle": "API key de Anthropic (BYOK)",
+    "byokHint": "Con tu propia key, el chat corre en Claude y se saltea la cuota diaria, el bloqueo del trial semanal y el presupuesto del proyecto — las llamadas las paga tu key.",
+    "placeholder": "sk-ant-…",
+    "save": "Guardar key",
+    "clear": "Quitar key",
+    "active": "Key activa:",
+    "invalid": "Eso no parece una key de Anthropic (debería empezar con «sk-ant-»).",
+    "securityNote": "Se guarda solo en esta pestaña del navegador (sessionStorage), se envía con cada request y se borra al cerrar la pestaña. Nunca la guardamos ni la logueamos."
   }
 }

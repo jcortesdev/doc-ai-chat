@@ -1,4 +1,5 @@
 import { checkProjectBudget } from '@/lib/budget';
+import { isValidAnthropicKey } from '@/lib/byok';
 import { streamChat } from '@/lib/chat';
 import { retrieveChatContext } from '@/lib/chat-retrieve';
 import { enforceDailyChatQuota, enforceRateLimit, rateLimitHeaders } from '@/lib/rate-limit';
@@ -18,9 +19,9 @@ import { z } from 'zod';
 // grounded context (task 3), assemble the versioned prompt (task 2), and stream
 // the answer through the env-selected model (task 1). History lives client-side
 // (sessionStorage) and is sent with each request; retrieval keys off the latest
-// message only. M4 adds free-tier gates (owner-exempt): a burst token bucket
-// (task 1), the daily quota + weekly trial lock (task 2); BYOK and the budget
-// kill switch land in later M4 tasks.
+// message only. M4 adds free-tier gates (owner- and BYOK-exempt): burst token
+// bucket (task 1), daily quota + weekly trial lock (task 2), project budget kill
+// switch (task 3), and BYOK passthrough via X-User-API-Key (task 4).
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
 
@@ -50,6 +51,13 @@ export async function POST(request: Request) {
   }
   const { message, history = [] } = parsed.data;
 
+  // BYOK (task 4): a user-supplied Anthropic key (sk-ant-…) pays for this request.
+  // Read from the header only, never the body; never logged or persisted. A
+  // malformed value is ignored (treated as no key, so the user falls to free tier).
+  const headerKey = request.headers.get('x-user-api-key')?.trim();
+  const userApiKey = headerKey && isValidAnthropicKey(headerKey) ? headerKey : undefined;
+  const isByok = userApiKey !== undefined;
+
   try {
     const user = await currentUser();
     const email = user?.primaryEmailAddress?.emailAddress ?? '';
@@ -58,13 +66,14 @@ export async function POST(request: Request) {
     const { id: workspaceId, userCreatedAt } = await ensureWorkspace(userId, email);
     const isPrivileged = resolveTier(email) === 'privileged';
 
-    // Free-tier gates. Owners bypass all of them (ADR-010). Ordered most-terminal
-    // first so the user gets the most informative error:
+    // Free-tier gates. Owners (ADR-010) AND BYOK users (ADR-009, their own key
+    // pays) bypass all of them. Ordered most-terminal first so the user gets the
+    // most informative error:
     //   1. weekly_lock          — the 7-day trial has ended (ADR-009, 403).
     //   2. daily_limit          — out of today's chat messages (ADR-009, 429).
     //   3. rate_limit           — burst token bucket on the hot path (task 1, 429).
     //   4. project_over_capacity — project budget kill switch hit (ADR-015, 403).
-    if (!isPrivileged) {
+    if (!isPrivileged && !isByok) {
       if (isTrialExpired(userCreatedAt)) {
         return NextResponse.json({ error: 'weekly_lock' }, { status: 403 });
       }
@@ -110,7 +119,8 @@ export async function POST(request: Request) {
     const result = streamChat({
       system: PROMPT_RAG_ANSWER_V1,
       messages,
-      context: { workspaceId, isPrivileged },
+      context: { workspaceId, isPrivileged, isByok },
+      userApiKey,
     });
 
     return result.toUIMessageStreamResponse({

@@ -1,6 +1,7 @@
 'use client';
 
 import { CitationPanel } from '@/components/citation-panel';
+import { type ChatUsage, CostLatencyBar } from '@/components/cost-latency-bar';
 import { ErrorState, type ErrorVariant } from '@/components/error-state';
 import { BYOK_STORAGE_KEY } from '@/lib/byok';
 import { rehypeCitations } from '@/lib/rehype-citations';
@@ -12,8 +13,9 @@ import { type FormEvent, useState } from 'react';
 import Markdown, { type Components } from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
-// The route sends the citation sources (label -> chunk/page) as message metadata.
-type ChatMetadata = { sources?: CitationSource[] };
+// The route sends the citation sources (label -> chunk/page) and per-response
+// usage (cost/latency, task 7) as message metadata.
+type ChatMetadata = { sources?: CitationSource[]; usage?: ChatUsage };
 type ChatUIMessage = UIMessage<ChatMetadata>;
 
 // Server error codes that map to an ErrorState variant. The route returns the
@@ -198,6 +200,9 @@ export function ChatBox() {
   const [activeCitation, setActiveCitation] = useState<Citation | null>(null);
   const busy = status === 'submitted' || status === 'streaming';
   const errorVariant = mapChatError(error);
+  const usages = messages
+    .map((message) => message.metadata?.usage)
+    .filter((usage): usage is ChatUsage => usage !== undefined);
   const lastMessage = messages.at(-1);
   const awaitingAnswer =
     busy &&
@@ -217,6 +222,7 @@ export function ChatBox() {
 
   return (
     <div className="flex w-full flex-col gap-6">
+      <CostLatencyBar usages={usages} />
       <div className="flex flex-col gap-4">
         {messages.length === 0 && <p className="text-foreground/60 text-sm">{t('empty')}</p>}
 

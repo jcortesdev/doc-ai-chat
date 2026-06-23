@@ -45,14 +45,15 @@ export type StreamChatArgs = {
 };
 
 // Streams a chat completion through the selected model (AI SDK as transport,
-// ADR-005) and logs one usage_events row with cost on finish. Returns the raw
-// streamText result so the route handler (M3 task 4) pipes it to SSE.
+// ADR-005) and logs one usage_events row with cost on finish. Returns the stream
+// result plus the resolved `modelId` + `startedAt` so the route can emit live
+// cost/latency as message metadata (task 7).
 export function streamChat({ system, messages, context = {}, userApiKey }: StreamChatArgs) {
   const ref = userApiKey ? byokModelRef() : chatModelRef();
   const { modelId } = parseModelRef(ref);
   const startedAt = Date.now();
 
-  return streamText({
+  const result = streamText({
     model: resolveChatModel(ref, userApiKey),
     system,
     messages,
@@ -76,4 +77,6 @@ export function streamChat({ system, messages, context = {}, userApiKey }: Strea
       }
     },
   });
+
+  return { result, modelId, startedAt };
 }

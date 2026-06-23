@@ -11,6 +11,7 @@ import {
   PROMPT_RAG_ANSWER_V1,
   buildRagUserTurn,
 } from '@doc-ai-chat/prompts/rag-answer';
+import { computeCostUsd } from '@doc-ai-chat/providers/price-table';
 import type { ModelMessage } from 'ai';
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
@@ -135,7 +136,7 @@ export async function POST(request: Request) {
       content: hit.content.slice(0, 600),
     }));
 
-    const result = streamChat({
+    const { result, modelId, startedAt } = streamChat({
       system: PROMPT_RAG_ANSWER_V1,
       messages,
       context: { workspaceId, isPrivileged, isByok },
@@ -143,7 +144,28 @@ export async function POST(request: Request) {
     });
 
     return result.toUIMessageStreamResponse({
-      messageMetadata: ({ part }) => (part.type === 'start' ? { sources } : undefined),
+      // `start` carries the citation sources (needed while the answer streams);
+      // `finish` carries live usage for the cost/latency bar (task 7). Sources are
+      // repeated on finish so they survive whether metadata merges or replaces.
+      messageMetadata: ({ part }) => {
+        if (part.type === 'start') {
+          return { sources };
+        }
+        if (part.type === 'finish') {
+          const inputTokens = part.totalUsage.inputTokens ?? 0;
+          const outputTokens = part.totalUsage.outputTokens ?? 0;
+          return {
+            sources,
+            usage: {
+              inputTokens,
+              outputTokens,
+              costUsd: computeCostUsd(modelId, inputTokens, outputTokens),
+              latencyMs: Date.now() - startedAt,
+            },
+          };
+        }
+        return undefined;
+      },
       // Map a mid-stream provider failure to an ErrorState code the client can
       // render. Returning a controlled string (not the raw error) avoids leaking
       // provider/internal detail.

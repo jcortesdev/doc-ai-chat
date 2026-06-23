@@ -61,8 +61,6 @@
     "title": "Estado de ingesta",
     "processingHint": "Esto se actualiza solo.",
     "timeoutHint": "Sigue procesando — recargá para chequear.",
-    "failedHint": "No pudimos procesar este PDF. Puede ser escaneado, solo imagen, o no ser un PDF válido.",
-    "failedFileTooLarge": "Este archivo supera el límite de páginas de tu plan.",
     "status": {
       "uploading": "Subiendo",
       "processing": "Procesando",
@@ -89,5 +87,52 @@
     "active": "Key activa:",
     "invalid": "Eso no parece una key de Anthropic (debería empezar con «sk-ant-»).",
     "securityNote": "Se guarda solo en esta pestaña del navegador (sessionStorage), se envía con cada request y se borra al cerrar la pestaña. Nunca la guardamos ni la logueamos."
+  },
+  "errors": {
+    "cta": {
+      "byok": "Usá tu propia key",
+      "contact": "Escribime",
+      "retry": "Reintentar"
+    },
+    "out_of_credit": {
+      "title": "Sin crédito",
+      "body": "El presupuesto de API del demo se agotó por ahora. Agregá tu propia key de Anthropic para seguir chateando."
+    },
+    "daily_limit": {
+      "title": "Límite diario alcanzado",
+      "body": "Usaste tus mensajes gratis de hoy. Se reinician a las 00:00 UTC."
+    },
+    "project_over_capacity": {
+      "title": "Demo al límite",
+      "body": "El demo llegó a su tope de presupuesto por ahora. Agregá tu propia key para continuar, o volvé mañana."
+    },
+    "weekly_lock": {
+      "title": "Trial gratis terminado",
+      "body": "Tu prueba gratis de 7 días se terminó. Agregá tu propia key de Anthropic para seguir, o escribime."
+    },
+    "invalid_byok": {
+      "title": "API key inválida",
+      "body": "Anthropic rechazó esa key. Revisala en ajustes y probá de nuevo."
+    },
+    "model_overload": {
+      "title": "Modelo ocupado",
+      "body": "El modelo está sobrecargado en este momento. Dale un momento y reintentá."
+    },
+    "file_too_large": {
+      "title": "Archivo demasiado grande",
+      "body": "Ese PDF supera el límite de tamaño o páginas de tu plan. Probá con un archivo más chico."
+    },
+    "pdf_unparseable": {
+      "title": "No se pudo leer el PDF",
+      "body": "Este archivo parece escaneado o solo imagen — no hay texto extraíble para procesar."
+    },
+    "network_error": {
+      "title": "Problema de conexión",
+      "body": "El request no llegó. Revisá tu conexión y probá de nuevo."
+    },
+    "storage_full": {
+      "title": "Almacenamiento lleno",
+      "body": "El almacenamiento del demo está lleno por ahora. Borrá archivos viejos para liberar espacio."
+    }
   }
 }

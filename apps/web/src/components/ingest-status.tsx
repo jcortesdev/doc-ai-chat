@@ -1,5 +1,6 @@
 'use client';
 
+import { ErrorState } from '@/components/error-state';
 import type { DocumentStatus } from '@/lib/documents';
 import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
@@ -122,9 +123,9 @@ export function IngestStatus({ initial }: { initial: DocumentStatus }) {
       </div>
 
       {doc.status === 'failed' ? (
-        <p className="rounded-lg border border-foreground/10 p-4 text-sm text-foreground/70">
-          {doc.errorVariant === 'file_too_large' ? t('failedFileTooLarge') : t('failedHint')}
-        </p>
+        <ErrorState
+          variant={doc.errorVariant === 'file_too_large' ? 'file_too_large' : 'pdf_unparseable'}
+        />
       ) : (
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
           <Metric label={t('metric.pages')} value={doc.pageCount?.toString() ?? '—'} />

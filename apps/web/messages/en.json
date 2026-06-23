@@ -61,8 +61,6 @@
     "title": "Ingest status",
     "processingHint": "This updates automatically.",
     "timeoutHint": "Still processing — refresh to check.",
-    "failedHint": "We couldn't process this PDF. It may be scanned, image-only, or not a valid PDF.",
-    "failedFileTooLarge": "This file exceeds the page limit for your plan.",
     "status": {
       "uploading": "Uploading",
       "processing": "Processing",
@@ -89,5 +87,52 @@
     "active": "Key active:",
     "invalid": "That doesn't look like an Anthropic key (it should start with \"sk-ant-\").",
     "securityNote": "Stored only in this browser tab (sessionStorage), sent with each request, and cleared when you close the tab. We never save or log it."
+  },
+  "errors": {
+    "cta": {
+      "byok": "Use your own key",
+      "contact": "Get in touch",
+      "retry": "Try again"
+    },
+    "out_of_credit": {
+      "title": "Out of credit",
+      "body": "The demo's API budget is exhausted for now. Add your own Anthropic key to keep chatting."
+    },
+    "daily_limit": {
+      "title": "Daily limit reached",
+      "body": "You've used your free messages for today. They reset at 00:00 UTC."
+    },
+    "project_over_capacity": {
+      "title": "Demo at capacity",
+      "body": "The demo hit its budget cap for now. Add your own key to continue, or come back tomorrow."
+    },
+    "weekly_lock": {
+      "title": "Free trial ended",
+      "body": "Your 7-day free trial is over. Add your own Anthropic key to keep going, or get in touch."
+    },
+    "invalid_byok": {
+      "title": "Invalid API key",
+      "body": "Anthropic rejected that key. Review it in settings and try again."
+    },
+    "model_overload": {
+      "title": "Model busy",
+      "body": "The model is overloaded right now. Give it a moment and try again."
+    },
+    "file_too_large": {
+      "title": "File too large",
+      "body": "That PDF exceeds the size or page limit for your plan. Try a smaller file."
+    },
+    "pdf_unparseable": {
+      "title": "Couldn't read the PDF",
+      "body": "This file looks scanned or image-only — there's no extractable text to work with."
+    },
+    "network_error": {
+      "title": "Connection problem",
+      "body": "The request didn't go through. Check your connection and try again."
+    },
+    "storage_full": {
+      "title": "Storage full",
+      "body": "The demo's storage is full right now. Delete old files to free up space."
+    }
   }
 }

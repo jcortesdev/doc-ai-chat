@@ -9,7 +9,9 @@
   "nav": {
     "signIn": "Sign in",
     "search": "Search",
-    "chat": "Chat"
+    "chat": "Chat",
+    "usage": "Usage",
+    "settings": "Settings"
   },
   "chat": {
     "title": "Chat",
@@ -18,6 +20,9 @@
     "send": "Send",
     "thinking": "Thinking…",
     "empty": "Ask a question to get started.",
+    "barCost": "Conversation cost",
+    "barTokensPerSec": "Tokens/s",
+    "barLatency": "Latency p50/p95",
     "errorGeneric": "Something went wrong. Please try again.",
     "you": "You",
     "assistant": "DocAI",
@@ -53,15 +58,13 @@
     "hint": "Max 10 MB · text-based PDF",
     "uploading": "Uploading…",
     "errorType": "Only PDF files are supported.",
-    "errorSize": "That file is larger than 10 MB.",
     "errorGeneric": "Upload failed. Please try again."
   },
   "ingest": {
     "title": "Ingest status",
     "processingHint": "This updates automatically.",
     "timeoutHint": "Still processing — refresh to check.",
-    "failedHint": "We couldn't process this PDF. It may be scanned, image-only, or not a valid PDF.",
-    "failedFileTooLarge": "This file exceeds the page limit for your plan.",
+    "failedTimeout": "This upload timed out before it finished processing. Try uploading it again.",
     "status": {
       "uploading": "Uploading",
       "processing": "Processing",
@@ -75,6 +78,81 @@
       "tokens": "Tokens",
       "cost": "Cost (USD)",
       "latencyPerChunk": "Latency / chunk"
+    }
+  },
+  "usage": {
+    "title": "Usage",
+    "hint": "Cost, calls, and latency for your activity.",
+    "hintOwner": "Project-wide cost, calls, and latency across all workspaces.",
+    "includePrivileged": "Include owner",
+    "excludePrivileged": "Exclude owner",
+    "totalCost": "Total cost",
+    "calls": "Calls",
+    "tokens": "Tokens",
+    "cost": "Cost",
+    "p50": "Latency p50",
+    "p95": "Latency p95",
+    "perModel": "By model",
+    "model": "Model",
+    "empty": "No usage recorded yet."
+  },
+  "settings": {
+    "title": "Settings",
+    "hint": "Bring your own Anthropic key to chat without the free-tier limits.",
+    "byokTitle": "Anthropic API key (BYOK)",
+    "byokHint": "With your own key, chat runs on Claude and skips the daily quota, weekly trial lock, and project budget — your key pays for the calls.",
+    "placeholder": "sk-ant-…",
+    "save": "Save key",
+    "clear": "Remove key",
+    "active": "Key active:",
+    "invalid": "That doesn't look like an Anthropic key (it should start with \"sk-ant-\").",
+    "securityNote": "Stored only in this browser tab (sessionStorage), sent with each request, and cleared when you close the tab. We never save or log it."
+  },
+  "errors": {
+    "cta": {
+      "byok": "Use your own key",
+      "contact": "Get in touch",
+      "retry": "Try again"
+    },
+    "out_of_credit": {
+      "title": "Out of credit",
+      "body": "The demo's API budget is exhausted for now. Add your own Anthropic key to keep chatting."
+    },
+    "daily_limit": {
+      "title": "Daily limit reached",
+      "body": "You've used your free messages for today. They reset at 00:00 UTC."
+    },
+    "project_over_capacity": {
+      "title": "Demo at capacity",
+      "body": "The demo hit its budget cap for now. Add your own key to continue, or come back tomorrow."
+    },
+    "weekly_lock": {
+      "title": "Free trial ended",
+      "body": "Your 7-day free trial is over. Add your own Anthropic key to keep going, or get in touch."
+    },
+    "invalid_byok": {
+      "title": "Invalid API key",
+      "body": "Anthropic rejected that key. Review it in settings and try again."
+    },
+    "model_overload": {
+      "title": "Model busy",
+      "body": "The model is overloaded right now. Give it a moment and try again."
+    },
+    "file_too_large": {
+      "title": "File too large",
+      "body": "That PDF exceeds the size or page limit for your plan. Try a smaller file."
+    },
+    "pdf_unparseable": {
+      "title": "Couldn't read the PDF",
+      "body": "This file looks scanned or image-only — there's no extractable text to work with."
+    },
+    "network_error": {
+      "title": "Connection problem",
+      "body": "The request didn't go through. Check your connection and try again."
+    },
+    "storage_full": {
+      "title": "Storage full",
+      "body": "The demo's storage is full right now. Delete old files to free up space."
     }
   }
 }

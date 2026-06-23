@@ -1,3 +1,4 @@
+import { recordProjectSpend } from '@/lib/budget';
 import { db } from '@doc-ai-chat/db/client';
 import { usageEvents } from '@doc-ai-chat/db/schema';
 import { computeCostUsd } from '@doc-ai-chat/providers/price-table';
@@ -78,6 +79,8 @@ export async function embed(texts: string[], context: EmbedContext = {}): Promis
     costUsd: costUsd.toFixed(6),
     isPrivileged: context.isPrivileged ?? false,
   });
+  // Embeddings always run on the project's Voyage key (BYOK only covers chat).
+  await recordProjectSpend(costUsd);
 
   return { embeddings, totalTokens, costUsd };
 }

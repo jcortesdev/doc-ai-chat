@@ -1,4 +1,6 @@
+import { checkProjectBudget } from '@/lib/budget';
 import { hybridRetrieve } from '@/lib/hybrid-retrieve';
+import { isTrialExpired, resolveTier } from '@/lib/tiers';
 import { ensureWorkspace } from '@/lib/workspace';
 import { auth, currentUser } from '@clerk/nextjs/server';
 import { NextResponse } from 'next/server';
@@ -27,7 +29,17 @@ export async function POST(request: Request) {
     const user = await currentUser();
     const email = user?.primaryEmailAddress?.emailAddress ?? '';
     // Tenant isolation: scope retrieval to the caller's own workspace.
-    const workspaceId = await ensureWorkspace(userId, email);
+    const { id: workspaceId, userCreatedAt } = await ensureWorkspace(userId, email);
+
+    // Free-tier gates the whole free tier, not just chat. Owners bypass (ADR-010).
+    if (resolveTier(email) !== 'privileged') {
+      if (isTrialExpired(userCreatedAt)) {
+        return NextResponse.json({ error: 'weekly_lock' }, { status: 403 });
+      }
+      if ((await checkProjectBudget()).over) {
+        return NextResponse.json({ error: 'project_over_capacity' }, { status: 403 });
+      }
+    }
 
     const { hits, costUsd } = await hybridRetrieve(parsed.data.query, workspaceId, {
       topN: parsed.data.topN,

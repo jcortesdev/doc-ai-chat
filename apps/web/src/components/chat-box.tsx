@@ -1,6 +1,9 @@
 'use client';
 
 import { CitationPanel } from '@/components/citation-panel';
+import { type ChatUsage, CostLatencyBar } from '@/components/cost-latency-bar';
+import { ErrorState, type ErrorVariant } from '@/components/error-state';
+import { BYOK_STORAGE_KEY } from '@/lib/byok';
 import { rehypeCitations } from '@/lib/rehype-citations';
 import { useChat } from '@ai-sdk/react';
 import type { Citation, CitationSource } from '@doc-ai-chat/prompts/rag-answer';
@@ -10,9 +13,40 @@ import { type FormEvent, useState } from 'react';
 import Markdown, { type Components } from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
-// The route sends the citation sources (label -> chunk/page) as message metadata.
-type ChatMetadata = { sources?: CitationSource[] };
+// The route sends the citation sources (label -> chunk/page) and per-response
+// usage (cost/latency, task 7) as message metadata.
+type ChatMetadata = { sources?: CitationSource[]; usage?: ChatUsage };
 type ChatUIMessage = UIMessage<ChatMetadata>;
+
+// Server error codes that map to an ErrorState variant. The route returns the
+// code in the response body (gate errors) or via the stream's onError (provider
+// errors); both reach useChat's `error.message`, so a substring scan covers both.
+// `rate_limit_exceeded`/`chat_failed` have no dedicated variant → generic fallback.
+const CHAT_ERROR_CODES: ErrorVariant[] = [
+  'out_of_credit',
+  'invalid_byok',
+  'model_overload',
+  'project_over_capacity',
+  'weekly_lock',
+  'daily_limit',
+  'network_error',
+];
+
+function mapChatError(error: Error | undefined): ErrorVariant | null {
+  if (!error) {
+    return null;
+  }
+  const message = (error.message ?? '').toLowerCase();
+  for (const code of CHAT_ERROR_CODES) {
+    if (message.includes(code)) {
+      return code;
+    }
+  }
+  if (message.includes('failed to fetch') || message.includes('network')) {
+    return 'network_error';
+  }
+  return null;
+}
 
 // Joins a message's text parts; reasoning and other parts are not rendered.
 function messageText(message: ChatUIMessage): string {
@@ -27,6 +61,15 @@ function messageText(message: ChatUIMessage): string {
 // history (text only). History lives client-side and is sent each request.
 const transport = new DefaultChatTransport<ChatUIMessage>({
   api: '/api/chat',
+  // BYOK: attach the user's Anthropic key from sessionStorage as a per-request
+  // header (read fresh each send). Never stored server-side; absent → free tier.
+  headers: (): Record<string, string> => {
+    if (typeof window === 'undefined') {
+      return {};
+    }
+    const key = window.sessionStorage.getItem(BYOK_STORAGE_KEY);
+    return key ? { 'x-user-api-key': key } : {};
+  },
   prepareSendMessagesRequest: ({ messages }) => {
     const last = messages.at(-1);
     const history = messages
@@ -150,10 +193,16 @@ function TypingIndicator() {
 
 export function ChatBox() {
   const t = useTranslations('chat');
-  const { messages, sendMessage, status, error } = useChat<ChatUIMessage>({ transport });
+  const { messages, sendMessage, status, error, regenerate } = useChat<ChatUIMessage>({
+    transport,
+  });
   const [input, setInput] = useState('');
   const [activeCitation, setActiveCitation] = useState<Citation | null>(null);
   const busy = status === 'submitted' || status === 'streaming';
+  const errorVariant = mapChatError(error);
+  const usages = messages
+    .map((message) => message.metadata?.usage)
+    .filter((usage): usage is ChatUsage => usage !== undefined);
   const lastMessage = messages.at(-1);
   const awaitingAnswer =
     busy &&
@@ -173,6 +222,7 @@ export function ChatBox() {
 
   return (
     <div className="flex w-full flex-col gap-6">
+      <CostLatencyBar usages={usages} />
       <div className="flex flex-col gap-4">
         {messages.length === 0 && <p className="text-foreground/60 text-sm">{t('empty')}</p>}
 
@@ -211,7 +261,12 @@ export function ChatBox() {
         })}
 
         {awaitingAnswer && <TypingIndicator />}
-        {error && <p className="text-red-500 text-sm">{t('errorGeneric')}</p>}
+        {error &&
+          (errorVariant ? (
+            <ErrorState variant={errorVariant} onRetry={() => regenerate()} />
+          ) : (
+            <p className="text-red-500 text-sm">{t('errorGeneric')}</p>
+          ))}
       </div>
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-2 sm:flex-row">

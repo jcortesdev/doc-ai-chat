@@ -1,5 +1,6 @@
 'use client';
 
+import { ErrorState, type ErrorVariant } from '@/components/error-state';
 import { useRouter } from '@/i18n/navigation';
 import { useTranslations } from 'next-intl';
 import { useRef, useState } from 'react';
@@ -8,22 +9,26 @@ const MAX_BYTES = 10 * 1024 * 1024;
 
 type PresignResponse = { documentId: string; uploadUrl: string };
 
+// 'type' (wrong file type) keeps its plain message; 'generic' falls back; a known
+// variant (file_too_large / weekly_lock / project_over_capacity) renders ErrorState.
+type UploadError = ErrorVariant | 'type' | 'generic';
+
 export function PdfUploader() {
   const t = useTranslations('upload');
   const router = useRouter();
   const inputRef = useRef<HTMLInputElement>(null);
   const [busy, setBusy] = useState(false);
   const [dragging, setDragging] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<UploadError | null>(null);
 
   async function handleFile(file: File) {
     setError(null);
     if (file.type !== 'application/pdf') {
-      setError(t('errorType'));
+      setError('type');
       return;
     }
     if (file.size > MAX_BYTES) {
-      setError(t('errorSize'));
+      setError('file_too_large');
       return;
     }
 
@@ -39,7 +44,15 @@ export function PdfUploader() {
         }),
       });
       if (!presign.ok) {
-        throw new Error('presign');
+        const body = (await presign.json().catch(() => null)) as { error?: string } | null;
+        const code = body?.error;
+        setError(
+          code === 'weekly_lock' || code === 'project_over_capacity' || code === 'file_too_large'
+            ? code
+            : 'generic',
+        );
+        setBusy(false);
+        return;
       }
       const { documentId, uploadUrl } = (await presign.json()) as PresignResponse;
 
@@ -63,7 +76,7 @@ export function PdfUploader() {
 
       router.push(`/ingest/${documentId}`);
     } catch {
-      setError(t('errorGeneric'));
+      setError('generic');
       setBusy(false);
     }
   }
@@ -94,7 +107,7 @@ export function PdfUploader() {
         } ${busy ? 'cursor-wait opacity-60' : 'cursor-pointer'}`}
       >
         <span className="font-medium">{busy ? t('uploading') : t('cta')}</span>
-        <span className="text-xs text-foreground/50">{t('hint')}</span>
+        <span className="text-xs text-foreground/70">{t('hint')}</span>
       </button>
       <input
         ref={inputRef}
@@ -108,7 +121,9 @@ export function PdfUploader() {
           }
         }}
       />
-      {error && <p className="text-sm text-red-500">{error}</p>}
+      {error === 'type' && <p className="text-sm text-red-500">{t('errorType')}</p>}
+      {error === 'generic' && <p className="text-sm text-red-500">{t('errorGeneric')}</p>}
+      {error && error !== 'type' && error !== 'generic' && <ErrorState variant={error} />}
     </div>
   );
 }

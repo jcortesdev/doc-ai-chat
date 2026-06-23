@@ -20,6 +20,8 @@
     "@doc-ai-chat/db": "workspace:*",
     "@doc-ai-chat/prompts": "workspace:*",
     "@doc-ai-chat/providers": "workspace:*",
+    "@upstash/ratelimit": "^2.0.8",
+    "@upstash/redis": "^1.38.0",
     "ai": "^6.0.208",
     "drizzle-orm": "^0.45.2",
     "inngest": "^4.5.1",

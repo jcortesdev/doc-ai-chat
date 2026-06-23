@@ -1,4 +1,9 @@
-import { GetObjectCommand, PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
+import {
+  DeleteObjectCommand,
+  GetObjectCommand,
+  PutObjectCommand,
+  S3Client,
+} from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 
 function requireEnv(name: string): string {
@@ -59,4 +64,10 @@ export async function getObjectBytes(key: string): Promise<Uint8Array> {
     throw new Error(`R2 object not found: ${key}`);
   }
   return response.Body.transformToByteArray();
+}
+
+// Deletes an object (retention + LRU eviction cron, M4 task 9). R2 returns success
+// even if the key is already gone, so this is safe to call on stale rows.
+export async function deleteObject(key: string): Promise<void> {
+  await r2Client().send(new DeleteObjectCommand({ Bucket: r2Bucket(), Key: key }));
 }

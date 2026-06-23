@@ -10,6 +10,7 @@
     "signIn": "Iniciar sesión",
     "search": "Búsqueda",
     "chat": "Chat",
+    "usage": "Uso",
     "settings": "Ajustes"
   },
   "chat": {
@@ -77,6 +78,22 @@
       "cost": "Costo (USD)",
       "latencyPerChunk": "Latencia / chunk"
     }
+  },
+  "usage": {
+    "title": "Uso",
+    "hint": "Costo, llamadas y latencia de tu actividad.",
+    "hintOwner": "Costo, llamadas y latencia de todo el proyecto, en todos los workspaces.",
+    "includePrivileged": "Incluir owner",
+    "excludePrivileged": "Excluir owner",
+    "totalCost": "Costo total",
+    "calls": "Llamadas",
+    "tokens": "Tokens",
+    "cost": "Costo",
+    "p50": "Latencia p50",
+    "p95": "Latencia p95",
+    "perModel": "Por modelo",
+    "model": "Modelo",
+    "empty": "Todavía no hay uso registrado."
   },
   "settings": {
     "title": "Ajustes",

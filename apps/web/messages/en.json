@@ -10,6 +10,7 @@
     "signIn": "Sign in",
     "search": "Search",
     "chat": "Chat",
+    "usage": "Usage",
     "settings": "Settings"
   },
   "chat": {
@@ -77,6 +78,22 @@
       "cost": "Cost (USD)",
       "latencyPerChunk": "Latency / chunk"
     }
+  },
+  "usage": {
+    "title": "Usage",
+    "hint": "Cost, calls, and latency for your activity.",
+    "hintOwner": "Project-wide cost, calls, and latency across all workspaces.",
+    "includePrivileged": "Include owner",
+    "excludePrivileged": "Exclude owner",
+    "totalCost": "Total cost",
+    "calls": "Calls",
+    "tokens": "Tokens",
+    "cost": "Cost",
+    "p50": "Latency p50",
+    "p95": "Latency p95",
+    "perModel": "By model",
+    "model": "Model",
+    "empty": "No usage recorded yet."
   },
   "settings": {
     "title": "Settings",

@@ -112,6 +112,18 @@
     "invalid": "That doesn't look like an Anthropic key (it should start with \"sk-ant-\").",
     "securityNote": "Stored only in this browser tab (sessionStorage), sent with each request, and cleared when you close the tab. We never save or log it."
   },
+  "files": {
+    "title": "Your files",
+    "hint": "PDFs you've uploaded. Deleting removes the file and everything indexed from it.",
+    "empty": "You haven't uploaded any PDFs yet.",
+    "pages": "{count, plural, one {# page} other {# pages}}",
+    "expires": "expires {date}",
+    "delete": "Delete",
+    "confirm": "Confirm delete",
+    "cancel": "Cancel",
+    "deleting": "Deleting…",
+    "deleteError": "Couldn't delete that file. Please try again."
+  },
   "errors": {
     "cta": {
       "byok": "Use your own key",

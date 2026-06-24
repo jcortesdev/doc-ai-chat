@@ -14,6 +14,19 @@ export type DocumentStatus = {
   errorVariant: string | null;
 };
 
+// One row in the "your files" list (pre-M5). Counters come straight from the
+// ingest run; `expiresAt` is the per-tier retention deadline (ADR-012).
+export type DocumentListItem = {
+  id: string;
+  filename: string;
+  status: string;
+  pageCount: number | null;
+  chunkCount: number;
+  costUsd: string;
+  createdAt: Date;
+  expiresAt: Date;
+};
+
 // Fetches a document only if it belongs to the caller's workspace (tenant
 // isolation, SECURITY.md #4). Returns null when missing or not owned.
 export async function getOwnedDocument(id: string, userId: string): Promise<DocumentStatus | null> {
@@ -81,4 +94,30 @@ export async function getOwnedDocumentForPdf(
   }
 
   return { r2Key: doc.r2Key, filename: doc.filename };
+}
+
+// Lists a workspace's documents, newest first (tenant isolation: the caller
+// resolves the workspace from the Clerk session, never from client input).
+export async function listWorkspaceDocuments(workspaceId: string): Promise<DocumentListItem[]> {
+  return db.query.documents.findMany({
+    where: eq(documents.workspaceId, workspaceId),
+    columns: {
+      id: true,
+      filename: true,
+      status: true,
+      pageCount: true,
+      chunkCount: true,
+      costUsd: true,
+      createdAt: true,
+      expiresAt: true,
+    },
+    orderBy: (doc, { desc }) => [desc(doc.createdAt)],
+  });
+}
+
+// Deletes a document row; its chunks cascade (FK onDelete: 'cascade'). Ownership
+// is checked by the caller via getOwnedDocumentForPdf before this runs, so this
+// takes only the id. The R2 object is deleted separately (deleteObject).
+export async function deleteDocumentRow(id: string): Promise<void> {
+  await db.delete(documents).where(eq(documents.id, id));
 }

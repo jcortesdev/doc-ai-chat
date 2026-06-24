@@ -112,6 +112,18 @@
     "invalid": "Eso no parece una key de Anthropic (debería empezar con «sk-ant-»).",
     "securityNote": "Se guarda solo en esta pestaña del navegador (sessionStorage), se envía con cada request y se borra al cerrar la pestaña. Nunca la guardamos ni la logueamos."
   },
+  "files": {
+    "title": "Tus archivos",
+    "hint": "PDFs que subiste. La acción Borrar, elimina el archivo y todo lo indexado de él.",
+    "empty": "Todavía no subiste ningún PDF.",
+    "pages": "{count, plural, one {# página} other {# páginas}}",
+    "expires": "vence {date}",
+    "delete": "Borrar",
+    "confirm": "Confirmar",
+    "cancel": "Cancelar",
+    "deleting": "Borrando…",
+    "deleteError": "No se pudo borrar el archivo. Probá de nuevo."
+  },
   "errors": {
     "cta": {
       "byok": "Usá tu propia key",

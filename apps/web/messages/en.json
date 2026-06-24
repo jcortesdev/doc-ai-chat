@@ -10,8 +10,7 @@
     "signIn": "Sign in",
     "search": "Search",
     "chat": "Chat",
-    "usage": "Usage",
-    "settings": "Settings"
+    "account": "Account"
   },
   "banner": {
     "message": "Demo in progress — some features are still being built.",
@@ -111,6 +110,12 @@
     "active": "Key active:",
     "invalid": "That doesn't look like an Anthropic key (it should start with \"sk-ant-\").",
     "securityNote": "Stored only in this browser tab (sessionStorage), sent with each request, and cleared when you close the tab. We never save or log it."
+  },
+  "account": {
+    "title": "Account",
+    "hint": "Your usage, API key, and uploaded files.",
+    "hintOwner": "Project-wide usage, your API key, and your uploaded files.",
+    "usageTitle": "Usage"
   },
   "files": {
     "title": "Your files",

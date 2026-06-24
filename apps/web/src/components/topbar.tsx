@@ -8,7 +8,12 @@ export async function Topbar() {
 
   return (
     <header className="flex items-center justify-between px-6 py-4 sm:px-10">
-      <span className="font-mono text-sm font-semibold tracking-tight">DocAI</span>
+      <Link
+        href="/"
+        className="font-mono text-sm font-semibold tracking-tight transition-opacity hover:opacity-80"
+      >
+        DocAI
+      </Link>
       <div className="flex items-center gap-3">
         <Show when="signed-in">
           <Link
@@ -24,16 +29,10 @@ export async function Topbar() {
             {t('search')}
           </Link>
           <Link
-            href="/usage"
+            href="/account"
             className="text-xs font-medium text-foreground/70 transition-colors hover:text-foreground"
           >
-            {t('usage')}
-          </Link>
-          <Link
-            href="/settings"
-            className="text-xs font-medium text-foreground/70 transition-colors hover:text-foreground"
-          >
-            {t('settings')}
+            {t('account')}
           </Link>
         </Show>
         <LocaleSwitcher />

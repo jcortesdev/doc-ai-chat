@@ -10,8 +10,7 @@
     "signIn": "Iniciar sesión",
     "search": "Búsqueda",
     "chat": "Chat",
-    "usage": "Uso",
-    "settings": "Ajustes"
+    "account": "Cuenta"
   },
   "banner": {
     "message": "Demo en construcción — algunas funciones todavía se están construyendo.",
@@ -111,6 +110,12 @@
     "active": "Key activa:",
     "invalid": "Eso no parece una key de Anthropic (debería empezar con «sk-ant-»).",
     "securityNote": "Se guarda solo en esta pestaña del navegador (sessionStorage), se envía con cada request y se borra al cerrar la pestaña. Nunca la guardamos ni la logueamos."
+  },
+  "account": {
+    "title": "Cuenta",
+    "hint": "Tu uso, tu API key y tus archivos.",
+    "hintOwner": "Uso de todo el proyecto, tu API key y tus archivos.",
+    "usageTitle": "Uso"
   },
   "files": {
     "title": "Tus archivos",

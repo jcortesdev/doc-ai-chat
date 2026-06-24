@@ -3,6 +3,7 @@
 import { ErrorState } from '@/components/error-state';
 import type { DocumentStatus } from '@/lib/documents';
 import { useTranslations } from 'next-intl';
+import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
 const TERMINAL_STATUSES = new Set(['ready', 'failed']);
@@ -32,6 +33,7 @@ function Metric({ label, value }: { label: string; value: string }) {
 
 export function IngestStatus({ initial }: { initial: DocumentStatus }) {
   const t = useTranslations('ingest');
+  const router = useRouter();
   const [doc, setDoc] = useState(initial);
   const [timedOut, setTimedOut] = useState(false);
 
@@ -73,6 +75,12 @@ export function IngestStatus({ initial }: { initial: DocumentStatus }) {
           }
           setDoc(next);
           if (TERMINAL_STATUSES.has(next.status)) {
+            // A freshly-ready document flips the topbar's Chat/Search gate — refresh
+            // the server components (the topbar lives in the layout) so the nav
+            // enables without the user having to navigate away and back.
+            if (next.status === 'ready') {
+              router.refresh();
+            }
             return;
           }
         }
@@ -88,7 +96,7 @@ export function IngestStatus({ initial }: { initial: DocumentStatus }) {
       cancelled = true;
       clearTimeout(timer);
     };
-  }, [doc.id, doc.status]);
+  }, [doc.id, doc.status, router]);
 
   const latencyPerChunk =
     doc.latencyMs !== null && doc.chunkCount > 0

@@ -10,7 +10,8 @@
     "signIn": "Iniciar sesión",
     "search": "Búsqueda",
     "chat": "Chat",
-    "account": "Cuenta"
+    "account": "Cuenta",
+    "uploadFirst": "Debes subir un documento primero"
   },
   "banner": {
     "message": "Demo en construcción — algunas funciones todavía se están construyendo.",

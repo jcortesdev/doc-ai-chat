@@ -2,6 +2,7 @@
 
 import type { DocumentListItem } from '@/lib/documents';
 import { useFormatter, useTranslations } from 'next-intl';
+import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
 // Lists the caller's uploaded PDFs with a two-step inline delete (Delete →
@@ -12,6 +13,7 @@ export function DocumentsList({ documents }: { documents: DocumentListItem[] }) 
   const t = useTranslations('files');
   const tStatus = useTranslations('ingest');
   const format = useFormatter();
+  const router = useRouter();
   const [items, setItems] = useState(documents);
   const [confirmingId, setConfirmingId] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
@@ -26,6 +28,10 @@ export function DocumentsList({ documents }: { documents: DocumentListItem[] }) 
         throw new Error('delete failed');
       }
       setItems((prev) => prev.filter((doc) => doc.id !== id));
+      // Re-render the server components so the topbar's Chat/Search gate (and the
+      // home files section) reflect the new count — e.g. deleting your last ready
+      // document disables those links again.
+      router.refresh();
     } catch {
       setErrorId(id);
     } finally {

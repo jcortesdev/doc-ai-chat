@@ -10,7 +10,8 @@
     "signIn": "Sign in",
     "search": "Search",
     "chat": "Chat",
-    "account": "Account"
+    "account": "Account",
+    "uploadFirst": "Upload a document first"
   },
   "banner": {
     "message": "Demo in progress — some features are still being built.",

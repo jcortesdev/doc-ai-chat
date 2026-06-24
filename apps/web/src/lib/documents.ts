@@ -1,6 +1,6 @@
 import { db } from '@doc-ai-chat/db/client';
 import { documents, workspaces } from '@doc-ai-chat/db/schema';
-import { eq } from 'drizzle-orm';
+import { and, eq, sql } from 'drizzle-orm';
 
 export type DocumentStatus = {
   id: string;
@@ -120,4 +120,17 @@ export async function listWorkspaceDocuments(workspaceId: string): Promise<Docum
 // takes only the id. The R2 object is deleted separately (deleteObject).
 export async function deleteDocumentRow(id: string): Promise<void> {
   await db.delete(documents).where(eq(documents.id, id));
+}
+
+// Counts the user's documents that finished ingesting ('ready') — the topbar uses
+// it to gate Chat/Search (you can only ask about ready documents). Joins by
+// workspace owner so a brand-new user with no workspace yet just counts zero, no
+// upsert on every page render.
+export async function countReadyDocumentsForUser(userId: string): Promise<number> {
+  const rows = await db
+    .select({ n: sql<number>`count(*)::int` })
+    .from(documents)
+    .innerJoin(workspaces, eq(documents.workspaceId, workspaces.id))
+    .where(and(eq(workspaces.ownerId, userId), eq(documents.status, 'ready')));
+  return rows[0]?.n ?? 0;
 }

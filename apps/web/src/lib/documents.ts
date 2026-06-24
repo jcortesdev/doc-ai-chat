@@ -1,6 +1,6 @@
 import { db } from '@doc-ai-chat/db/client';
 import { documents, workspaces } from '@doc-ai-chat/db/schema';
-import { and, eq, sql } from 'drizzle-orm';
+import { and, desc, eq, sql } from 'drizzle-orm';
 
 export type DocumentStatus = {
   id: string;
@@ -25,6 +25,13 @@ export type DocumentListItem = {
   costUsd: string;
   createdAt: Date;
   expiresAt: Date;
+};
+
+// A ready-to-query document, shown read-only on chat/search so the user knows
+// what they can ask about.
+export type ReadyDocument = {
+  id: string;
+  filename: string;
 };
 
 // Fetches a document only if it belongs to the caller's workspace (tenant
@@ -133,4 +140,16 @@ export async function countReadyDocumentsForUser(userId: string): Promise<number
     .innerJoin(workspaces, eq(documents.workspaceId, workspaces.id))
     .where(and(eq(workspaces.ownerId, userId), eq(documents.status, 'ready')));
   return rows[0]?.n ?? 0;
+}
+
+// Lists the user's ready documents (id + filename, newest first) for the
+// read-only "you can ask about these" hint on chat/search. Same owner-join as the
+// count so it never needs a workspace upsert.
+export async function listReadyDocumentsForUser(userId: string): Promise<ReadyDocument[]> {
+  return db
+    .select({ id: documents.id, filename: documents.filename })
+    .from(documents)
+    .innerJoin(workspaces, eq(documents.workspaceId, workspaces.id))
+    .where(and(eq(workspaces.ownerId, userId), eq(documents.status, 'ready')))
+    .orderBy(desc(documents.createdAt));
 }

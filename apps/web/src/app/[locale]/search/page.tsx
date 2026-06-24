@@ -1,4 +1,7 @@
+import { AvailableDocuments } from '@/components/available-documents';
 import { SearchBox } from '@/components/search-box';
+import { listReadyDocumentsForUser } from '@/lib/documents';
+import { auth } from '@clerk/nextjs/server';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 
 type Props = {
@@ -10,12 +13,16 @@ export default async function SearchPage({ params }: Props) {
   setRequestLocale(locale);
   const t = await getTranslations('search');
 
+  const { userId } = await auth();
+  const documents = userId ? await listReadyDocumentsForUser(userId) : [];
+
   return (
     <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-6 px-6 py-10">
       <div className="flex flex-col gap-1">
-        <h1 className="text-2xl font-bold tracking-tight">{t('title')}</h1>
-        <p className="text-sm text-foreground/70">{t('hint')}</p>
+        <h1 className="font-bold text-2xl tracking-tight">{t('title')}</h1>
+        <p className="text-foreground/70 text-sm">{t('hint')}</p>
       </div>
+      <AvailableDocuments documents={documents} />
       <SearchBox />
     </main>
   );

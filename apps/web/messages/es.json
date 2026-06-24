@@ -70,7 +70,7 @@
     "timeoutHint": "Sigue procesando — recargá para chequear.",
     "failedTimeout": "Esta subida expiró antes de terminar de procesarse. Probá subirla de nuevo.",
     "readyTitle": "Listo para chatear",
-    "readyHint": "Tu documento está ingestado. Hacé preguntas sobre él y obtené respuestas con citas.",
+    "readyHint": "Tu documento está ingestado. Ya puedes hacer preguntas sobre él y obtener respuestas con citas.",
     "readyCta": "Chatear con este documento",
     "status": {
       "uploading": "Subiendo",
@@ -132,6 +132,9 @@
     "cancel": "Cancelar",
     "deleting": "Borrando…",
     "deleteError": "No se pudo borrar el archivo. Probá de nuevo."
+  },
+  "documents": {
+    "available": "Documentos sobre los que puedes preguntar"
   },
   "errors": {
     "cta": {

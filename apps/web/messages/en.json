@@ -133,6 +133,9 @@
     "deleting": "Deleting…",
     "deleteError": "Couldn't delete that file. Please try again."
   },
+  "documents": {
+    "available": "Documents you can ask about"
+  },
   "errors": {
     "cta": {
       "byok": "Use your own key",

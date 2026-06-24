@@ -4,7 +4,8 @@
     "subtitle": "RAG chat over your PDFs — with citations, cost tracking, and evals you can actually see.",
     "footer": "A portfolio project by Josue Cortes.",
     "localeLabel": "Change language",
-    "signInToUpload": "Sign in to upload a PDF."
+    "signInToUpload": "Sign in to upload a PDF.",
+    "help": "DocAI lets you upload a PDF and then chat with it. Upload a document below; once it's ingested you can ask questions and get answers grounded in its text, with citations back to the page."
   },
   "nav": {
     "signIn": "Sign in",
@@ -16,6 +17,9 @@
   "banner": {
     "message": "Demo in progress — some features are still being built.",
     "dismiss": "Dismiss this notice"
+  },
+  "help": {
+    "summary": "What does this page do?"
   },
   "chat": {
     "title": "Chat",
@@ -37,7 +41,8 @@
     "openPdfNoPage": "Open PDF",
     "close": "Close",
     "pdfError": "Couldn't open the PDF.",
-    "pdfHighlightNote": "The cited passage is highlighted above. Opening the PDF jumps to the page; in-PDF highlight there is supported in Chrome, Edge and other Chromium browsers."
+    "pdfHighlightNote": "The cited passage is highlighted above. Opening the PDF jumps to the page; in-PDF highlight there is supported in Chrome, Edge and other Chromium browsers.",
+    "help": "Ask natural-language questions about your ingested PDFs. Answers come only from the retrieved passages and include citation chips — click one to see the exact source text and open the PDF at that page."
   },
   "search": {
     "title": "Search",
@@ -55,7 +60,8 @@
       "rrf": "RRF",
       "cosine": "Cosine",
       "bm25": "BM25"
-    }
+    },
+    "help": "Search your PDFs without the LLM — this shows the raw retrieval: the top passages with their cosine, BM25, RRF and reranker scores, so you can see how relevant each match is."
   },
   "upload": {
     "cta": "Drop a PDF here or click to upload",
@@ -119,7 +125,8 @@
     "title": "Account",
     "hint": "Your usage, API key, and uploaded files.",
     "hintOwner": "Project-wide usage, your API key, and your uploaded files.",
-    "usageTitle": "Usage"
+    "usageTitle": "Usage",
+    "help": "Review your usage (cost, calls, latency) and add your own Anthropic API key to skip the free-tier limits. Manage your uploaded files from the home page."
   },
   "files": {
     "title": "Your files",

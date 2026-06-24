@@ -1,4 +1,5 @@
 import { ByokForm } from '@/components/byok-form';
+import { PageHelp } from '@/components/page-help';
 import { UsageSummary } from '@/components/usage-summary';
 import { Link } from '@/i18n/navigation';
 import { resolveTier } from '@/lib/tiers';
@@ -46,7 +47,10 @@ export default async function AccountPage({ params, searchParams }: Props) {
   return (
     <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-8 px-6 py-10">
       <div className="flex flex-col gap-1">
-        <h1 className="font-bold text-2xl tracking-tight">{t('title')}</h1>
+        <div className="flex items-center gap-2">
+          <h1 className="font-bold text-2xl tracking-tight">{t('title')}</h1>
+          <PageHelp body={t('help')} />
+        </div>
         <p className="text-foreground/70 text-sm">{isOwner ? t('hintOwner') : t('hint')}</p>
       </div>
 

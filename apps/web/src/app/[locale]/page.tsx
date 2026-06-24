@@ -1,4 +1,5 @@
 import { DocumentsList } from '@/components/documents-list';
+import { PageHelp } from '@/components/page-help';
 import { PdfUploader } from '@/components/pdf-uploader';
 import type { DocumentListItem } from '@/lib/documents';
 import { listWorkspaceDocuments } from '@/lib/documents';
@@ -32,6 +33,9 @@ export default async function LandingPage({ params }: Props) {
       <section className="flex flex-1 flex-col items-center justify-center gap-6 px-6 py-10 text-center">
         <h1 className="max-w-2xl text-balance text-4xl font-bold tracking-tight sm:text-6xl">
           {t('title')}
+          <span className="ml-2 inline-flex align-super">
+            <PageHelp body={t('help')} align="end" />
+          </span>
         </h1>
         <p className="max-w-xl text-balance text-base text-foreground/70 sm:text-lg">
           {t('subtitle')}

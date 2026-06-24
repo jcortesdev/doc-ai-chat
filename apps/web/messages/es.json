@@ -4,18 +4,22 @@
     "subtitle": "Chat RAG sobre tus PDFs — con citas, control de costos y evals que podés ver de verdad.",
     "footer": "Un proyecto de portafolio de Josue Cortes.",
     "localeLabel": "Cambiar idioma",
-    "signInToUpload": "Iniciá sesión para subir un PDF."
+    "signInToUpload": "Iniciá sesión para subir un PDF.",
+    "help": "DocAI le permite subir un PDF y luego chatear con él. Suba un documento; una vez ingestado, puede hacer preguntas y obtener respuestas basadas en su texto, con citas a la página."
   },
   "nav": {
     "signIn": "Iniciar sesión",
     "search": "Búsqueda",
     "chat": "Chat",
     "account": "Cuenta",
-    "uploadFirst": "Debes subir un documento primero"
+    "uploadFirst": "Debe subir un documento primero"
   },
   "banner": {
     "message": "Demo en construcción — algunas funciones todavía se están construyendo.",
     "dismiss": "Cerrar este aviso"
+  },
+  "help": {
+    "summary": "¿Qué hace esta página?"
   },
   "chat": {
     "title": "Chat",
@@ -37,7 +41,8 @@
     "openPdfNoPage": "Abrir PDF",
     "close": "Cerrar",
     "pdfError": "No se pudo abrir el PDF.",
-    "pdfHighlightNote": "El pasaje citado se resalta arriba. Al abrir el PDF salta a la página; el resaltado dentro del PDF funciona en Chrome, Edge y otros navegadores Chromium."
+    "pdfHighlightNote": "El pasaje citado se resalta arriba. Al abrir el PDF salta a la página; el resaltado dentro del PDF funciona en Chrome, Edge y otros navegadores Chromium.",
+    "help": "Haga preguntas en lenguaje natural sobre sus PDFs ingestados. Las respuestas salen solo de los pasajes recuperados e incluyen citas: haga clic en una para ver el texto exacto y abrir el PDF en esa página."
   },
   "search": {
     "title": "Búsqueda",
@@ -55,7 +60,8 @@
       "rrf": "RRF",
       "cosine": "Cosine",
       "bm25": "BM25"
-    }
+    },
+    "help": "Busque en sus PDFs sin el LLM — esto muestra el retrieval crudo: los mejores pasajes con sus scores cosine, BM25, RRF y reranker, para ver qué tan relevante es cada coincidencia."
   },
   "upload": {
     "cta": "Suelta un archivo PDF acá o haz clic para subirlo",
@@ -70,7 +76,7 @@
     "timeoutHint": "Sigue procesando — recargá para chequear.",
     "failedTimeout": "Esta subida expiró antes de terminar de procesarse. Probá subirla de nuevo.",
     "readyTitle": "Listo para chatear",
-    "readyHint": "Tu documento está ingestado. Ya puedes hacer preguntas sobre él y obtener respuestas con citas.",
+    "readyHint": "Su documento está ingestado. Ya puede hacer preguntas sobre él y obtener respuestas con citas.",
     "readyCta": "Chatear con este documento",
     "status": {
       "uploading": "Subiendo",
@@ -117,24 +123,25 @@
   },
   "account": {
     "title": "Cuenta",
-    "hint": "Tu uso, tu API key y tus archivos.",
-    "hintOwner": "Uso de todo el proyecto, tu API key y tus archivos.",
-    "usageTitle": "Uso"
+    "hint": "Su uso, su API key y sus archivos.",
+    "hintOwner": "Uso de todo el proyecto, su API key y sus archivos.",
+    "usageTitle": "Uso",
+    "help": "Revise su uso (costo, llamadas, latencia) y agregue su propia API key de Anthropic para saltarse los límites del free-tier. Sus archivos los administra desde el inicio."
   },
   "files": {
-    "title": "Tus archivos",
-    "hint": "PDFs que subiste. La acción Borrar, elimina el archivo y todo lo indexado de él.",
-    "empty": "Todavía no subiste ningún PDF.",
+    "title": "Sus archivos",
+    "hint": "PDFs que subió. La acción Borrar, elimina el archivo y todo lo indexado de él.",
+    "empty": "Todavía no subió ningún PDF.",
     "pages": "{count, plural, one {# página} other {# páginas}}",
     "expires": "vence {date}",
     "delete": "Borrar",
     "confirm": "Confirmar",
     "cancel": "Cancelar",
     "deleting": "Borrando…",
-    "deleteError": "No se pudo borrar el archivo. Probá de nuevo."
+    "deleteError": "No se pudo borrar el archivo. Intente de nuevo."
   },
   "documents": {
-    "available": "Documentos sobre los que puedes preguntar"
+    "available": "Documentos sobre los que puede preguntar"
   },
   "errors": {
     "cta": {

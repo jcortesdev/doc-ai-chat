@@ -13,6 +13,10 @@
     "usage": "Uso",
     "settings": "Ajustes"
   },
+  "banner": {
+    "message": "Demo en construcción — algunas funciones todavía se están construyendo.",
+    "dismiss": "Cerrar este aviso"
+  },
   "chat": {
     "title": "Chat",
     "hint": "Preguntá sobre tus PDFs ingestados — las respuestas se basan en tus documentos, con citas.",

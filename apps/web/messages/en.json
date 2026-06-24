@@ -13,6 +13,10 @@
     "usage": "Usage",
     "settings": "Settings"
   },
+  "banner": {
+    "message": "Demo in progress — some features are still being built.",
+    "dismiss": "Dismiss this notice"
+  },
   "chat": {
     "title": "Chat",
     "hint": "Ask about your ingested PDFs — answers are grounded in your documents, with citations.",

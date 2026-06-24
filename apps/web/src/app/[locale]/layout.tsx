@@ -1,4 +1,5 @@
 import { Topbar } from '@/components/topbar';
+import { UnderConstructionBanner } from '@/components/under-construction-banner';
 import { routing } from '@/i18n/routing';
 import { enUS, esES } from '@clerk/localizations';
 import { ClerkProvider } from '@clerk/nextjs';
@@ -47,6 +48,7 @@ export default async function LocaleLayout({ children, params }: Props) {
         <body className="min-h-full flex flex-col font-sans">
           <NextIntlClientProvider>
             <Topbar />
+            <UnderConstructionBanner />
             {children}
           </NextIntlClientProvider>
         </body>

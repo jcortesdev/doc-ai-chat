@@ -85,10 +85,12 @@ const transport = new DefaultChatTransport<ChatUIMessage>({
 
 function CitationChip({
   citation,
+  query,
   onOpen,
 }: {
   citation: Citation;
-  onOpen: (citation: Citation) => void;
+  query: string;
+  onOpen: (citation: Citation, query: string) => void;
 }) {
   const t = useTranslations('chat');
   const aria =
@@ -98,7 +100,7 @@ function CitationChip({
   return (
     <button
       type="button"
-      onClick={() => onOpen(citation)}
+      onClick={() => onOpen(citation, query)}
       title={aria}
       aria-label={aria}
       className="mx-0.5 inline-flex cursor-pointer select-none items-center rounded border border-foreground/25 px-1 align-super font-medium text-[10px] text-foreground/70 transition-colors hover:bg-foreground/10"
@@ -114,11 +116,13 @@ function CitationChip({
 function AssistantAnswer({
   text,
   sources,
+  query,
   onOpenCitation,
 }: {
   text: string;
   sources: CitationSource[];
-  onOpenCitation: (citation: Citation) => void;
+  query: string;
+  onOpenCitation: (citation: Citation, query: string) => void;
 }) {
   const components: Components = {
     cite: ({ node }) => {
@@ -126,7 +130,7 @@ function AssistantAnswer({
       const label = Number(raw);
       const source = Number.isInteger(label) ? sources[label - 1] : undefined;
       return source ? (
-        <CitationChip citation={{ label, ...source }} onOpen={onOpenCitation} />
+        <CitationChip citation={{ label, ...source }} query={query} onOpen={onOpenCitation} />
       ) : (
         <>{`[${raw ?? ''}]`}</>
       );
@@ -197,7 +201,12 @@ export function ChatBox() {
     transport,
   });
   const [input, setInput] = useState('');
-  const [activeCitation, setActiveCitation] = useState<Citation | null>(null);
+  // The open citation plus the question it answered — the panel highlights the
+  // passage sentence that best matches that question.
+  const [activeCitation, setActiveCitation] = useState<{
+    citation: Citation;
+    query: string;
+  } | null>(null);
   const busy = status === 'submitted' || status === 'streaming';
   const errorVariant = mapChatError(error);
   const usages = messages
@@ -226,7 +235,7 @@ export function ChatBox() {
       <div className="flex flex-col gap-4">
         {messages.length === 0 && <p className="text-foreground/60 text-sm">{t('empty')}</p>}
 
-        {messages.map((message) => {
+        {messages.map((message, index) => {
           const text = messageText(message);
           // Suppress an assistant bubble that has no text yet — the typing
           // indicator below stands in until the first token arrives.
@@ -234,6 +243,15 @@ export function ChatBox() {
             return null;
           }
           const isUser = message.role === 'user';
+          // The question this answer responds to — the nearest preceding user
+          // turn — drives which passage sentence the citation panel highlights.
+          const queryMessage = isUser
+            ? undefined
+            : messages
+                .slice(0, index)
+                .filter((m) => m.role === 'user')
+                .at(-1);
+          const query = queryMessage ? messageText(queryMessage) : '';
           return (
             <div key={message.id} className="flex flex-col gap-1">
               <span className="font-medium text-foreground/70 text-xs">
@@ -252,7 +270,8 @@ export function ChatBox() {
                   <AssistantAnswer
                     text={text}
                     sources={message.metadata?.sources ?? []}
-                    onOpenCitation={setActiveCitation}
+                    query={query}
+                    onOpenCitation={(citation, q) => setActiveCitation({ citation, query: q })}
                   />
                 )}
               </div>
@@ -287,7 +306,11 @@ export function ChatBox() {
         </button>
       </form>
 
-      <CitationPanel citation={activeCitation} onClose={() => setActiveCitation(null)} />
+      <CitationPanel
+        citation={activeCitation?.citation ?? null}
+        query={activeCitation?.query ?? ''}
+        onClose={() => setActiveCitation(null)}
+      />
     </div>
   );
 }

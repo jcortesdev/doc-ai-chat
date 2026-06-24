@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   PROMPT_RAG_ANSWER_V1,
+  bestMatchingSpan,
   buildRagUserTurn,
   citationSearchPhrase,
   neutralizeControlTags,
@@ -116,5 +117,46 @@ describe('citationSearchPhrase', () => {
 
   it('returns empty for blank content', () => {
     expect(citationSearchPhrase('   \n  ')).toBe('');
+  });
+});
+
+describe('bestMatchingSpan', () => {
+  const PASSAGE =
+    'International freight grew steadily last year. Revenue from air cargo rose 12% in the second quarter. Costs stayed flat.';
+
+  // Helper: the substring the returned range points at.
+  function picked(content: string, query: string): string | null {
+    const span = bestMatchingSpan(content, query);
+    return span ? content.slice(span.start, span.end) : null;
+  }
+
+  it('returns the sentence with the most question-keyword overlap', () => {
+    expect(picked(PASSAGE, 'How much did air cargo revenue rise?')).toBe(
+      'Revenue from air cargo rose 12% in the second quarter.',
+    );
+  });
+
+  it('returns offsets that slice exactly to a sentence boundary', () => {
+    const span = bestMatchingSpan(PASSAGE, 'freight growth');
+    expect(span).not.toBeNull();
+    expect(PASSAGE.slice(span?.start, span?.end)).toBe(
+      'International freight grew steadily last year.',
+    );
+  });
+
+  it('matches accent-insensitively (es question without accents)', () => {
+    const es = 'El informe es claro. A partir del 1 de julio se delimitarán las zonas.';
+    expect(picked(es, 'cuando se delimitaran las zonas')).toBe(
+      'A partir del 1 de julio se delimitarán las zonas.',
+    );
+  });
+
+  it('returns null when no usable keywords (stopwords / too short only)', () => {
+    expect(bestMatchingSpan(PASSAGE, 'what is the')).toBeNull();
+    expect(bestMatchingSpan(PASSAGE, '   ')).toBeNull();
+  });
+
+  it('returns null when no sentence overlaps the query', () => {
+    expect(bestMatchingSpan(PASSAGE, 'photosynthesis chlorophyll')).toBeNull();
   });
 });

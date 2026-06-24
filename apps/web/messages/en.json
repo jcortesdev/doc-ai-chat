@@ -37,7 +37,7 @@
     "openPdfNoPage": "Open PDF",
     "close": "Close",
     "pdfError": "Couldn't open the PDF.",
-    "pdfHighlightNote": "Jumps to the cited page. In-PDF highlight is supported in Chrome, Edge and other Chromium browsers."
+    "pdfHighlightNote": "The cited passage is highlighted above. Opening the PDF jumps to the page; in-PDF highlight there is supported in Chrome, Edge and other Chromium browsers."
   },
   "search": {
     "title": "Search",

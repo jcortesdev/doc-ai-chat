@@ -37,7 +37,7 @@
     "openPdfNoPage": "Abrir PDF",
     "close": "Cerrar",
     "pdfError": "No se pudo abrir el PDF.",
-    "pdfHighlightNote": "Salta a la página citada. El resaltado dentro del PDF funciona en Chrome, Edge y otros navegadores Chromium."
+    "pdfHighlightNote": "El pasaje citado se resalta arriba. Al abrir el PDF salta a la página; el resaltado dentro del PDF funciona en Chrome, Edge y otros navegadores Chromium."
   },
   "search": {
     "title": "Búsqueda",

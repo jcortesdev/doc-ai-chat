@@ -1,6 +1,7 @@
 'use client';
 
 import { ErrorState } from '@/components/error-state';
+import { Link } from '@/i18n/navigation';
 import type { DocumentStatus } from '@/lib/documents';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
@@ -129,6 +130,21 @@ export function IngestStatus({ initial }: { initial: DocumentStatus }) {
           </span>
         )}
       </div>
+
+      {doc.status === 'ready' && (
+        <div className="flex flex-col gap-3 rounded-xl border border-foreground/10 bg-foreground/[0.03] p-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex flex-col gap-0.5">
+            <span className="font-semibold text-sm">{t('readyTitle')}</span>
+            <span className="text-foreground/70 text-xs">{t('readyHint')}</span>
+          </div>
+          <Link
+            href="/chat"
+            className="inline-flex w-fit shrink-0 items-center rounded-lg bg-foreground px-4 py-2 font-medium text-background text-sm transition-opacity hover:opacity-90"
+          >
+            {t('readyCta')}
+          </Link>
+        </div>
+      )}
 
       {doc.status === 'failed' ? (
         doc.errorVariant === 'processing_timeout' ? (

@@ -69,6 +69,9 @@
     "processingHint": "This updates automatically.",
     "timeoutHint": "Still processing — refresh to check.",
     "failedTimeout": "This upload timed out before it finished processing. Try uploading it again.",
+    "readyTitle": "Ready to chat",
+    "readyHint": "Your document is ingested. Ask questions about it and get answers with citations.",
+    "readyCta": "Chat with this document",
     "status": {
       "uploading": "Uploading",
       "processing": "Processing",

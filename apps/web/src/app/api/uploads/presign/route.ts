@@ -2,7 +2,7 @@ import { randomUUID } from 'node:crypto';
 import { checkProjectBudget } from '@/lib/budget';
 import { isValidAnthropicKey } from '@/lib/byok';
 import { getSignedUploadUrl } from '@/lib/r2';
-import { getTierLimits, isTrialExpired } from '@/lib/tiers';
+import { getTierLimits, isTrialExempt, isTrialExpired } from '@/lib/tiers';
 import { ensureWorkspace } from '@/lib/workspace';
 import { auth, currentUser } from '@clerk/nextjs/server';
 import { db } from '@doc-ai-chat/db/client';
@@ -59,7 +59,7 @@ export async function POST(request: Request) {
 
   // Free-tier gates uploads too, not just chat. Owners bypass (ADR-010).
   if (limits.tier !== 'privileged') {
-    if (!isByok && isTrialExpired(userCreatedAt)) {
+    if (!isByok && !isTrialExempt(email) && isTrialExpired(userCreatedAt)) {
       return NextResponse.json({ error: 'weekly_lock' }, { status: 403 });
     }
     // Voyage embeddings are project-paid even on BYOK uploads, so the kill switch

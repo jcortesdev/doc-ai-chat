@@ -3,7 +3,7 @@ import { isValidAnthropicKey } from '@/lib/byok';
 import { streamChat } from '@/lib/chat';
 import { retrieveChatContext } from '@/lib/chat-retrieve';
 import { enforceDailyChatQuota, enforceRateLimit, rateLimitHeaders } from '@/lib/rate-limit';
-import { isTrialExpired, resolveTier } from '@/lib/tiers';
+import { isTrialExempt, isTrialExpired, resolveTier } from '@/lib/tiers';
 import { ensureWorkspace } from '@/lib/workspace';
 import { auth, currentUser } from '@clerk/nextjs/server';
 import {
@@ -98,7 +98,7 @@ export async function POST(request: Request) {
     //   3. rate_limit           — burst token bucket on the hot path (task 1, 429).
     //   4. project_over_capacity — project budget kill switch hit (ADR-015, 403).
     if (!isPrivileged && !isByok) {
-      if (isTrialExpired(userCreatedAt)) {
+      if (!isTrialExempt(email) && isTrialExpired(userCreatedAt)) {
         return NextResponse.json({ error: 'weekly_lock' }, { status: 403 });
       }
       const daily = await enforceDailyChatQuota(userId);

@@ -1,7 +1,7 @@
 import { checkProjectBudget } from '@/lib/budget';
 import { isValidAnthropicKey } from '@/lib/byok';
 import { hybridRetrieve } from '@/lib/hybrid-retrieve';
-import { isTrialExpired, resolveTier } from '@/lib/tiers';
+import { isTrialExempt, isTrialExpired, resolveTier } from '@/lib/tiers';
 import { ensureWorkspace } from '@/lib/workspace';
 import { auth, currentUser } from '@clerk/nextjs/server';
 import { NextResponse } from 'next/server';
@@ -40,7 +40,7 @@ export async function POST(request: Request) {
 
     // Free-tier gates the whole free tier, not just chat. Owners bypass (ADR-010).
     if (resolveTier(email) !== 'privileged') {
-      if (!isByok && isTrialExpired(userCreatedAt)) {
+      if (!isByok && !isTrialExempt(email) && isTrialExpired(userCreatedAt)) {
         return NextResponse.json({ error: 'weekly_lock' }, { status: 403 });
       }
       if ((await checkProjectBudget()).over) {

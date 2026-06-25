@@ -317,7 +317,9 @@ export function ChatBox({ documents }: { documents: ReadyDocument[] }) {
               const query = queryMessage ? messageText(queryMessage) : '';
               return (
                 <div key={message.id} className="flex flex-col gap-1">
-                  <span className="font-medium text-foreground/70 text-xs">
+                  <span
+                    className={`font-medium text-foreground/70 text-xs ${isUser ? 'self-end' : 'self-start'}`}
+                  >
                     {isUser ? t('you') : t('assistant')}
                   </span>
                   <div

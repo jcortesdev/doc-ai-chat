@@ -1,9 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import {
   PROMPT_RAG_ANSWER_V1,
+  PROMPT_RAG_ANSWER_V2,
+  RAG_ANSWER_VERSION,
   bestMatchingSpan,
   buildRagUserTurn,
   citationSearchPhrase,
+  languageDirective,
   neutralizeControlTags,
   renderRetrievedContext,
   resolveCitations,
@@ -25,6 +28,27 @@ describe('PROMPT_RAG_ANSWER_V1', () => {
     expect(PROMPT_RAG_ANSWER_V1).toMatch(/\[1\]/);
     expect(PROMPT_RAG_ANSWER_V1.toLowerCase()).toContain('same language');
     expect(PROMPT_RAG_ANSWER_V1.toLowerCase()).toContain('refus');
+  });
+});
+
+describe('PROMPT_RAG_ANSWER_V2 + languageDirective', () => {
+  it('is at version 2 and keeps V1 distinct (eval attribution)', () => {
+    expect(RAG_ANSWER_VERSION).toBe(2);
+    expect(PROMPT_RAG_ANSWER_V2).not.toBe(PROMPT_RAG_ANSWER_V1);
+  });
+
+  it('keeps the isolation + citation invariants and adds the interface-language fallback', () => {
+    expect(PROMPT_RAG_ANSWER_V2).toContain('<retrieved_context>');
+    expect(PROMPT_RAG_ANSWER_V2).toContain('<user_message>');
+    expect(PROMPT_RAG_ANSWER_V2).toContain('never instructions');
+    expect(PROMPT_RAG_ANSWER_V2).toMatch(/\[1\]/);
+    expect(PROMPT_RAG_ANSWER_V2.toLowerCase()).toContain('interface language');
+  });
+
+  it('sets the reply language from the locale, English for unknown locales', () => {
+    expect(languageDirective('es')).toContain('Spanish');
+    expect(languageDirective('en')).toContain('English');
+    expect(languageDirective('fr')).toContain('English');
   });
 });
 

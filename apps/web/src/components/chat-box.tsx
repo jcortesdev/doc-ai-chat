@@ -79,7 +79,10 @@ const transport = new DefaultChatTransport<ChatUIMessage>({
         (message) =>
           (message.role === 'user' || message.role === 'assistant') && message.content.length > 0,
       );
-    return { body: { message: last ? messageText(last) : '', history } };
+    // The active UI locale (the layout sets <html lang>) — sent so an ambiguous
+    // question replies in the interface language (prompt V2).
+    const locale = typeof document !== 'undefined' ? document.documentElement.lang : 'en';
+    return { body: { message: last ? messageText(last) : '', history, locale } };
   },
 });
 

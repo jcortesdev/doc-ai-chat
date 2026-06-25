@@ -8,8 +8,9 @@ import { ensureWorkspace } from '@/lib/workspace';
 import { auth, currentUser } from '@clerk/nextjs/server';
 import {
   type CitationSource,
-  PROMPT_RAG_ANSWER_V1,
+  PROMPT_RAG_ANSWER_V2,
   buildRagUserTurn,
+  languageDirective,
 } from '@doc-ai-chat/prompts/rag-answer';
 import { computeCostUsd } from '@doc-ai-chat/providers/price-table';
 import type { ModelMessage } from 'ai';
@@ -37,6 +38,9 @@ const chatSchema = z.object({
     )
     .max(20)
     .optional(),
+  // The UI locale, threaded from the client (prompt V2). Sets the reply-language
+  // default for ambiguous questions; absent → English.
+  locale: z.enum(['en', 'es']).optional(),
 });
 
 // Maps a provider/API error to an ErrorState code (best-effort, M4 task 6). The
@@ -69,7 +73,7 @@ export async function POST(request: Request) {
   if (!parsed.success) {
     return NextResponse.json({ error: 'invalid_request' }, { status: 400 });
   }
-  const { message, history = [] } = parsed.data;
+  const { message, history = [], locale = 'en' } = parsed.data;
 
   // BYOK (task 4): a user-supplied Anthropic key (sk-ant-…) pays for this request.
   // Read from the header only, never the body; never logged or persisted. A
@@ -137,7 +141,9 @@ export async function POST(request: Request) {
     }));
 
     const { result, modelId, startedAt } = streamChat({
-      system: PROMPT_RAG_ANSWER_V1,
+      // V2 + the locale directive: answer in the question's language, falling back
+      // to the UI locale when the question is too short/ambiguous to tell.
+      system: `${PROMPT_RAG_ANSWER_V2}\n\n${languageDirective(locale)}`,
       messages,
       context: { workspaceId, isPrivileged, isByok },
       userApiKey,

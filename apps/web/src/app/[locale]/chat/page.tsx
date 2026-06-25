@@ -1,4 +1,3 @@
-import { AvailableDocuments } from '@/components/available-documents';
 import { ChatBox } from '@/components/chat-box';
 import { PageHelp } from '@/components/page-help';
 import { listReadyDocumentsForUser } from '@/lib/documents';
@@ -18,7 +17,7 @@ export default async function ChatPage({ params }: Props) {
   const documents = userId ? await listReadyDocumentsForUser(userId) : [];
 
   return (
-    <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-6 px-6 py-10">
+    <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-6 px-6 py-10 xl:max-w-5xl">
       <div className="flex flex-col gap-1">
         <div className="flex items-center gap-2">
           <h1 className="font-bold text-2xl tracking-tight">{t('title')}</h1>
@@ -26,8 +25,7 @@ export default async function ChatPage({ params }: Props) {
         </div>
         <p className="text-foreground/70 text-sm">{t('hint')}</p>
       </div>
-      <AvailableDocuments documents={documents} />
-      <ChatBox />
+      <ChatBox documents={documents} />
     </main>
   );
 }

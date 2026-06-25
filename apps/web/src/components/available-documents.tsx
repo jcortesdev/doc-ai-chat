@@ -1,11 +1,14 @@
+'use client';
+
 import type { ReadyDocument } from '@/lib/documents';
-import { getTranslations } from 'next-intl/server';
+import { useTranslations } from 'next-intl';
 
 // Read-only list of the documents the user can ask about, shown on chat/search so
 // they know what's in scope. Informational only — no open/delete actions (that's
 // the home "your files" list). Renders nothing when there are no ready documents.
-export async function AvailableDocuments({ documents }: { documents: ReadyDocument[] }) {
-  const t = await getTranslations('documents');
+// Client component so it can sit inside the chat's two-column layout (ChatBox).
+export function AvailableDocuments({ documents }: { documents: ReadyDocument[] }) {
+  const t = useTranslations('documents');
 
   if (documents.length === 0) {
     return null;

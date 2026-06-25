@@ -1,9 +1,11 @@
 'use client';
 
+import { AvailableDocuments } from '@/components/available-documents';
 import { CitationPanel } from '@/components/citation-panel';
 import { type ChatUsage, CostLatencyBar } from '@/components/cost-latency-bar';
 import { ErrorState, type ErrorVariant } from '@/components/error-state';
 import { BYOK_STORAGE_KEY } from '@/lib/byok';
+import type { ReadyDocument } from '@/lib/documents';
 import { rehypeCitations } from '@/lib/rehype-citations';
 import { useChat } from '@ai-sdk/react';
 import type { Citation, CitationSource } from '@doc-ai-chat/prompts/rag-answer';
@@ -203,7 +205,7 @@ function TypingIndicator() {
 // so). Global per browser; "New chat" clears it.
 const CHAT_STORAGE_KEY = 'docai:chat';
 
-export function ChatBox() {
+export function ChatBox({ documents }: { documents: ReadyDocument[] }) {
   const t = useTranslations('chat');
   const { messages, setMessages, sendMessage, status, error, regenerate } = useChat<ChatUIMessage>({
     transport,
@@ -273,100 +275,109 @@ export function ChatBox() {
   }
 
   return (
-    <div className="flex w-full flex-col gap-6">
-      {messages.length > 0 && (
-        <div className="flex justify-end">
-          <button
-            type="button"
-            onClick={handleNewChat}
-            className="rounded-lg border border-foreground/20 px-3 py-1.5 font-medium text-foreground/70 text-xs transition-colors hover:bg-foreground/5 hover:text-foreground"
-          >
-            {t('newChat')}
-          </button>
+    <>
+      {/* Two-column on large screens: a sticky aside (controls + context + live
+          metrics) so the width is actually used, with the conversation kept at a
+          readable column. Below xl everything stacks (aside collapses on top). */}
+      <div className="grid grid-cols-1 gap-6 xl:grid-cols-[260px_minmax(0,1fr)] xl:gap-8">
+        <aside className="flex flex-col gap-4 xl:sticky xl:top-6 xl:self-start">
+          {messages.length > 0 && (
+            <button
+              type="button"
+              onClick={handleNewChat}
+              className="w-fit rounded-lg border border-foreground/20 px-3 py-1.5 font-medium text-foreground/70 text-xs transition-colors hover:bg-foreground/5 hover:text-foreground"
+            >
+              {t('newChat')}
+            </button>
+          )}
+          <AvailableDocuments documents={documents} />
+          <CostLatencyBar usages={usages} />
+        </aside>
+
+        <div className="flex min-w-0 flex-col gap-6">
+          <div className="flex flex-col gap-4">
+            {messages.length === 0 && <p className="text-foreground/60 text-sm">{t('empty')}</p>}
+
+            {messages.map((message, index) => {
+              const text = messageText(message);
+              // Suppress an assistant bubble that has no text yet — the typing
+              // indicator below stands in until the first token arrives.
+              if (message.role === 'assistant' && text.length === 0) {
+                return null;
+              }
+              const isUser = message.role === 'user';
+              // The question this answer responds to — the nearest preceding user
+              // turn — drives which passage sentence the citation panel highlights.
+              const queryMessage = isUser
+                ? undefined
+                : messages
+                    .slice(0, index)
+                    .filter((m) => m.role === 'user')
+                    .at(-1);
+              const query = queryMessage ? messageText(queryMessage) : '';
+              return (
+                <div key={message.id} className="flex flex-col gap-1">
+                  <span className="font-medium text-foreground/70 text-xs">
+                    {isUser ? t('you') : t('assistant')}
+                  </span>
+                  <div
+                    className={`rounded-xl border px-4 py-2.5 text-sm leading-relaxed ${
+                      isUser
+                        ? 'self-end whitespace-pre-wrap border-foreground/15 bg-foreground/5'
+                        : 'self-start border-foreground/10'
+                    }`}
+                  >
+                    {isUser ? (
+                      text
+                    ) : (
+                      <AssistantAnswer
+                        text={text}
+                        sources={message.metadata?.sources ?? []}
+                        query={query}
+                        onOpenCitation={(citation, q) => setActiveCitation({ citation, query: q })}
+                      />
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+
+            {awaitingAnswer && <TypingIndicator />}
+            {error &&
+              (errorVariant ? (
+                <ErrorState variant={errorVariant} onRetry={() => regenerate()} />
+              ) : (
+                <p className="text-red-500 text-sm">{t('errorGeneric')}</p>
+              ))}
+          </div>
+
+          <form onSubmit={handleSubmit} className="flex flex-col gap-2 sm:flex-row">
+            <input
+              type="text"
+              value={input}
+              onChange={(event) => setInput(event.target.value)}
+              placeholder={t('placeholder')}
+              aria-label={t('title')}
+              className="flex-1 rounded-lg border border-foreground/20 bg-transparent px-4 py-2.5 text-sm outline-none focus:border-foreground/50"
+            />
+            <button
+              type="submit"
+              disabled={busy || input.trim().length === 0}
+              className="rounded-lg bg-foreground px-5 py-2.5 font-medium text-background text-sm transition-opacity hover:opacity-90 disabled:opacity-50"
+            >
+              {busy ? t('thinking') : t('send')}
+            </button>
+          </form>
+
+          <p className="text-foreground/60 text-xs">{t('privacyNote')}</p>
         </div>
-      )}
-      <CostLatencyBar usages={usages} />
-      <div className="flex flex-col gap-4">
-        {messages.length === 0 && <p className="text-foreground/60 text-sm">{t('empty')}</p>}
-
-        {messages.map((message, index) => {
-          const text = messageText(message);
-          // Suppress an assistant bubble that has no text yet — the typing
-          // indicator below stands in until the first token arrives.
-          if (message.role === 'assistant' && text.length === 0) {
-            return null;
-          }
-          const isUser = message.role === 'user';
-          // The question this answer responds to — the nearest preceding user
-          // turn — drives which passage sentence the citation panel highlights.
-          const queryMessage = isUser
-            ? undefined
-            : messages
-                .slice(0, index)
-                .filter((m) => m.role === 'user')
-                .at(-1);
-          const query = queryMessage ? messageText(queryMessage) : '';
-          return (
-            <div key={message.id} className="flex flex-col gap-1">
-              <span className="font-medium text-foreground/70 text-xs">
-                {isUser ? t('you') : t('assistant')}
-              </span>
-              <div
-                className={`rounded-xl border px-4 py-2.5 text-sm leading-relaxed ${
-                  isUser
-                    ? 'self-end whitespace-pre-wrap border-foreground/15 bg-foreground/5'
-                    : 'self-start border-foreground/10'
-                }`}
-              >
-                {isUser ? (
-                  text
-                ) : (
-                  <AssistantAnswer
-                    text={text}
-                    sources={message.metadata?.sources ?? []}
-                    query={query}
-                    onOpenCitation={(citation, q) => setActiveCitation({ citation, query: q })}
-                  />
-                )}
-              </div>
-            </div>
-          );
-        })}
-
-        {awaitingAnswer && <TypingIndicator />}
-        {error &&
-          (errorVariant ? (
-            <ErrorState variant={errorVariant} onRetry={() => regenerate()} />
-          ) : (
-            <p className="text-red-500 text-sm">{t('errorGeneric')}</p>
-          ))}
       </div>
-
-      <form onSubmit={handleSubmit} className="flex flex-col gap-2 sm:flex-row">
-        <input
-          type="text"
-          value={input}
-          onChange={(event) => setInput(event.target.value)}
-          placeholder={t('placeholder')}
-          aria-label={t('title')}
-          className="flex-1 rounded-lg border border-foreground/20 bg-transparent px-4 py-2.5 text-sm outline-none focus:border-foreground/50"
-        />
-        <button
-          type="submit"
-          disabled={busy || input.trim().length === 0}
-          className="rounded-lg bg-foreground px-5 py-2.5 font-medium text-background text-sm transition-opacity hover:opacity-90 disabled:opacity-50"
-        >
-          {busy ? t('thinking') : t('send')}
-        </button>
-      </form>
-
-      <p className="text-foreground/60 text-xs">{t('privacyNote')}</p>
 
       <CitationPanel
         citation={activeCitation?.citation ?? null}
         query={activeCitation?.query ?? ''}
         onClose={() => setActiveCitation(null)}
       />
-    </div>
+    </>
   );
 }

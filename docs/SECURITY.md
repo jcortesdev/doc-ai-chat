@@ -34,18 +34,21 @@ The "Bring Your Own Key" pattern is the most sensitive area of the codebase: a u
 ### Key lifecycle
 
 ```
-1. User pastes their Anthropic key into /settings BYOK form
+1. User pastes their Anthropic key into the /account BYOK form
 2. Client validates format (sk-ant-...) without calling the network
 3. Client writes the key to sessionStorage under a single fixed key name
-4. From this point, every chat request:
+4. From this point, every chat / search / upload request:
      a. Reads the key from sessionStorage
      b. Sends it as the X-User-API-Key header (never in the body)
      c. Server reads the header inside the Route Handler
-     d. Server uses it to construct a one-off Anthropic client
+     d. Server uses it to construct a one-off Anthropic client (chat) or to waive
+        the free-tier trial gate (search / upload, which are project-paid)
      e. Server never persists, logs, or echoes the header value
      f. Server discards the client object at end-of-request
 5. User closes tab → sessionStorage cleared → key gone
-6. User can also manually "Clear key" from /settings
+6. Signed-in user changes (sign-out, or a different account in the same tab) → a
+   client session guard clears the key, so it can't leak to the next user
+7. User can also manually "Remove key" from /account
 ```
 
 ### Server-side enforcement
@@ -92,8 +95,8 @@ Every user (including anonymous) sees a "Delete now" button on every document. T
 | Chunks (text + embedding) | Neon Postgres | AES-256 at rest |
 | Usage events (model, tokens, cost, latency) | Neon Postgres | AES-256 at rest |
 | User account (name, email) | Clerk | Managed by Clerk |
-| BYOK API key | **Client only** (sessionStorage) | Browser-process memory; never persisted server-side |
-| Chat history | **Client only** (sessionStorage) + ephemeral request body | Sent with each request; not persisted server-side beyond the streamed response |
+| BYOK API key | **Client only** (sessionStorage; cleared on tab close or when the signed-in user changes) | Browser-process memory; never persisted server-side |
+| Chat history | **Client only** (localStorage, scoped per user id) + ephemeral request body | Sent with each request as history; never persisted server-side beyond the streamed response |
 
 ### Storage quota — R2 protection (ADR-012)
 

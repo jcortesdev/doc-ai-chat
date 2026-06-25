@@ -372,3 +372,23 @@ Default values per role live in private operational docs — they are intentiona
 - Per-environment pinning: dev can run on a cost-optimized provider, preview can mirror prod, prod can override for an A/B without code changes.
 - The price table inside `packages/providers` still needs a code update when a new model is added — that's the right boundary (cost math is code, model choice is config).
 - `.env.example` at the repo root lists the variable names with placeholder values only; real defaults are operational state, not source.
+
+---
+
+## ADR-017 — Pre-M5 UX/product polish
+
+**Status:** accepted, 2026-06-25
+
+**Context.** After M4 shipped and deployed, a round of smoke testing surfaced UX and product gaps that made the demo harder to read for a recruiter and trapped real testers. These are refinements on top of M1–M4, gathered into one PR before the M5 evals work.
+
+**Decisions.**
+- **Answer language follows the UI locale (prompt V2).** `PROMPT_RAG_ANSWER_V2` + `languageDirective(locale)` make a short/ambiguous question reply in the interface language instead of defaulting to English; a full question in another language still wins. V1 is kept verbatim for eval attribution (M5). The locale is threaded client → `/api/chat`.
+- **BYOK continues past the trial on upload and search, not just chat.** A trial-expired user with a key was fully blocked (couldn't chat without docs, couldn't upload to get docs). Upload/search embeddings + rerank are project-paid, so the project **budget kill switch still applies** to them — only the weekly trial lock is waived for BYOK. BYOK still shares the logged-in file/retention limits (it is not promoted to a distinct tier); its benefit is unlimited chat and continued access.
+- **`TRIAL_EXEMPT_EMAILS` allow-list.** A CSV env that waives the trial lock for specific testers without making them owners (they stay logged-in tier; daily quota + budget still apply). Managed in the deployment, no DB, reversible — the admin lever for "give this tester more time."
+- **Unified `/account` page; file management on the home page.** `/usage` + `/settings` redirect to `/account` (usage + BYOK); the upload dropzone and the "your files" list (with delete) live together on the home page. One nav link.
+- **Lightweight, client-only chat persistence.** The active conversation is kept in `localStorage`, **scoped per user id** so a different account on the same browser never sees it, with a "New chat" button and a privacy note. It never reaches the server (SECURITY.md). Full server-side conversation history is deliberately deferred — it is generic CRUD with low AI-engineering signal and a larger privacy surface.
+
+**Consequences.**
+- The reply-language fix is correctness, not eval-dependent, so it shipped now; M5 will still calibrate refusal/language scoring against V1 and V2.
+- BYOK is now a coherent "keep using the demo" path end-to-end, capped by the budget switch rather than the trial.
+- Chat persistence adds no schema and no server surface; the privacy story stays "your chats never touch our servers."

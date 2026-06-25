@@ -2,6 +2,7 @@
 
 import { ErrorState, type ErrorVariant } from '@/components/error-state';
 import { useRouter } from '@/i18n/navigation';
+import { BYOK_STORAGE_KEY } from '@/lib/byok';
 import { useTranslations } from 'next-intl';
 import { useRef, useState } from 'react';
 
@@ -34,9 +35,17 @@ export function PdfUploader() {
 
     setBusy(true);
     try {
+      // BYOK: forward the user's key (sessionStorage) so a trial-expired BYOK user
+      // can still upload. Read fresh each time; absent → free tier.
+      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+      const byokKey = window.sessionStorage.getItem(BYOK_STORAGE_KEY);
+      if (byokKey) {
+        headers['x-user-api-key'] = byokKey;
+      }
+
       const presign = await fetch('/api/uploads/presign', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers,
         body: JSON.stringify({
           filename: file.name,
           contentType: 'application/pdf',

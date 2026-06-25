@@ -1,6 +1,7 @@
 'use client';
 
 import { ErrorState, type ErrorVariant } from '@/components/error-state';
+import { BYOK_STORAGE_KEY } from '@/lib/byok';
 import { useTranslations } from 'next-intl';
 import { type FormEvent, useState } from 'react';
 
@@ -62,9 +63,16 @@ export function SearchBox() {
     setBusy(true);
     setError(null);
     try {
+      // BYOK: forward the user's key so a trial-expired BYOK user can still search.
+      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+      const byokKey = window.sessionStorage.getItem(BYOK_STORAGE_KEY);
+      if (byokKey) {
+        headers['x-user-api-key'] = byokKey;
+      }
+
       const res = await fetch('/api/search', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers,
         body: JSON.stringify({ query: trimmed }),
       });
       if (!res.ok) {

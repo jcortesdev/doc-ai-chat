@@ -1,5 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { checkProjectBudget } from '@/lib/budget';
+import { isValidAnthropicKey } from '@/lib/byok';
 import { getSignedUploadUrl } from '@/lib/r2';
 import { getTierLimits, isTrialExpired } from '@/lib/tiers';
 import { ensureWorkspace } from '@/lib/workspace';
@@ -50,11 +51,19 @@ export async function POST(request: Request) {
     email ?? `${userId}@users.noreply`,
   );
 
+  // BYOK users keep going past the free trial (they bring their own key for chat,
+  // and upload embeddings are cheap + still budget-capped below). Read from the
+  // header only, never the body; a malformed value is ignored (treated as no key).
+  const headerKey = request.headers.get('x-user-api-key')?.trim();
+  const isByok = Boolean(headerKey && isValidAnthropicKey(headerKey));
+
   // Free-tier gates uploads too, not just chat. Owners bypass (ADR-010).
   if (limits.tier !== 'privileged') {
-    if (isTrialExpired(userCreatedAt)) {
+    if (!isByok && isTrialExpired(userCreatedAt)) {
       return NextResponse.json({ error: 'weekly_lock' }, { status: 403 });
     }
+    // Voyage embeddings are project-paid even on BYOK uploads, so the kill switch
+    // still applies to every non-owner upload.
     if ((await checkProjectBudget()).over) {
       return NextResponse.json({ error: 'project_over_capacity' }, { status: 403 });
     }

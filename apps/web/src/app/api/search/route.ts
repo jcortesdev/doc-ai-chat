@@ -1,4 +1,5 @@
 import { checkProjectBudget } from '@/lib/budget';
+import { isValidAnthropicKey } from '@/lib/byok';
 import { hybridRetrieve } from '@/lib/hybrid-retrieve';
 import { isTrialExpired, resolveTier } from '@/lib/tiers';
 import { ensureWorkspace } from '@/lib/workspace';
@@ -31,9 +32,15 @@ export async function POST(request: Request) {
     // Tenant isolation: scope retrieval to the caller's own workspace.
     const { id: workspaceId, userCreatedAt } = await ensureWorkspace(userId, email);
 
+    // BYOK users keep going past the free trial (consistent with chat/upload).
+    // Voyage + Cohere are project-paid even on BYOK, so the budget gate still
+    // applies. Header only, never the body; a malformed value is ignored.
+    const headerKey = request.headers.get('x-user-api-key')?.trim();
+    const isByok = Boolean(headerKey && isValidAnthropicKey(headerKey));
+
     // Free-tier gates the whole free tier, not just chat. Owners bypass (ADR-010).
     if (resolveTier(email) !== 'privileged') {
-      if (isTrialExpired(userCreatedAt)) {
+      if (!isByok && isTrialExpired(userCreatedAt)) {
         return NextResponse.json({ error: 'weekly_lock' }, { status: 403 });
       }
       if ((await checkProjectBudget()).over) {

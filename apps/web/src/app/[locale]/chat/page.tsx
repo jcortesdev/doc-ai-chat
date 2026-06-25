@@ -25,7 +25,7 @@ export default async function ChatPage({ params }: Props) {
         </div>
         <p className="text-foreground/70 text-sm">{t('hint')}</p>
       </div>
-      <ChatBox documents={documents} />
+      <ChatBox documents={documents} userId={userId ?? ''} />
     </main>
   );
 }

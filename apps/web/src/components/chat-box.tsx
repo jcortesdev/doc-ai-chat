@@ -202,11 +202,15 @@ function TypingIndicator() {
 
 // Lightweight chat persistence (pre-M5): the active conversation is kept only in
 // the browser's localStorage — it never reaches our server (the privacy note says
-// so). Global per browser; "New chat" clears it.
-const CHAT_STORAGE_KEY = 'docai:chat';
+// so). Scoped per user so a different account on the same browser never sees it;
+// "New chat" clears it.
+function chatStorageKey(userId: string): string {
+  return `docai:chat:${userId}`;
+}
 
-export function ChatBox({ documents }: { documents: ReadyDocument[] }) {
+export function ChatBox({ documents, userId }: { documents: ReadyDocument[]; userId: string }) {
   const t = useTranslations('chat');
+  const storageKey = chatStorageKey(userId);
   const { messages, setMessages, sendMessage, status, error, regenerate } = useChat<ChatUIMessage>({
     transport,
   });
@@ -235,7 +239,7 @@ export function ChatBox({ documents }: { documents: ReadyDocument[] }) {
   // Load any saved conversation once on mount, then mark hydrated.
   useEffect(() => {
     try {
-      const stored = window.localStorage.getItem(CHAT_STORAGE_KEY);
+      const stored = window.localStorage.getItem(storageKey);
       if (stored) {
         setMessages(JSON.parse(stored) as ChatUIMessage[]);
       }
@@ -243,7 +247,7 @@ export function ChatBox({ documents }: { documents: ReadyDocument[] }) {
       // Corrupt/unreadable storage — start fresh.
     }
     setHydrated(true);
-  }, [setMessages]);
+  }, [setMessages, storageKey]);
 
   // Persist after each settled turn. Skip while streaming (avoids per-token writes)
   // and before hydration (avoids clobbering the saved chat with the initial empty state).
@@ -252,16 +256,16 @@ export function ChatBox({ documents }: { documents: ReadyDocument[] }) {
       return;
     }
     if (messages.length === 0) {
-      window.localStorage.removeItem(CHAT_STORAGE_KEY);
+      window.localStorage.removeItem(storageKey);
     } else {
-      window.localStorage.setItem(CHAT_STORAGE_KEY, JSON.stringify(messages));
+      window.localStorage.setItem(storageKey, JSON.stringify(messages));
     }
-  }, [messages, busy, hydrated]);
+  }, [messages, busy, hydrated, storageKey]);
 
   function handleNewChat() {
     setMessages([]);
     setActiveCitation(null);
-    window.localStorage.removeItem(CHAT_STORAGE_KEY);
+    window.localStorage.removeItem(storageKey);
   }
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {

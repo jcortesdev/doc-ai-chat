@@ -44,6 +44,21 @@ export function getTierLimits(email: string | null): TierLimits {
   return { tier, ...LIMITS[tier] };
 }
 
+// Emails granted an open-ended trial (no weekly_lock) without becoming owners —
+// for letting specific testers keep evaluating the demo past the 7 days. They
+// stay on the logged_in tier (the daily quota + budget still apply); only the
+// trial expiry is waived. Comma-separated env, managed in the deployment.
+export function isTrialExempt(email: string | null): boolean {
+  if (!email) {
+    return false;
+  }
+  const exempt = (process.env.TRIAL_EXEMPT_EMAILS ?? '')
+    .split(',')
+    .map((entry) => entry.trim().toLowerCase())
+    .filter(Boolean);
+  return exempt.includes(email.toLowerCase());
+}
+
 const DAY_MS = 24 * 60 * 60 * 1000;
 
 // Length of the logged-in free trial (ADR-009): free access (chat 10/day, search,

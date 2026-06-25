@@ -1,6 +1,6 @@
 import { db } from '@doc-ai-chat/db/client';
 import { documents, workspaces } from '@doc-ai-chat/db/schema';
-import { eq } from 'drizzle-orm';
+import { and, desc, eq, sql } from 'drizzle-orm';
 
 export type DocumentStatus = {
   id: string;
@@ -12,6 +12,26 @@ export type DocumentStatus = {
   latencyMs: number | null;
   pageCount: number | null;
   errorVariant: string | null;
+};
+
+// One row in the "your files" list (pre-M5). Counters come straight from the
+// ingest run; `expiresAt` is the per-tier retention deadline (ADR-012).
+export type DocumentListItem = {
+  id: string;
+  filename: string;
+  status: string;
+  pageCount: number | null;
+  chunkCount: number;
+  costUsd: string;
+  createdAt: Date;
+  expiresAt: Date;
+};
+
+// A ready-to-query document, shown read-only on chat/search so the user knows
+// what they can ask about.
+export type ReadyDocument = {
+  id: string;
+  filename: string;
 };
 
 // Fetches a document only if it belongs to the caller's workspace (tenant
@@ -81,4 +101,55 @@ export async function getOwnedDocumentForPdf(
   }
 
   return { r2Key: doc.r2Key, filename: doc.filename };
+}
+
+// Lists a workspace's documents, newest first (tenant isolation: the caller
+// resolves the workspace from the Clerk session, never from client input).
+export async function listWorkspaceDocuments(workspaceId: string): Promise<DocumentListItem[]> {
+  return db.query.documents.findMany({
+    where: eq(documents.workspaceId, workspaceId),
+    columns: {
+      id: true,
+      filename: true,
+      status: true,
+      pageCount: true,
+      chunkCount: true,
+      costUsd: true,
+      createdAt: true,
+      expiresAt: true,
+    },
+    orderBy: (doc, { desc }) => [desc(doc.createdAt)],
+  });
+}
+
+// Deletes a document row; its chunks cascade (FK onDelete: 'cascade'). Ownership
+// is checked by the caller via getOwnedDocumentForPdf before this runs, so this
+// takes only the id. The R2 object is deleted separately (deleteObject).
+export async function deleteDocumentRow(id: string): Promise<void> {
+  await db.delete(documents).where(eq(documents.id, id));
+}
+
+// Counts the user's documents that finished ingesting ('ready') — the topbar uses
+// it to gate Chat/Search (you can only ask about ready documents). Joins by
+// workspace owner so a brand-new user with no workspace yet just counts zero, no
+// upsert on every page render.
+export async function countReadyDocumentsForUser(userId: string): Promise<number> {
+  const rows = await db
+    .select({ n: sql<number>`count(*)::int` })
+    .from(documents)
+    .innerJoin(workspaces, eq(documents.workspaceId, workspaces.id))
+    .where(and(eq(workspaces.ownerId, userId), eq(documents.status, 'ready')));
+  return rows[0]?.n ?? 0;
+}
+
+// Lists the user's ready documents (id + filename, newest first) for the
+// read-only "you can ask about these" hint on chat/search. Same owner-join as the
+// count so it never needs a workspace upsert.
+export async function listReadyDocumentsForUser(userId: string): Promise<ReadyDocument[]> {
+  return db
+    .select({ id: documents.id, filename: documents.filename })
+    .from(documents)
+    .innerJoin(workspaces, eq(documents.workspaceId, workspaces.id))
+    .where(and(eq(workspaces.ownerId, userId), eq(documents.status, 'ready')))
+    .orderBy(desc(documents.createdAt));
 }

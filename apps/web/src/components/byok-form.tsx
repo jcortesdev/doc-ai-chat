@@ -57,7 +57,7 @@ export function ByokForm() {
           </button>
         </div>
       ) : (
-        <form onSubmit={handleSave} className="flex flex-col gap-2 sm:flex-row">
+        <form onSubmit={handleSave} className="flex flex-col gap-2">
           <input
             type="password"
             value={input}

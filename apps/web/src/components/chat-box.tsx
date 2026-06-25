@@ -1,15 +1,17 @@
 'use client';
 
+import { AvailableDocuments } from '@/components/available-documents';
 import { CitationPanel } from '@/components/citation-panel';
 import { type ChatUsage, CostLatencyBar } from '@/components/cost-latency-bar';
 import { ErrorState, type ErrorVariant } from '@/components/error-state';
 import { BYOK_STORAGE_KEY } from '@/lib/byok';
+import type { ReadyDocument } from '@/lib/documents';
 import { rehypeCitations } from '@/lib/rehype-citations';
 import { useChat } from '@ai-sdk/react';
 import type { Citation, CitationSource } from '@doc-ai-chat/prompts/rag-answer';
 import { DefaultChatTransport, type UIMessage } from 'ai';
 import { useTranslations } from 'next-intl';
-import { type FormEvent, useState } from 'react';
+import { type FormEvent, useEffect, useState } from 'react';
 import Markdown, { type Components } from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
@@ -79,16 +81,21 @@ const transport = new DefaultChatTransport<ChatUIMessage>({
         (message) =>
           (message.role === 'user' || message.role === 'assistant') && message.content.length > 0,
       );
-    return { body: { message: last ? messageText(last) : '', history } };
+    // The active UI locale (the layout sets <html lang>) — sent so an ambiguous
+    // question replies in the interface language (prompt V2).
+    const locale = typeof document !== 'undefined' ? document.documentElement.lang : 'en';
+    return { body: { message: last ? messageText(last) : '', history, locale } };
   },
 });
 
 function CitationChip({
   citation,
+  query,
   onOpen,
 }: {
   citation: Citation;
-  onOpen: (citation: Citation) => void;
+  query: string;
+  onOpen: (citation: Citation, query: string) => void;
 }) {
   const t = useTranslations('chat');
   const aria =
@@ -98,7 +105,7 @@ function CitationChip({
   return (
     <button
       type="button"
-      onClick={() => onOpen(citation)}
+      onClick={() => onOpen(citation, query)}
       title={aria}
       aria-label={aria}
       className="mx-0.5 inline-flex cursor-pointer select-none items-center rounded border border-foreground/25 px-1 align-super font-medium text-[10px] text-foreground/70 transition-colors hover:bg-foreground/10"
@@ -114,11 +121,13 @@ function CitationChip({
 function AssistantAnswer({
   text,
   sources,
+  query,
   onOpenCitation,
 }: {
   text: string;
   sources: CitationSource[];
-  onOpenCitation: (citation: Citation) => void;
+  query: string;
+  onOpenCitation: (citation: Citation, query: string) => void;
 }) {
   const components: Components = {
     cite: ({ node }) => {
@@ -126,7 +135,7 @@ function AssistantAnswer({
       const label = Number(raw);
       const source = Number.isInteger(label) ? sources[label - 1] : undefined;
       return source ? (
-        <CitationChip citation={{ label, ...source }} onOpen={onOpenCitation} />
+        <CitationChip citation={{ label, ...source }} query={query} onOpen={onOpenCitation} />
       ) : (
         <>{`[${raw ?? ''}]`}</>
       );
@@ -191,13 +200,30 @@ function TypingIndicator() {
   );
 }
 
-export function ChatBox() {
+// Lightweight chat persistence (pre-M5): the active conversation is kept only in
+// the browser's localStorage — it never reaches our server (the privacy note says
+// so). Scoped per user so a different account on the same browser never sees it;
+// "New chat" clears it.
+function chatStorageKey(userId: string): string {
+  return `docai:chat:${userId}`;
+}
+
+export function ChatBox({ documents, userId }: { documents: ReadyDocument[]; userId: string }) {
   const t = useTranslations('chat');
-  const { messages, sendMessage, status, error, regenerate } = useChat<ChatUIMessage>({
+  const storageKey = chatStorageKey(userId);
+  const { messages, setMessages, sendMessage, status, error, regenerate } = useChat<ChatUIMessage>({
     transport,
   });
   const [input, setInput] = useState('');
-  const [activeCitation, setActiveCitation] = useState<Citation | null>(null);
+  // Hydrate from localStorage once before persisting, so the initial empty state
+  // doesn't wipe a saved conversation (same effect-reads-storage pattern as byok-form).
+  const [hydrated, setHydrated] = useState(false);
+  // The open citation plus the question it answered — the panel highlights the
+  // passage sentence that best matches that question.
+  const [activeCitation, setActiveCitation] = useState<{
+    citation: Citation;
+    query: string;
+  } | null>(null);
   const busy = status === 'submitted' || status === 'streaming';
   const errorVariant = mapChatError(error);
   const usages = messages
@@ -210,6 +236,38 @@ export function ChatBox() {
       lastMessage.role !== 'assistant' ||
       messageText(lastMessage).trim().length === 0);
 
+  // Load any saved conversation once on mount, then mark hydrated.
+  useEffect(() => {
+    try {
+      const stored = window.localStorage.getItem(storageKey);
+      if (stored) {
+        setMessages(JSON.parse(stored) as ChatUIMessage[]);
+      }
+    } catch {
+      // Corrupt/unreadable storage — start fresh.
+    }
+    setHydrated(true);
+  }, [setMessages, storageKey]);
+
+  // Persist after each settled turn. Skip while streaming (avoids per-token writes)
+  // and before hydration (avoids clobbering the saved chat with the initial empty state).
+  useEffect(() => {
+    if (!hydrated || busy) {
+      return;
+    }
+    if (messages.length === 0) {
+      window.localStorage.removeItem(storageKey);
+    } else {
+      window.localStorage.setItem(storageKey, JSON.stringify(messages));
+    }
+  }, [messages, busy, hydrated, storageKey]);
+
+  function handleNewChat() {
+    setMessages([]);
+    setActiveCitation(null);
+    window.localStorage.removeItem(storageKey);
+  }
+
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const text = input.trim();
@@ -221,73 +279,111 @@ export function ChatBox() {
   }
 
   return (
-    <div className="flex w-full flex-col gap-6">
-      <CostLatencyBar usages={usages} />
-      <div className="flex flex-col gap-4">
-        {messages.length === 0 && <p className="text-foreground/60 text-sm">{t('empty')}</p>}
+    <>
+      {/* Two-column on large screens: a sticky aside (controls + context + live
+          metrics) so the width is actually used, with the conversation kept at a
+          readable column. Below xl everything stacks (aside collapses on top). */}
+      <div className="grid grid-cols-1 gap-6 xl:grid-cols-[260px_minmax(0,1fr)] xl:gap-8">
+        <aside className="flex flex-col gap-4 xl:sticky xl:top-6 xl:self-start">
+          {messages.length > 0 && (
+            <button
+              type="button"
+              onClick={handleNewChat}
+              className="w-fit rounded-lg border border-foreground/20 px-3 py-1.5 font-medium text-foreground/70 text-xs transition-colors hover:bg-foreground/5 hover:text-foreground"
+            >
+              {t('newChat')}
+            </button>
+          )}
+          <AvailableDocuments documents={documents} />
+          <CostLatencyBar usages={usages} />
+        </aside>
 
-        {messages.map((message) => {
-          const text = messageText(message);
-          // Suppress an assistant bubble that has no text yet — the typing
-          // indicator below stands in until the first token arrives.
-          if (message.role === 'assistant' && text.length === 0) {
-            return null;
-          }
-          const isUser = message.role === 'user';
-          return (
-            <div key={message.id} className="flex flex-col gap-1">
-              <span className="font-medium text-foreground/70 text-xs">
-                {isUser ? t('you') : t('assistant')}
-              </span>
-              <div
-                className={`rounded-xl border px-4 py-2.5 text-sm leading-relaxed ${
-                  isUser
-                    ? 'self-end whitespace-pre-wrap border-foreground/15 bg-foreground/5'
-                    : 'self-start border-foreground/10'
-                }`}
-              >
-                {isUser ? (
-                  text
-                ) : (
-                  <AssistantAnswer
-                    text={text}
-                    sources={message.metadata?.sources ?? []}
-                    onOpenCitation={setActiveCitation}
-                  />
-                )}
-              </div>
-            </div>
-          );
-        })}
+        <div className="flex min-w-0 flex-col gap-6">
+          <div className="flex flex-col gap-4">
+            {messages.length === 0 && <p className="text-foreground/60 text-sm">{t('empty')}</p>}
 
-        {awaitingAnswer && <TypingIndicator />}
-        {error &&
-          (errorVariant ? (
-            <ErrorState variant={errorVariant} onRetry={() => regenerate()} />
-          ) : (
-            <p className="text-red-500 text-sm">{t('errorGeneric')}</p>
-          ))}
+            {messages.map((message, index) => {
+              const text = messageText(message);
+              // Suppress an assistant bubble that has no text yet — the typing
+              // indicator below stands in until the first token arrives.
+              if (message.role === 'assistant' && text.length === 0) {
+                return null;
+              }
+              const isUser = message.role === 'user';
+              // The question this answer responds to — the nearest preceding user
+              // turn — drives which passage sentence the citation panel highlights.
+              const queryMessage = isUser
+                ? undefined
+                : messages
+                    .slice(0, index)
+                    .filter((m) => m.role === 'user')
+                    .at(-1);
+              const query = queryMessage ? messageText(queryMessage) : '';
+              return (
+                <div key={message.id} className="flex flex-col gap-1">
+                  <span
+                    className={`font-medium text-foreground/70 text-xs ${isUser ? 'self-end' : 'self-start'}`}
+                  >
+                    {isUser ? t('you') : t('assistant')}
+                  </span>
+                  <div
+                    className={`rounded-xl border px-4 py-2.5 text-sm leading-relaxed ${
+                      isUser
+                        ? 'self-end whitespace-pre-wrap border-foreground/15 bg-foreground/5'
+                        : 'self-start border-foreground/10'
+                    }`}
+                  >
+                    {isUser ? (
+                      text
+                    ) : (
+                      <AssistantAnswer
+                        text={text}
+                        sources={message.metadata?.sources ?? []}
+                        query={query}
+                        onOpenCitation={(citation, q) => setActiveCitation({ citation, query: q })}
+                      />
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+
+            {awaitingAnswer && <TypingIndicator />}
+            {error &&
+              (errorVariant ? (
+                <ErrorState variant={errorVariant} onRetry={() => regenerate()} />
+              ) : (
+                <p className="text-red-500 text-sm">{t('errorGeneric')}</p>
+              ))}
+          </div>
+
+          <form onSubmit={handleSubmit} className="flex flex-col gap-2 sm:flex-row">
+            <input
+              type="text"
+              value={input}
+              onChange={(event) => setInput(event.target.value)}
+              placeholder={t('placeholder')}
+              aria-label={t('title')}
+              className="flex-1 rounded-lg border border-foreground/20 bg-transparent px-4 py-2.5 text-sm outline-none focus:border-foreground/50"
+            />
+            <button
+              type="submit"
+              disabled={busy || input.trim().length === 0}
+              className="rounded-lg bg-foreground px-5 py-2.5 font-medium text-background text-sm transition-opacity hover:opacity-90 disabled:opacity-50"
+            >
+              {busy ? t('thinking') : t('send')}
+            </button>
+          </form>
+
+          <p className="text-foreground/60 text-xs">{t('privacyNote')}</p>
+        </div>
       </div>
 
-      <form onSubmit={handleSubmit} className="flex flex-col gap-2 sm:flex-row">
-        <input
-          type="text"
-          value={input}
-          onChange={(event) => setInput(event.target.value)}
-          placeholder={t('placeholder')}
-          aria-label={t('title')}
-          className="flex-1 rounded-lg border border-foreground/20 bg-transparent px-4 py-2.5 text-sm outline-none focus:border-foreground/50"
-        />
-        <button
-          type="submit"
-          disabled={busy || input.trim().length === 0}
-          className="rounded-lg bg-foreground px-5 py-2.5 font-medium text-background text-sm transition-opacity hover:opacity-90 disabled:opacity-50"
-        >
-          {busy ? t('thinking') : t('send')}
-        </button>
-      </form>
-
-      <CitationPanel citation={activeCitation} onClose={() => setActiveCitation(null)} />
-    </div>
+      <CitationPanel
+        citation={activeCitation?.citation ?? null}
+        query={activeCitation?.query ?? ''}
+        onClose={() => setActiveCitation(null)}
+      />
+    </>
   );
 }

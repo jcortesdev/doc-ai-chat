@@ -1,8 +1,10 @@
 'use client';
 
 import { ErrorState } from '@/components/error-state';
+import { Link } from '@/i18n/navigation';
 import type { DocumentStatus } from '@/lib/documents';
 import { useTranslations } from 'next-intl';
+import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
 const TERMINAL_STATUSES = new Set(['ready', 'failed']);
@@ -32,6 +34,7 @@ function Metric({ label, value }: { label: string; value: string }) {
 
 export function IngestStatus({ initial }: { initial: DocumentStatus }) {
   const t = useTranslations('ingest');
+  const router = useRouter();
   const [doc, setDoc] = useState(initial);
   const [timedOut, setTimedOut] = useState(false);
 
@@ -73,6 +76,12 @@ export function IngestStatus({ initial }: { initial: DocumentStatus }) {
           }
           setDoc(next);
           if (TERMINAL_STATUSES.has(next.status)) {
+            // A freshly-ready document flips the topbar's Chat/Search gate — refresh
+            // the server components (the topbar lives in the layout) so the nav
+            // enables without the user having to navigate away and back.
+            if (next.status === 'ready') {
+              router.refresh();
+            }
             return;
           }
         }
@@ -88,7 +97,7 @@ export function IngestStatus({ initial }: { initial: DocumentStatus }) {
       cancelled = true;
       clearTimeout(timer);
     };
-  }, [doc.id, doc.status]);
+  }, [doc.id, doc.status, router]);
 
   const latencyPerChunk =
     doc.latencyMs !== null && doc.chunkCount > 0
@@ -121,6 +130,21 @@ export function IngestStatus({ initial }: { initial: DocumentStatus }) {
           </span>
         )}
       </div>
+
+      {doc.status === 'ready' && (
+        <div className="flex flex-col gap-3 rounded-xl border border-foreground/10 bg-foreground/[0.03] p-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex flex-col gap-0.5">
+            <span className="font-semibold text-sm">{t('readyTitle')}</span>
+            <span className="text-foreground/70 text-xs">{t('readyHint')}</span>
+          </div>
+          <Link
+            href="/chat"
+            className="inline-flex w-fit shrink-0 items-center rounded-lg bg-foreground px-4 py-2 font-medium text-background text-sm transition-opacity hover:opacity-90"
+          >
+            {t('readyCta')}
+          </Link>
+        </div>
+      )}
 
       {doc.status === 'failed' ? (
         doc.errorVariant === 'processing_timeout' ? (

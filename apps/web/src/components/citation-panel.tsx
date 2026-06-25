@@ -1,8 +1,12 @@
 'use client';
 
-import { type Citation, citationSearchPhrase } from '@doc-ai-chat/prompts/rag-answer';
+import {
+  type Citation,
+  bestMatchingSpan,
+  citationSearchPhrase,
+} from '@doc-ai-chat/prompts/rag-answer';
 import { useTranslations } from 'next-intl';
-import { type MouseEvent, useEffect, useRef } from 'react';
+import { type MouseEvent, useEffect, useMemo, useRef } from 'react';
 
 // Builds the same-origin proxy URL with the native PDF viewer's deep-link
 // fragment. `#page=N` jumps to the page in every browser's PDF viewer (the
@@ -24,13 +28,24 @@ function pdfUrl(citation: Citation): string {
 
 export function CitationPanel({
   citation,
+  query,
   onClose,
 }: {
   citation: Citation | null;
+  query: string;
   onClose: () => void;
 }) {
   const t = useTranslations('chat');
   const dialogRef = useRef<HTMLDialogElement>(null);
+  const markRef = useRef<HTMLElement>(null);
+
+  // The passage sentence that best matches the question, as a character range
+  // into the passage. We highlight just that span — our own HTML, so it works in
+  // every browser and on mobile (unlike the native PDF viewer's Text Fragment).
+  const span = useMemo(
+    () => (citation ? bestMatchingSpan(citation.content, query) : null),
+    [citation, query],
+  );
 
   // Drive the native <dialog> from the `citation` prop. showModal() gives focus
   // trapping + Esc handling for free; `cancel`/`close` events report back up.
@@ -43,6 +58,14 @@ export function CitationPanel({
       dialog.showModal();
     } else if (!citation && dialog.open) {
       dialog.close();
+    }
+  }, [citation]);
+
+  // Scroll the highlighted sentence into view when the panel opens, so a long
+  // passage lands on the cited span rather than at the top.
+  useEffect(() => {
+    if (citation && markRef.current) {
+      markRef.current.scrollIntoView({ block: 'center' });
     }
   }, [citation]);
 
@@ -83,7 +106,17 @@ export function CitationPanel({
           <div className="flex flex-col gap-2">
             <span className="font-medium text-foreground/70 text-xs">{t('sourcePassage')}</span>
             <blockquote className="whitespace-pre-wrap rounded-lg border border-foreground/10 border-l-2 border-l-foreground/40 bg-foreground/5 p-4 text-foreground/80 text-sm leading-relaxed">
-              {citation.content}
+              {span ? (
+                <>
+                  {citation.content.slice(0, span.start)}
+                  <mark ref={markRef} className="rounded bg-yellow-200/80 px-0.5 text-neutral-900">
+                    {citation.content.slice(span.start, span.end)}
+                  </mark>
+                  {citation.content.slice(span.end)}
+                </>
+              ) : (
+                citation.content
+              )}
             </blockquote>
           </div>
 

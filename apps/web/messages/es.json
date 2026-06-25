@@ -4,14 +4,24 @@
     "subtitle": "Chat RAG sobre tus PDFs — con citas, control de costos y evals que podés ver de verdad.",
     "footer": "Un proyecto de portafolio de Josue Cortes.",
     "localeLabel": "Cambiar idioma",
-    "signInToUpload": "Iniciá sesión para subir un PDF."
+    "signInToUpload": "Iniciá sesión para subir un PDF.",
+    "help": "DocAI le permite subir un PDF y luego chatear con él. Suba un documento; una vez ingestado, puede hacer preguntas y obtener respuestas basadas en su texto, con citas a la página.",
+    "disclaimer": "Usted es responsable de tener los derechos del contenido que sube. Demo de portafolio.",
+    "termsLink": "Términos"
   },
   "nav": {
     "signIn": "Iniciar sesión",
     "search": "Búsqueda",
     "chat": "Chat",
-    "usage": "Uso",
-    "settings": "Ajustes"
+    "account": "Cuenta",
+    "uploadFirst": "Debe subir un documento primero"
+  },
+  "banner": {
+    "message": "Demo en construcción — algunas funciones todavía se están construyendo.",
+    "dismiss": "Cerrar este aviso"
+  },
+  "help": {
+    "summary": "¿Qué hace esta página?"
   },
   "chat": {
     "title": "Chat",
@@ -32,8 +42,11 @@
     "openPdf": "Abrir PDF (página {page})",
     "openPdfNoPage": "Abrir PDF",
     "close": "Cerrar",
+    "newChat": "Nuevo chat",
+    "privacyNote": "Su historial de chat se guarda solo en este navegador, nunca en nuestros servidores.",
     "pdfError": "No se pudo abrir el PDF.",
-    "pdfHighlightNote": "Salta a la página citada. El resaltado dentro del PDF funciona en Chrome, Edge y otros navegadores Chromium."
+    "pdfHighlightNote": "El pasaje citado se resalta arriba. Al abrir el PDF salta a la página; el resaltado dentro del PDF funciona en Chrome, Edge y otros navegadores Chromium.",
+    "help": "Haga preguntas en lenguaje natural sobre sus PDFs ingestados. Las respuestas salen solo de los pasajes recuperados e incluyen citas: haga clic en una para ver el texto exacto y abrir el PDF en esa página."
   },
   "search": {
     "title": "Búsqueda",
@@ -51,7 +64,8 @@
       "rrf": "RRF",
       "cosine": "Cosine",
       "bm25": "BM25"
-    }
+    },
+    "help": "Busque en sus PDFs sin el LLM — esto muestra el retrieval crudo: los mejores pasajes con sus scores cosine, BM25, RRF y reranker, para ver qué tan relevante es cada coincidencia."
   },
   "upload": {
     "cta": "Suelta un archivo PDF acá o haz clic para subirlo",
@@ -65,6 +79,9 @@
     "processingHint": "Esto se actualiza solo.",
     "timeoutHint": "Sigue procesando — recargá para chequear.",
     "failedTimeout": "Esta subida expiró antes de terminar de procesarse. Probá subirla de nuevo.",
+    "readyTitle": "Listo para chatear",
+    "readyHint": "Su documento está ingestado. Ya puede hacer preguntas sobre él y obtener respuestas con citas.",
+    "readyCta": "Chatear con este documento",
     "status": {
       "uploading": "Subiendo",
       "processing": "Procesando",
@@ -107,6 +124,40 @@
     "active": "Key activa:",
     "invalid": "Eso no parece una key de Anthropic (debería empezar con «sk-ant-»).",
     "securityNote": "Se guarda solo en esta pestaña del navegador (sessionStorage), se envía con cada request y se borra al cerrar la pestaña. Nunca la guardamos ni la logueamos."
+  },
+  "account": {
+    "title": "Cuenta",
+    "hint": "Su uso, su API key y sus archivos.",
+    "hintOwner": "Uso de todo el proyecto, su API key y sus archivos.",
+    "usageTitle": "Uso",
+    "help": "Revise su uso (costo, llamadas, latencia) y agregue su propia API key de Anthropic para saltarse los límites del free-tier. Sus archivos los administra desde el inicio."
+  },
+  "files": {
+    "title": "Sus archivos",
+    "hint": "PDFs que subió. La acción Borrar, elimina el archivo y todo lo indexado de él.",
+    "empty": "Todavía no subió ningún PDF.",
+    "pages": "{count, plural, one {# página} other {# páginas}}",
+    "expires": "vence {date}",
+    "delete": "Borrar",
+    "confirm": "Confirmar",
+    "cancel": "Cancelar",
+    "deleting": "Borrando…",
+    "deleteError": "No se pudo borrar el archivo. Intente de nuevo."
+  },
+  "documents": {
+    "available": "Documentos sobre los que puede preguntar"
+  },
+  "terms": {
+    "title": "Términos y datos",
+    "intro": "DocAI es un demo de portafolio, no un servicio de producción. Al usarlo, usted acepta los puntos de abajo.",
+    "contentTitle": "Responsabilidad del contenido",
+    "contentBody": "Usted es responsable de tener los derechos de cualquier PDF que suba. No suba material confidencial, personal o con derechos de autor que no pueda compartir.",
+    "dataTitle": "Manejo de datos",
+    "dataBody": "Su historial de chat se guarda solo en su navegador (localStorage), nunca en nuestros servidores. Los PDFs que sube se almacenan para permitir la búsqueda y se eliminan tras un período de retención que depende de su plan, o apenas usted los borra.",
+    "warrantyTitle": "Sin garantías",
+    "warrantyBody": "Las respuestas las genera una IA a partir de sus documentos y pueden ser inexactas o incompletas. El demo se ofrece tal cual, sin garantías, y puede cambiar o quedar fuera de línea en cualquier momento.",
+    "contactTitle": "Contacto",
+    "contactBody": "¿Preguntas sobre el demo? Escríbanos."
   },
   "errors": {
     "cta": {

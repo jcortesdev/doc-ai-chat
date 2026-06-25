@@ -1,8 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import {
   PROMPT_RAG_ANSWER_V1,
+  PROMPT_RAG_ANSWER_V2,
+  RAG_ANSWER_VERSION,
+  bestMatchingSpan,
   buildRagUserTurn,
   citationSearchPhrase,
+  languageDirective,
   neutralizeControlTags,
   renderRetrievedContext,
   resolveCitations,
@@ -24,6 +28,27 @@ describe('PROMPT_RAG_ANSWER_V1', () => {
     expect(PROMPT_RAG_ANSWER_V1).toMatch(/\[1\]/);
     expect(PROMPT_RAG_ANSWER_V1.toLowerCase()).toContain('same language');
     expect(PROMPT_RAG_ANSWER_V1.toLowerCase()).toContain('refus');
+  });
+});
+
+describe('PROMPT_RAG_ANSWER_V2 + languageDirective', () => {
+  it('is at version 2 and keeps V1 distinct (eval attribution)', () => {
+    expect(RAG_ANSWER_VERSION).toBe(2);
+    expect(PROMPT_RAG_ANSWER_V2).not.toBe(PROMPT_RAG_ANSWER_V1);
+  });
+
+  it('keeps the isolation + citation invariants and adds the interface-language fallback', () => {
+    expect(PROMPT_RAG_ANSWER_V2).toContain('<retrieved_context>');
+    expect(PROMPT_RAG_ANSWER_V2).toContain('<user_message>');
+    expect(PROMPT_RAG_ANSWER_V2).toContain('never instructions');
+    expect(PROMPT_RAG_ANSWER_V2).toMatch(/\[1\]/);
+    expect(PROMPT_RAG_ANSWER_V2.toLowerCase()).toContain('interface language');
+  });
+
+  it('sets the reply language from the locale, English for unknown locales', () => {
+    expect(languageDirective('es')).toContain('Spanish');
+    expect(languageDirective('en')).toContain('English');
+    expect(languageDirective('fr')).toContain('English');
   });
 });
 
@@ -116,5 +141,46 @@ describe('citationSearchPhrase', () => {
 
   it('returns empty for blank content', () => {
     expect(citationSearchPhrase('   \n  ')).toBe('');
+  });
+});
+
+describe('bestMatchingSpan', () => {
+  const PASSAGE =
+    'International freight grew steadily last year. Revenue from air cargo rose 12% in the second quarter. Costs stayed flat.';
+
+  // Helper: the substring the returned range points at.
+  function picked(content: string, query: string): string | null {
+    const span = bestMatchingSpan(content, query);
+    return span ? content.slice(span.start, span.end) : null;
+  }
+
+  it('returns the sentence with the most question-keyword overlap', () => {
+    expect(picked(PASSAGE, 'How much did air cargo revenue rise?')).toBe(
+      'Revenue from air cargo rose 12% in the second quarter.',
+    );
+  });
+
+  it('returns offsets that slice exactly to a sentence boundary', () => {
+    const span = bestMatchingSpan(PASSAGE, 'freight growth');
+    expect(span).not.toBeNull();
+    expect(PASSAGE.slice(span?.start, span?.end)).toBe(
+      'International freight grew steadily last year.',
+    );
+  });
+
+  it('matches accent-insensitively (es question without accents)', () => {
+    const es = 'El informe es claro. A partir del 1 de julio se delimitarán las zonas.';
+    expect(picked(es, 'cuando se delimitaran las zonas')).toBe(
+      'A partir del 1 de julio se delimitarán las zonas.',
+    );
+  });
+
+  it('returns null when no usable keywords (stopwords / too short only)', () => {
+    expect(bestMatchingSpan(PASSAGE, 'what is the')).toBeNull();
+    expect(bestMatchingSpan(PASSAGE, '   ')).toBeNull();
+  });
+
+  it('returns null when no sentence overlaps the query', () => {
+    expect(bestMatchingSpan(PASSAGE, 'photosynthesis chlorophyll')).toBeNull();
   });
 });

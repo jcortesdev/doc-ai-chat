@@ -9,7 +9,7 @@ import { useChat } from '@ai-sdk/react';
 import type { Citation, CitationSource } from '@doc-ai-chat/prompts/rag-answer';
 import { DefaultChatTransport, type UIMessage } from 'ai';
 import { useTranslations } from 'next-intl';
-import { type FormEvent, useState } from 'react';
+import { type FormEvent, useEffect, useState } from 'react';
 import Markdown, { type Components } from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
@@ -198,12 +198,20 @@ function TypingIndicator() {
   );
 }
 
+// Lightweight chat persistence (pre-M5): the active conversation is kept only in
+// the browser's localStorage — it never reaches our server (the privacy note says
+// so). Global per browser; "New chat" clears it.
+const CHAT_STORAGE_KEY = 'docai:chat';
+
 export function ChatBox() {
   const t = useTranslations('chat');
-  const { messages, sendMessage, status, error, regenerate } = useChat<ChatUIMessage>({
+  const { messages, setMessages, sendMessage, status, error, regenerate } = useChat<ChatUIMessage>({
     transport,
   });
   const [input, setInput] = useState('');
+  // Hydrate from localStorage once before persisting, so the initial empty state
+  // doesn't wipe a saved conversation (same effect-reads-storage pattern as byok-form).
+  const [hydrated, setHydrated] = useState(false);
   // The open citation plus the question it answered — the panel highlights the
   // passage sentence that best matches that question.
   const [activeCitation, setActiveCitation] = useState<{
@@ -222,6 +230,38 @@ export function ChatBox() {
       lastMessage.role !== 'assistant' ||
       messageText(lastMessage).trim().length === 0);
 
+  // Load any saved conversation once on mount, then mark hydrated.
+  useEffect(() => {
+    try {
+      const stored = window.localStorage.getItem(CHAT_STORAGE_KEY);
+      if (stored) {
+        setMessages(JSON.parse(stored) as ChatUIMessage[]);
+      }
+    } catch {
+      // Corrupt/unreadable storage — start fresh.
+    }
+    setHydrated(true);
+  }, [setMessages]);
+
+  // Persist after each settled turn. Skip while streaming (avoids per-token writes)
+  // and before hydration (avoids clobbering the saved chat with the initial empty state).
+  useEffect(() => {
+    if (!hydrated || busy) {
+      return;
+    }
+    if (messages.length === 0) {
+      window.localStorage.removeItem(CHAT_STORAGE_KEY);
+    } else {
+      window.localStorage.setItem(CHAT_STORAGE_KEY, JSON.stringify(messages));
+    }
+  }, [messages, busy, hydrated]);
+
+  function handleNewChat() {
+    setMessages([]);
+    setActiveCitation(null);
+    window.localStorage.removeItem(CHAT_STORAGE_KEY);
+  }
+
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const text = input.trim();
@@ -234,6 +274,17 @@ export function ChatBox() {
 
   return (
     <div className="flex w-full flex-col gap-6">
+      {messages.length > 0 && (
+        <div className="flex justify-end">
+          <button
+            type="button"
+            onClick={handleNewChat}
+            className="rounded-lg border border-foreground/20 px-3 py-1.5 font-medium text-foreground/70 text-xs transition-colors hover:bg-foreground/5 hover:text-foreground"
+          >
+            {t('newChat')}
+          </button>
+        </div>
+      )}
       <CostLatencyBar usages={usages} />
       <div className="flex flex-col gap-4">
         {messages.length === 0 && <p className="text-foreground/60 text-sm">{t('empty')}</p>}
@@ -308,6 +359,8 @@ export function ChatBox() {
           {busy ? t('thinking') : t('send')}
         </button>
       </form>
+
+      <p className="text-foreground/60 text-xs">{t('privacyNote')}</p>
 
       <CitationPanel
         citation={activeCitation?.citation ?? null}

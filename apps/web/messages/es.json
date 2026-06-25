@@ -5,7 +5,9 @@
     "footer": "Un proyecto de portafolio de Josue Cortes.",
     "localeLabel": "Cambiar idioma",
     "signInToUpload": "Iniciá sesión para subir un PDF.",
-    "help": "DocAI le permite subir un PDF y luego chatear con él. Suba un documento; una vez ingestado, puede hacer preguntas y obtener respuestas basadas en su texto, con citas a la página."
+    "help": "DocAI le permite subir un PDF y luego chatear con él. Suba un documento; una vez ingestado, puede hacer preguntas y obtener respuestas basadas en su texto, con citas a la página.",
+    "disclaimer": "Usted es responsable de tener los derechos del contenido que sube. Demo de portafolio.",
+    "termsLink": "Términos"
   },
   "nav": {
     "signIn": "Iniciar sesión",
@@ -40,6 +42,8 @@
     "openPdf": "Abrir PDF (página {page})",
     "openPdfNoPage": "Abrir PDF",
     "close": "Cerrar",
+    "newChat": "Nuevo chat",
+    "privacyNote": "Su historial de chat se guarda solo en este navegador, nunca en nuestros servidores.",
     "pdfError": "No se pudo abrir el PDF.",
     "pdfHighlightNote": "El pasaje citado se resalta arriba. Al abrir el PDF salta a la página; el resaltado dentro del PDF funciona en Chrome, Edge y otros navegadores Chromium.",
     "help": "Haga preguntas en lenguaje natural sobre sus PDFs ingestados. Las respuestas salen solo de los pasajes recuperados e incluyen citas: haga clic en una para ver el texto exacto y abrir el PDF en esa página."
@@ -142,6 +146,18 @@
   },
   "documents": {
     "available": "Documentos sobre los que puede preguntar"
+  },
+  "terms": {
+    "title": "Términos y datos",
+    "intro": "DocAI es un demo de portafolio, no un servicio de producción. Al usarlo, usted acepta los puntos de abajo.",
+    "contentTitle": "Responsabilidad del contenido",
+    "contentBody": "Usted es responsable de tener los derechos de cualquier PDF que suba. No suba material confidencial, personal o con derechos de autor que no pueda compartir.",
+    "dataTitle": "Manejo de datos",
+    "dataBody": "Su historial de chat se guarda solo en su navegador (localStorage), nunca en nuestros servidores. Los PDFs que sube se almacenan para permitir la búsqueda y se eliminan tras un período de retención que depende de su plan, o apenas usted los borra.",
+    "warrantyTitle": "Sin garantías",
+    "warrantyBody": "Las respuestas las genera una IA a partir de sus documentos y pueden ser inexactas o incompletas. El demo se ofrece tal cual, sin garantías, y puede cambiar o quedar fuera de línea en cualquier momento.",
+    "contactTitle": "Contacto",
+    "contactBody": "¿Preguntas sobre el demo? Escríbanos."
   },
   "errors": {
     "cta": {

@@ -1,6 +1,7 @@
 import { DocumentsList } from '@/components/documents-list';
 import { PageHelp } from '@/components/page-help';
 import { PdfUploader } from '@/components/pdf-uploader';
+import { Link } from '@/i18n/navigation';
 import type { DocumentListItem } from '@/lib/documents';
 import { listWorkspaceDocuments } from '@/lib/documents';
 import { ensureWorkspace } from '@/lib/workspace';
@@ -46,7 +47,10 @@ export default async function LandingPage({ params }: Props) {
             when="signed-in"
             fallback={<p className="text-sm text-foreground/70">{t('signInToUpload')}</p>}
           >
-            <PdfUploader />
+            <div className="flex flex-col items-center gap-2">
+              <PdfUploader />
+              <p className="max-w-md text-balance text-foreground/70 text-xs">{t('disclaimer')}</p>
+            </div>
           </Show>
         </div>
 
@@ -59,6 +63,10 @@ export default async function LandingPage({ params }: Props) {
 
       <footer className="px-6 py-6 text-center text-xs text-foreground/70 sm:px-10">
         {t('footer')}
+        {' · '}
+        <Link href="/terms" className="underline underline-offset-2 hover:text-foreground">
+          {t('termsLink')}
+        </Link>
       </footer>
     </main>
   );

@@ -5,7 +5,9 @@
     "footer": "A portfolio project by Josue Cortes.",
     "localeLabel": "Change language",
     "signInToUpload": "Sign in to upload a PDF.",
-    "help": "DocAI lets you upload a PDF and then chat with it. Upload a document below; once it's ingested you can ask questions and get answers grounded in its text, with citations back to the page."
+    "help": "DocAI lets you upload a PDF and then chat with it. Upload a document below; once it's ingested you can ask questions and get answers grounded in its text, with citations back to the page.",
+    "disclaimer": "You're responsible for having the rights to the content you upload. Portfolio demo.",
+    "termsLink": "Terms"
   },
   "nav": {
     "signIn": "Sign in",
@@ -40,6 +42,8 @@
     "openPdf": "Open PDF (page {page})",
     "openPdfNoPage": "Open PDF",
     "close": "Close",
+    "newChat": "New chat",
+    "privacyNote": "Your chat history is saved only in this browser, never on our servers.",
     "pdfError": "Couldn't open the PDF.",
     "pdfHighlightNote": "The cited passage is highlighted above. Opening the PDF jumps to the page; in-PDF highlight there is supported in Chrome, Edge and other Chromium browsers.",
     "help": "Ask natural-language questions about your ingested PDFs. Answers come only from the retrieved passages and include citation chips — click one to see the exact source text and open the PDF at that page."
@@ -142,6 +146,18 @@
   },
   "documents": {
     "available": "Documents you can ask about"
+  },
+  "terms": {
+    "title": "Terms & data",
+    "intro": "DocAI is a portfolio demo, not a production service. By using it you agree to the points below.",
+    "contentTitle": "Content responsibility",
+    "contentBody": "You are responsible for having the rights to any PDF you upload. Don't upload confidential, personal, or copyrighted material you aren't allowed to share.",
+    "dataTitle": "Data handling",
+    "dataBody": "Your chat history is stored only in your browser (localStorage), never on our servers. Uploaded PDFs are stored to enable retrieval and are deleted after a retention window that depends on your plan, or as soon as you delete them.",
+    "warrantyTitle": "No warranties",
+    "warrantyBody": "Answers are AI-generated from your documents and may be inaccurate or incomplete. The demo is provided as-is, without warranties, and may change or go offline at any time.",
+    "contactTitle": "Contact",
+    "contactBody": "Questions about the demo? Get in touch."
   },
   "errors": {
     "cta": {

@@ -2,7 +2,7 @@ import { ByokSessionGuard } from '@/components/byok-session-guard';
 import { Topbar } from '@/components/topbar';
 import { UnderConstructionBanner } from '@/components/under-construction-banner';
 import { routing } from '@/i18n/routing';
-import { enUS, esES } from '@clerk/localizations';
+import { getClerkLocalization } from '@/lib/clerk-localization';
 import { ClerkProvider } from '@clerk/nextjs';
 import type { Metadata } from 'next';
 import { NextIntlClientProvider, hasLocale } from 'next-intl';
@@ -38,7 +38,7 @@ export default async function LocaleLayout({ children, params }: Props) {
 
   return (
     <ClerkProvider
-      localization={locale === 'es' ? esES : enUS}
+      localization={getClerkLocalization(locale)}
       signInUrl={`/${locale}/sign-in`}
       signUpUrl={`/${locale}/sign-up`}
     >

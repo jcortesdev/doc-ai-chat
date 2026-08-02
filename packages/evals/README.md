@@ -2,24 +2,26 @@
 
 Golden set + eval runner + LLM-as-judge. The module that turns "does my chat feel good" into "did my last change improve faithfulness by 0.3 points without dropping citation accuracy."
 
-**Status:** golden set designed in M0, runner scaffolded in M5.
+**Status:** golden set designed in M0; runner, judge, retrieval metrics, refusal correctness, and scorecard diff shipped in M5. Not yet wired: a CI workflow (needs `EVAL_WORKSPACE_ID` + provider API keys as repo secrets) and a golden-set run against a live-seeded eval workspace.
 
-## Layout (planned)
+## Layout
 
 ```
 src/
-├─ golden-set.json            # 25 Q&A, 20 EN + 5 ES, across 6 types
+├─ golden-set.json            # 25 Q&A, 20 EN + 5 ES, across 6 types (../golden-set.json)
 ├─ schema.ts                  # types for golden set + scorecard
-├─ runner.ts                  # M5 — runs golden set against a ChatProvider
-├─ judge.ts                   # M5 — judge scoring with 3-dimension rubric
-├─ retrieval-metrics.ts       # M5 — hit@k, MRR (no LLM)
-├─ refusal-correctness.ts     # M5 — boolean check for no-answer items
-├─ diff.ts                    # M5 — scorecard diff vs previous run
-└─ validate-golden-set.ts     # M0 — schema validation runnable now
+├─ validate-golden-set.ts     # schema + referential-integrity validation (`pnpm eval:validate-golden-set`)
+├─ retrieval-metrics.ts       # hit@k, MRR (no LLM)
+├─ refusal-correctness.ts     # no-answer items — delegates to @doc-ai-chat/prompts' isRefusal
+├─ judge.ts                   # LLM-as-judge, 3-dimension rubric, injectable JudgeFn for testing
+├─ runner.ts                  # orchestrates a golden-set run given injected retrieve/chat/judge adapters
+└─ diff.ts                    # scorecard diff vs a baseline, with regression tolerances (the CI gate policy)
 fixtures/
 ├─ README.md                  # explains how to source the 5 PDFs (not committed)
 └─ *.pdf                      # ignored by .gitignore
 ```
+
+This package stays a pure, dependency-injected leaf (no DB, no network, no apps/web import — packages don't depend on apps here). The live wiring — real `hybridRetrieve`, the chat model, and `EVAL_JUDGE_MODEL` — lives in [apps/web/scripts/run-golden-set.ts](../../apps/web/scripts/run-golden-set.ts) and runs via `pnpm --filter @doc-ai-chat/web eval:run`. It requires `EVAL_WORKSPACE_ID` (a workspace pre-seeded with these 5 fixtures ingested) plus the usual retrieval/chat/judge API keys.
 
 ## Golden set composition
 

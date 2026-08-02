@@ -14,6 +14,8 @@ const PRICE_TABLE: Record<string, ModelPrice> = {
   'claude-sonnet-4-6': { inputPerMillion: 3.0, outputPerMillion: 15.0 },
   // DeepSeek V4-Flash — dev iteration (and currently prod while benchmarking).
   'deepseek-v4-flash': { inputPerMillion: 0.14, outputPerMillion: 0.28 },
+  // OpenAI GPT-5-mini — eval judge (M5, ADR-016 EVAL_JUDGE_MODEL default).
+  'gpt-5-mini': { inputPerMillion: 0.25, outputPerMillion: 2.0 },
 };
 
 export function getModelPrice(model: string): ModelPrice {

@@ -4,15 +4,32 @@
   "version": "0.0.0",
   "description": "Golden set, eval runner, LLM-as-judge. CI gate for prompt changes from M5 onward.",
   "type": "module",
-  "main": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./schema": "./src/schema.ts",
+    "./validate-golden-set": "./src/validate-golden-set.ts",
+    "./retrieval-metrics": "./src/retrieval-metrics.ts",
+    "./refusal-correctness": "./src/refusal-correctness.ts",
+    "./judge": "./src/judge.ts",
+    "./runner": "./src/runner.ts",
+    "./diff": "./src/diff.ts"
+  },
   "scripts": {
-    "typecheck": "echo 'scaffolded in M5'",
-    "eval:run": "echo 'scaffolded in M5'",
-    "eval:validate-golden-set": "echo 'scaffolded in M5'",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "eval:validate-golden-set": "tsx src/validate-golden-set.ts",
     "build:fixtures": "node scripts/build-fixtures.mjs"
   },
   "devDependencies": {
+    "@doc-ai-chat/prompts": "workspace:*",
+    "@doc-ai-chat/providers": "workspace:*",
+    "@types/node": "^22",
+    "ai": "^6.0.208",
     "pdf-parse": "^2.4.5",
-    "pdfkit": "^0.19.1"
+    "pdfkit": "^0.19.1",
+    "tsx": "^4.20.0",
+    "typescript": "^5",
+    "vitest": "^4.1.9",
+    "zod": "^4.4.3"
   }
 }

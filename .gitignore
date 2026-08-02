@@ -46,5 +46,9 @@ pnpm-debug.log*
 # golden set fixtures (PDFs not committed — see packages/evals/fixtures/README.md)
 packages/evals/fixtures/*.pdf
 
+# eval run output (contains real model answers/costs from a specific run;
+# the point of comparison is a --baseline path you choose, not a repo file)
+packages/evals/scorecards/
+
 # local Fly.io state
 .fly/

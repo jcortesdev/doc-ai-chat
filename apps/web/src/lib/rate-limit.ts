@@ -132,37 +132,57 @@ export async function enforceRateLimit(
   return runLimiter(getLimiter(scope), identifier);
 }
 
-// Per-user daily chat quota (ADR-009): logged-in free users get N messages/day.
-// A fixed window of '1 d' aligns to the Unix epoch, so it resets at 00:00 UTC
-// (matching the project budget reset, ADR-015). Owners bypass at the call site.
-const DEFAULT_CHAT_DAILY_QUOTA = 10;
+// Per-user daily quota (ADR-009, extended M6 for the agent loop — ADR-014). A
+// fixed window of '1 d' aligns to the Unix epoch, so it resets at 00:00 UTC
+// (matching the project budget reset, ADR-015). Owners bypass at the call site;
+// BYOK bypasses too (M4/M6 — their own key, no project quota to protect).
+export type DailyQuotaScope = 'chat' | 'agent';
 
-let dailyChatLimiter: Ratelimit | null | undefined;
+type QuotaConfig = {
+  envVar: string;
+  default: number;
+};
 
-function getDailyChatLimiter(): Ratelimit | null {
-  if (dailyChatLimiter !== undefined) {
-    return dailyChatLimiter;
+// `agent` default (2/day free tier) is far lower than `chat` (10/day) — one
+// agent run can burn several model calls (ADR-014), so the per-run cost is
+// higher even with the iteration/token caps in the loop itself.
+const QUOTA_DEFAULTS: Record<DailyQuotaScope, QuotaConfig> = {
+  chat: { envVar: 'CHAT_DAILY_QUOTA', default: 10 },
+  agent: { envVar: 'AGENT_DAILY_QUOTA', default: 2 },
+};
+
+const dailyQuotaLimiters = new Map<DailyQuotaScope, Ratelimit | null>();
+
+function getDailyQuotaLimiter(scope: DailyQuotaScope): Ratelimit | null {
+  const cached = dailyQuotaLimiters.get(scope);
+  if (cached !== undefined) {
+    return cached;
   }
   const redis = getRedis();
   if (!redis) {
-    dailyChatLimiter = null;
+    dailyQuotaLimiters.set(scope, null);
     return null;
   }
-  const quota = envInt('CHAT_DAILY_QUOTA', DEFAULT_CHAT_DAILY_QUOTA);
-  dailyChatLimiter = new Ratelimit({
+  const config = QUOTA_DEFAULTS[scope];
+  const quota = envInt(config.envVar, config.default);
+  const limiter = new Ratelimit({
     redis,
     limiter: Ratelimit.fixedWindow(quota, '1 d'),
-    prefix: 'quota:chat',
+    prefix: `quota:${scope}`,
     analytics: false,
     ephemeralCache,
   });
-  return dailyChatLimiter;
+  dailyQuotaLimiters.set(scope, limiter);
+  return limiter;
 }
 
-// Consumes one of today's chat messages for `identifier`. `ok: false` → the user
-// hit the daily quota (caller responds 429 `daily_limit`). Never throws.
-export async function enforceDailyChatQuota(identifier: string): Promise<RateLimitResult> {
-  return runLimiter(getDailyChatLimiter(), identifier);
+// Consumes one of today's quota units for `identifier` in the given scope.
+// `ok: false` → the user hit the daily quota (caller responds 429). Never throws.
+export async function enforceDailyQuota(
+  scope: DailyQuotaScope,
+  identifier: string,
+): Promise<RateLimitResult> {
+  return runLimiter(getDailyQuotaLimiter(scope), identifier);
 }
 
 // Standard rate-limit response headers. `Retry-After` (seconds) is only set when

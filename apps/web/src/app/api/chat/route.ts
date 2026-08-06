@@ -2,7 +2,7 @@ import { checkProjectBudget } from '@/lib/budget';
 import { isValidAnthropicKey } from '@/lib/byok';
 import { streamChat } from '@/lib/chat';
 import { retrieveChatContext } from '@/lib/chat-retrieve';
-import { enforceDailyChatQuota, enforceRateLimit, rateLimitHeaders } from '@/lib/rate-limit';
+import { enforceDailyQuota, enforceRateLimit, rateLimitHeaders } from '@/lib/rate-limit';
 import { isTrialExempt, isTrialExpired, resolveTier } from '@/lib/tiers';
 import { ensureWorkspace } from '@/lib/workspace';
 import { auth, currentUser } from '@clerk/nextjs/server';
@@ -101,7 +101,7 @@ export async function POST(request: Request) {
       if (!isTrialExempt(email) && isTrialExpired(userCreatedAt)) {
         return NextResponse.json({ error: 'weekly_lock' }, { status: 403 });
       }
-      const daily = await enforceDailyChatQuota(userId);
+      const daily = await enforceDailyQuota('chat', userId);
       if (!daily.ok) {
         return NextResponse.json(
           { error: 'daily_limit' },

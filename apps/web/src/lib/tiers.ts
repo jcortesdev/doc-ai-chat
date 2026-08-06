@@ -79,3 +79,57 @@ export function trialDays(): number {
 export function isTrialExpired(trialStartedAt: Date, now: Date = new Date()): boolean {
   return now.getTime() - trialStartedAt.getTime() > trialDays() * DAY_MS;
 }
+
+// Agent loop tier (M6, ADR-014). Anonymous is not a reachable value here — the
+// route requires auth (mirrors "anonymous disabled" from the roadmap), so callers
+// only ever resolve 'free' or 'pro'. Kept as a two-value type (not reusing `Tier`)
+// because the agent loop only cares about the reasoner/caps split, not the finer
+// anonymous/logged_in/byok/privileged distinction the rest of the app uses.
+export type AgentTier = 'free' | 'pro';
+
+export type AgentCaps = {
+  tier: AgentTier;
+  // `provider:model_id` ref (ADR-016), resolved by the caller via resolveChatModel.
+  modelRef: string;
+  maxIterations: number;
+  maxWallClockMs: number;
+  maxCumulativeInputTokens: number;
+};
+
+// BYOK and privileged (owner) both get the "pro" reasoner + caps — a BYOK key
+// pays for itself so it earns the same headroom as an owner (ADR-014).
+export function resolveAgentTier(isPrivileged: boolean, isByok: boolean): AgentTier {
+  return isPrivileged || isByok ? 'pro' : 'free';
+}
+
+function envIntCap(name: string, fallback: number): number {
+  const raw = process.env[name];
+  if (!raw) {
+    return fallback;
+  }
+  const parsed = Number.parseInt(raw, 10);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
+}
+
+// Hard caps bounding the cost of any one agent run (ADR-014). Defaults here match
+// the free tier's worst case (~$0.004/run); real production values are set via
+// env (see RUNTIME_CONFIG.md) and are the same numbers for both tiers' wall clock
+// — only iterations, tokens, and the reasoner model differ by tier.
+export function getAgentCaps(tier: AgentTier): AgentCaps {
+  if (tier === 'pro') {
+    return {
+      tier,
+      modelRef: process.env.AGENT_PRO_MODEL ?? 'anthropic:claude-sonnet-4-6',
+      maxIterations: envIntCap('AGENT_MAX_ITERATIONS_PRO', 5),
+      maxWallClockMs: envIntCap('AGENT_MAX_WALL_CLOCK_MS', 30_000),
+      maxCumulativeInputTokens: envIntCap('AGENT_MAX_TOKENS_PRO', 80_000),
+    };
+  }
+  return {
+    tier,
+    modelRef: process.env.AGENT_FREE_MODEL ?? 'deepseek:deepseek-v4-flash',
+    maxIterations: envIntCap('AGENT_MAX_ITERATIONS_FREE', 3),
+    maxWallClockMs: envIntCap('AGENT_MAX_WALL_CLOCK_MS', 30_000),
+    maxCumulativeInputTokens: envIntCap('AGENT_MAX_TOKENS_FREE', 30_000),
+  };
+}

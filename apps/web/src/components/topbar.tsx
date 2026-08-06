@@ -13,7 +13,7 @@ function GatedNavLink({
   disabled,
   disabledTitle,
 }: {
-  href: '/chat' | '/search';
+  href: '/chat' | '/search' | '/agent';
   label: string;
   disabled: boolean;
   disabledTitle: string;
@@ -66,6 +66,12 @@ export async function Topbar() {
           <GatedNavLink
             href="/search"
             label={t('search')}
+            disabled={!hasReadyDocs}
+            disabledTitle={t('uploadFirst')}
+          />
+          <GatedNavLink
+            href="/agent"
+            label={t('agent')}
             disabled={!hasReadyDocs}
             disabledTitle={t('uploadFirst')}
           />

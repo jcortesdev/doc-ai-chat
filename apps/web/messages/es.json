@@ -13,6 +13,7 @@
     "signIn": "Iniciar sesión",
     "search": "Búsqueda",
     "chat": "Chat",
+    "agent": "Agente",
     "account": "Cuenta",
     "uploadFirst": "Debe subir un documento primero"
   },
@@ -47,6 +48,33 @@
     "pdfError": "No se pudo abrir el PDF.",
     "pdfHighlightNote": "El pasaje citado se resalta arriba. Al abrir el PDF salta a la página; el resaltado dentro del PDF funciona en Chrome, Edge y otros navegadores Chromium.",
     "help": "Haga preguntas en lenguaje natural sobre sus PDFs ingestados. Las respuestas salen solo de los pasajes recuperados e incluyen citas: haga clic en una para ver el texto exacto y abrir el PDF en esa página."
+  },
+  "agent": {
+    "title": "Agente",
+    "hint": "Haga una pregunta que requiera comparar o cruzar información entre sus documentos — el agente busca y razona entre ellos, mostrando cada paso.",
+    "help": "El modo agente usa herramientas para buscar en sus documentos paso a paso — útil para comparar dos PDFs o encontrar contradicciones entre ellos. Cada búsqueda y consulta de pasaje se muestra en la transcripción debajo de la respuesta. Las ejecuciones tienen un límite (menos pasos en el plan gratuito, más con su propia clave de API) — si se alcanza el límite, igual recibirá una respuesta parcial y honesta.",
+    "placeholder": "Ej: Compare el documento A y el documento B…",
+    "send": "Ejecutar",
+    "thinking": "Trabajando…",
+    "empty": "Haga una pregunta que abarque varios documentos para empezar.",
+    "you": "Usted",
+    "assistant": "Agente DocAI",
+    "newRun": "Nueva ejecución",
+    "privacyNote": "Esta transcripción se guarda solo en este navegador, nunca en nuestros servidores.",
+    "errorGeneric": "Algo salió mal. Intente de nuevo.",
+    "toolSearchChunks": "Buscando en los documentos",
+    "toolGetPassage": "Obteniendo más contexto",
+    "toolRunning": "En curso…",
+    "toolDone": "Listo",
+    "toolError": "Falló",
+    "capBadge": "Respuesta parcial — el agente se detuvo al alcanzar un límite ({reason}).",
+    "capReasonMaxIterations": "máximo de pasos",
+    "capReasonMaxTokens": "presupuesto de tokens",
+    "capReasonMaxWallClock": "límite de tiempo",
+    "tierFree": "Plan gratuito — hasta {n} pasos",
+    "tierPro": "Plan pro — hasta {n} pasos",
+    "usageCost": "Costo",
+    "usageLatency": "Latencia"
   },
   "search": {
     "title": "Búsqueda",
@@ -172,6 +200,10 @@
     "daily_limit": {
       "title": "Límite diario alcanzado",
       "body": "Usaste tus mensajes gratis de hoy. Se reinician a las 00:00 UTC."
+    },
+    "agent_daily_limit": {
+      "title": "Límite diario de agente alcanzado",
+      "body": "Ya usó sus ejecuciones de agente gratuitas de hoy. Se reinician a las 00:00 UTC."
     },
     "project_over_capacity": {
       "title": "Demo al límite",

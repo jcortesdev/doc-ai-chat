@@ -13,6 +13,7 @@
     "signIn": "Sign in",
     "search": "Search",
     "chat": "Chat",
+    "agent": "Agent",
     "account": "Account",
     "uploadFirst": "Upload a document first"
   },
@@ -47,6 +48,33 @@
     "pdfError": "Couldn't open the PDF.",
     "pdfHighlightNote": "The cited passage is highlighted above. Opening the PDF jumps to the page; in-PDF highlight there is supported in Chrome, Edge and other Chromium browsers.",
     "help": "Ask natural-language questions about your ingested PDFs. Answers come only from the retrieved passages and include citation chips — click one to see the exact source text and open the PDF at that page."
+  },
+  "agent": {
+    "title": "Agent",
+    "hint": "Ask a question that needs comparing or cross-referencing your documents — the agent searches and reasons across them, with every step shown.",
+    "help": "Agent mode uses tools to search your documents step by step — useful for comparing two PDFs or finding contradictions across them. Every search and passage lookup is shown in the transcript below the answer. Runs are capped (fewer steps on the free tier, more with your own API key) — if the cap is hit, you'll still get a partial, honest answer.",
+    "placeholder": "e.g. Compare document A and document B…",
+    "send": "Run",
+    "thinking": "Working…",
+    "empty": "Ask a question that spans multiple documents to get started.",
+    "you": "You",
+    "assistant": "DocAI Agent",
+    "newRun": "New run",
+    "privacyNote": "This transcript is saved only in this browser, never on our servers.",
+    "errorGeneric": "Something went wrong. Please try again.",
+    "toolSearchChunks": "Searching documents",
+    "toolGetPassage": "Fetching more context",
+    "toolRunning": "Running…",
+    "toolDone": "Done",
+    "toolError": "Failed",
+    "capBadge": "Partial answer — the agent stopped after reaching a limit ({reason}).",
+    "capReasonMaxIterations": "max steps",
+    "capReasonMaxTokens": "token budget",
+    "capReasonMaxWallClock": "time limit",
+    "tierFree": "Free tier — up to {n} steps",
+    "tierPro": "Pro tier — up to {n} steps",
+    "usageCost": "Cost",
+    "usageLatency": "Latency"
   },
   "search": {
     "title": "Search",
@@ -172,6 +200,10 @@
     "daily_limit": {
       "title": "Daily limit reached",
       "body": "You've used your free messages for today. They reset at 00:00 UTC."
+    },
+    "agent_daily_limit": {
+      "title": "Daily agent limit reached",
+      "body": "You've used your free agent runs for today. They reset at 00:00 UTC."
     },
     "project_over_capacity": {
       "title": "Demo at capacity",

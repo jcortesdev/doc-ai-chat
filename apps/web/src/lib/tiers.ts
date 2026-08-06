@@ -102,12 +102,20 @@ export function resolveAgentTier(isPrivileged: boolean, isByok: boolean): AgentT
   return isPrivileged || isByok ? 'pro' : 'free';
 }
 
+// Uses Number(), not Number.parseInt(), on purpose: parseInt silently truncates
+// at the first non-digit character (e.g. "50_000" — a JS numeric-literal
+// separator that means nothing in an env string — parses to 50, not 50000),
+// turning a typo into a tiny, wrong cap instead of an error. Number() rejects
+// the whole string as NaN on any malformed input, so a bad value fails safe to
+// the documented default rather than silently wrecking the cap (found live —
+// see RUNTIME_CONFIG.md tuning notes: env values here are plain digits, no
+// separators).
 function envIntCap(name: string, fallback: number): number {
   const raw = process.env[name];
   if (!raw) {
     return fallback;
   }
-  const parsed = Number.parseInt(raw, 10);
+  const parsed = Number(raw);
   return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
 }
 

@@ -1,6 +1,6 @@
 import { db } from '@doc-ai-chat/db/client';
 import { documents, workspaces } from '@doc-ai-chat/db/schema';
-import { and, desc, eq, sql } from 'drizzle-orm';
+import { and, desc, eq, inArray, sql } from 'drizzle-orm';
 
 export type DocumentStatus = {
   id: string;
@@ -152,4 +152,23 @@ export async function listReadyDocumentsForUser(userId: string): Promise<ReadyDo
     .innerJoin(workspaces, eq(documents.workspaceId, workspaces.id))
     .where(and(eq(workspaces.ownerId, userId), eq(documents.status, 'ready')))
     .orderBy(desc(documents.createdAt));
+}
+
+// Maps documentId -> filename for a set of ids, scoped to one workspace (tenant
+// isolation). Used by the agent loop's search_chunks tool (M6) to give the model
+// (and the transcript UI) a human-readable label instead of a bare document UUID
+// — an id outside `workspaceId` is silently absent from the returned map rather
+// than erroring, same fail-quiet posture as getPassageAround.
+export async function getDocumentFilenames(
+  documentIds: string[],
+  workspaceId: string,
+): Promise<Map<string, string>> {
+  if (documentIds.length === 0) {
+    return new Map();
+  }
+  const rows = await db
+    .select({ id: documents.id, filename: documents.filename })
+    .from(documents)
+    .where(and(inArray(documents.id, documentIds), eq(documents.workspaceId, workspaceId)));
+  return new Map(rows.map((row) => [row.id, row.filename]));
 }

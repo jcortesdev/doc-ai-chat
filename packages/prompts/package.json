@@ -6,7 +6,8 @@
   "type": "module",
   "exports": {
     "./rag-answer": "./src/rag-answer.ts",
-    "./refusal-detector": "./src/refusal-detector.ts"
+    "./refusal-detector": "./src/refusal-detector.ts",
+    "./agent": "./src/agent.ts"
   },
   "scripts": {
     "typecheck": "tsc --noEmit",

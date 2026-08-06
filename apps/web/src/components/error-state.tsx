@@ -10,6 +10,7 @@ import { useTranslations } from 'next-intl';
 export type ErrorVariant =
   | 'out_of_credit'
   | 'daily_limit'
+  | 'agent_daily_limit'
   | 'project_over_capacity'
   | 'weekly_lock'
   | 'invalid_byok'
@@ -24,6 +25,7 @@ type CtaConfig = { byok?: boolean; contact?: boolean; retry?: boolean };
 const CTA: Record<ErrorVariant, CtaConfig> = {
   out_of_credit: { byok: true },
   daily_limit: { contact: true },
+  agent_daily_limit: { byok: true, contact: true },
   project_over_capacity: { byok: true, contact: true },
   weekly_lock: { byok: true, contact: true },
   invalid_byok: { byok: true },

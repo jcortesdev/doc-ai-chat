@@ -2,6 +2,7 @@ import { neutralizeControlTags } from '@doc-ai-chat/prompts/rag-answer';
 import { tool } from 'ai';
 import { z } from 'zod';
 import { getPassageAround } from './chunk-passage';
+import { getDocumentFilenames } from './documents';
 import { hybridRetrieve } from './hybrid-retrieve';
 
 // M6 agent loop tools. Deliberately kept to two general-purpose tools instead of
@@ -29,15 +30,23 @@ const SNIPPET_CHARS = 800;
 export function createAgentTools({ workspaceId, isPrivileged }: AgentToolContext) {
   const search_chunks = tool({
     description:
-      "Search this workspace's ready documents for passages relevant to a query. Returns up to 5 ranked passages, each with documentId, chunkIndex, page, a relevance score, and a snippet. Call it once per distinct question — e.g. once per document when comparing two PDFs, or once per topic when looking for contradictions across documents.",
+      "Search this workspace's ready documents for passages relevant to a query. Returns up to 5 ranked passages, each with documentId, documentLabel (filename, for citing), chunkIndex, page, a relevance score, and a snippet. Call it once per distinct question — e.g. once per document when comparing two PDFs, or once per topic when looking for contradictions across documents.",
     inputSchema: z.object({
       query: z.string().min(1).max(500).describe('A focused natural-language search query.'),
     }),
     execute: async ({ query }) => {
       const { hits } = await hybridRetrieve(query, workspaceId, { isPrivileged });
+      // Filenames aren't in HybridHit (M2 stays document-metadata-free) — a small
+      // lookup here gives the model (and the transcript UI) something citable
+      // instead of a bare document UUID.
+      const filenames = await getDocumentFilenames(
+        Array.from(new Set(hits.map((hit) => hit.documentId))),
+        workspaceId,
+      );
       return hits.map((hit) => ({
         chunkId: hit.chunkId,
         documentId: hit.documentId,
+        documentLabel: filenames.get(hit.documentId) ?? hit.documentId,
         chunkIndex: hit.chunkIndex,
         page: hit.page,
         relevance: hit.rerankRelevance,

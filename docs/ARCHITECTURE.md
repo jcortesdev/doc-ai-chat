@@ -105,13 +105,16 @@ For *why* each piece was chosen, see [DECISIONS.md](DECISIONS.md). For threat mo
 └─────────────────────────────────────────────────────────────────────────┘
 
 ┌─────────────────────────────────────────────────────────────────────────┐
-│ FASE 5: AGENT LOOP (M6) — explicit invocation only                      │
-│  complex Q ─► tier-configured planner model                             │
-│       ├─► tool: search (vector + BM25)                                  │
-│       ├─► tool: get_passage (R2 + chunk lookup)                         │
-│       └─► tool: compare/extract (configured sub-task model)             │
-│  Planner synthesis ─► answer + transcript visible to user               │
-│  Caps: iteration / token / wall-clock limits per tier (ADR-014)         │
+│ FASE 5: AGENT LOOP (M6) — explicit invocation, own route (/agent)       │
+│  complex Q ─► tier-configured reasoner (free: DeepSeek, pro: Sonnet)    │
+│       ├─► tool: search_chunks (hybridRetrieve, reused from M2)          │
+│       └─► tool: get_full_passage (neighboring chunks, no model call)    │
+│  Reasoner interleaves tool calls + text in one multi-step streamText    │
+│  call (AI SDK `stopWhen`/`prepareStep`) — no separate planner/synthesis │
+│  phase (ADR-019). Full tool-call transcript streamed to the client.     │
+│  Caps: iteration / token / wall-clock limits per tier (ADR-014).        │
+│  A cap firing mid-run disables tools for one forced final step instead  │
+│  of truncating — the answer is honest and partial, badge shown in UI.   │
 └─────────────────────────────────────────────────────────────────────────┘
 
 ┌─────────────────────────────────────────────────────────────────────────┐
@@ -147,12 +150,14 @@ All model selection lives in environment variables, not source constants. Each r
 | Chat — dev iteration | `CHAT_DEV_MODEL` | M1 |
 | Agent reasoner — free tier | `AGENT_FREE_MODEL` | M6 |
 | Agent reasoner — BYOK/privileged | `AGENT_PRO_MODEL` | M6 |
-| Agent sub-task | `AGENT_SUBTASK_MODEL` | M6 |
+| Agent sub-task *(designed, not wired)* | `AGENT_SUBTASK_MODEL` | M6 |
 | Module gate primary | `GATE_PRIMARY_MODEL` | M5 |
 | Module gate sanity check (1/gate) | `GATE_SANITY_MODEL` | M5 |
 | Eval judge | `EVAL_JUDGE_MODEL` | M5 |
 | Embeddings | `EMBEDDINGS_MODEL` | M1 |
 | Reranker | `RERANK_MODEL` | M2 |
+
+`AGENT_SUBTASK_MODEL` was reserved at M0 planning time for a sub-agent dispatch pattern (a cheaper model handling isolated sub-tasks under the main reasoner). M6 shipped a single-reasoner loop instead — two tools, one model per run — so the env var exists but nothing reads it yet (same category as M5's `GATE_SANITY_MODEL`: designed, not wired).
 
 Default values and the per-provider price table live in the `packages/providers` source plus operational docs — they are not published here so the public-repo audience cannot pre-target a specific model with prompt-injection optimization. The variable names and the role-to-env-var mapping are public so contributors can wire their own values.
 
@@ -263,6 +268,6 @@ Inngest functions are TypeScript modules colocated with the Next.js app. The `/a
 - **No self-hosted job queue.** Inngest manages queue + retry + cron; we focus on the pipeline.
 - **No GraphQL / tRPC.** Route handlers return JSON. The contract is the URL, the body, and a Zod schema next to it.
 - **No managed vector DB.** Pgvector with hybrid search by hand (ADR-002).
-- **No agent framework.** The agent loop in M6 is a hand-written `while` with explicit tools.
+- **No agent framework.** M6 has no autonomous planner, memory, or multi-agent orchestration (LangGraph, CrewAI, AutoGPT-style). The loop is the AI SDK's built-in multi-step tool calling (`streamText` + `stopWhen`/`prepareStep`) around two hand-written tools and hand-written cap logic — a thin, inspectable mechanism, not a framework making autonomous decisions about what to do next.
 - **No streaming framework.** Vercel AI SDK as a thin SSE helper; no LangChain or LlamaIndex (ADR-005).
 - **No multi-tenancy beyond workspaces.** One workspace per user; no orgs.

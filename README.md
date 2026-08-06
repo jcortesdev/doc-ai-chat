@@ -2,7 +2,7 @@
 
 > Ask questions of your PDFs. Get answers grounded in the documents, with clickable citations that open the exact passage.
 
-**Status:** 🚧 **Live demo, still building in public.** Shipped & deployed: M1 ingest pipeline · M2 hybrid search · M3 RAG chat (streaming + citations + guardrails) · M4 BYOK + rate limiting + cost/latency dashboard + retention + error states. Plus a UX polish pass: unified account page, file management (list/delete), in-panel citation highlight, UI-locale-aware answers, local chat persistence, and per-page help. M5 evals: golden-set runner, LLM-as-judge rubric (faithfulness / relevance / citation accuracy), retrieval metrics (hit@k, MRR), refusal correctness, and a scorecard diff gate — landed and run against a live-seeded workspace (see [packages/evals](packages/evals)); CI gate not wired yet. Next: wire the CI gate · M6 agent loop · M7 multi-provider benchmark.
+**Status:** 🚧 **Live demo, still building in public.** Shipped & deployed: M1 ingest pipeline · M2 hybrid search · M3 RAG chat (streaming + citations + guardrails) · M4 BYOK + rate limiting + cost/latency dashboard + retention + error states. Plus a UX polish pass: unified account page, file management (list/delete), in-panel citation highlight, UI-locale-aware answers, local chat persistence, and per-page help. M5 evals: golden-set runner, LLM-as-judge rubric (faithfulness / relevance / citation accuracy), retrieval metrics (hit@k, MRR), refusal correctness, and a scorecard diff gate — landed and run against a live-seeded workspace (see [packages/evals](packages/evals)); CI gate not wired yet. M6 agent loop: tool-using multi-step reasoner (`search_chunks` + `get_full_passage`) with a visible tool-call transcript, tiered caps (DeepSeek/free, Sonnet/BYOK+owner), and a graceful partial-answer fallback when a cap fires — live at `/agent`. Next: wire the CI gate · M7 multi-provider benchmark.
 **Demo:** [demo-docai.jcortes.dev](https://demo-docai.jcortes.dev)
 
 ## What this is
@@ -37,7 +37,7 @@ Designed deliberately as an AI-Engineer-shaped project: built without LangChain,
 2. RETRIEVE ✅ question → hybrid search (BM25 + cosine + RRF) → Cohere rerank → top-5
 3. ANSWER   ✅ LLM with retrieved context in <retrieved_context> tags → streamed → citations
 4. EVAL     ✅ golden set (25 Q&A, en+es) → GPT-5-mini judge → scorecard (CI gate not wired yet)
-5. AGENT       "compare two PDFs" → tool-using loop → transcript with cost
+5. AGENT    ✅ "compare two PDFs" → tool-using loop (search_chunks, get_full_passage) → visible transcript + cost, capped with a partial-answer fallback
 6. BENCH       same golden set across 3 providers × 2 tiers → diplomatic report
 ```
 
@@ -51,17 +51,18 @@ This is a portfolio demo, so resources are capped. Sign-in is required to upload
 |---|---|---|
 | Files | 3 (10 MB / 50 pages) | 3 (10 MB / 50 pages) |
 | Chat | 10/day for a 7-day trial, then locked | Unlimited — your key pays for it |
+| Agent (`/agent`) | 2 runs/day, 3 tool calls max, DeepSeek | Unlimited runs, 5 tool calls max, Claude Sonnet |
 | Search / upload | During the trial | Continues past the trial |
 | Retention | 7 days | 7 days |
 
-Owner accounts are unlimited. Anonymous access (1 file, 24 h) and the agent loop (M6) are designed but not enabled yet. BYOK's benefit today is unlimited chat and continued access past the trial — it shares the free-tier file and retention limits.
+Owner accounts are unlimited. Anonymous access (1 file, 24 h) is designed but not enabled yet. BYOK's benefit today is unlimited chat and continued access past the trial — it shares the free-tier file and retention limits; on the agent it also unlocks the larger reasoner and tool-call budget.
 
 Need higher quotas, custom ingestion pipelines, or a tailored RAG build for your team? **I'm available for contract work.** → [Contact](mailto:jcortesdev@gmail.com)
 
 ## Documentation
 
 - [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) — system shape, pipeline diagram, model-by-role table
-- [docs/DECISIONS.md](docs/DECISIONS.md) — 16 ADRs covering every non-obvious choice
+- [docs/DECISIONS.md](docs/DECISIONS.md) — 19 ADRs covering every non-obvious choice
 - [docs/SECURITY.md](docs/SECURITY.md) — threat model, BYOK security architecture, data handling
 
 ## Local development

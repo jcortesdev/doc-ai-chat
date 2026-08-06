@@ -2,7 +2,7 @@
 
 > Ask questions of your PDFs. Get answers grounded in the documents, with clickable citations that open the exact passage.
 
-**Status:** 🚧 **Live demo, still building in public.** Shipped & deployed: M1 ingest pipeline · M2 hybrid search · M3 RAG chat (streaming + citations + guardrails) · M4 BYOK + rate limiting + cost/latency dashboard + retention + error states. Plus a UX polish pass: unified account page, file management (list/delete), in-panel citation highlight, UI-locale-aware answers, local chat persistence, and per-page help. Next: M5 evals · M6 agent loop · M7 multi-provider benchmark.
+**Status:** 🚧 **Live demo, still building in public.** Shipped & deployed: M1 ingest pipeline · M2 hybrid search · M3 RAG chat (streaming + citations + guardrails) · M4 BYOK + rate limiting + cost/latency dashboard + retention + error states. Plus a UX polish pass: unified account page, file management (list/delete), in-panel citation highlight, UI-locale-aware answers, local chat persistence, and per-page help. M5 evals: golden-set runner, LLM-as-judge rubric (faithfulness / relevance / citation accuracy), retrieval metrics (hit@k, MRR), refusal correctness, and a scorecard diff gate — landed and run against a live-seeded workspace (see [packages/evals](packages/evals)); CI gate not wired yet. Next: wire the CI gate · M6 agent loop · M7 multi-provider benchmark.
 **Demo:** [demo-docai.jcortes.dev](https://demo-docai.jcortes.dev)
 
 ## What this is
@@ -36,7 +36,7 @@ Designed deliberately as an AI-Engineer-shaped project: built without LangChain,
 1. INGEST   ✅ upload PDF → parse → chunk → Voyage-3 embed → Postgres + R2
 2. RETRIEVE ✅ question → hybrid search (BM25 + cosine + RRF) → Cohere rerank → top-5
 3. ANSWER   ✅ LLM with retrieved context in <retrieved_context> tags → streamed → citations
-4. EVAL        golden set (25 Q&A, en+es) → GPT-5-mini judge → scorecard, CI-gated
+4. EVAL     ✅ golden set (25 Q&A, en+es) → GPT-5-mini judge → scorecard (CI gate not wired yet)
 5. AGENT       "compare two PDFs" → tool-using loop → transcript with cost
 6. BENCH       same golden set across 3 providers × 2 tiers → diplomatic report
 ```

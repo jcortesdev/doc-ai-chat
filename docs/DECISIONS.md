@@ -392,3 +392,33 @@ Default values per role live in private operational docs — they are intentiona
 - The reply-language fix is correctness, not eval-dependent, so it shipped now; M5 will still calibrate refusal/language scoring against V1 and V2.
 - BYOK is now a coherent "keep using the demo" path end-to-end, capped by the budget switch rather than the trial.
 - Chat persistence adds no schema and no server surface; the privacy story stays "your chats never touch our servers."
+
+---
+
+## ADR-018 — Evals package stays a pure, injected leaf; live wiring lives in apps/web
+
+**Status:** accepted, 2026-07-26
+
+**Context.** M5 needed a golden-set runner, an LLM-as-judge rubric, retrieval metrics, refusal correctness, and a scorecard diff for the CI gate (ADR-008's "refusal correctness eval in M5" and the README's planned layout). The runner has to call the real retrieval pipeline (`hybridRetrieve`, Neon-backed) and a real chat model, but `packages/evals` cannot depend on `apps/web` — this monorepo's dependency direction is apps → packages, never the reverse (ADR-001).
+
+**Decision.** `packages/evals` implements `runGoldenSet` against injected `RunnerAdapters` (`retrieve`, `chat`, `judge` functions) rather than importing `hybridRetrieve` or a chat model directly. Every scoring dimension (`retrieval-metrics.ts`, `refusal-correctness.ts`, `judge.ts`'s prompt-building, `diff.ts`) is a pure function unit-tested with fakes — no network, no DB, no API keys required to run `pnpm test` in this package. The real wiring — `hybridRetrieve`, `resolveChatModel`, `resolveJudgeModel`, and the RAG prompt assembly — lives in `apps/web/scripts/run-golden-set.ts`, which `apps/web` runs via `pnpm eval:run` since it already depends on `@doc-ai-chat/db` and the provider packages.
+
+Refusal correctness (`refusal-correctness.ts`) delegates to `@doc-ai-chat/prompts`' `isRefusal` — the same pattern detector gating the prod guardrail (SECURITY.md #10) — instead of a second pattern set, so the eval measures actual production behavior rather than a parallel approximation of it.
+
+The eval judge needs OpenAI (GPT-5-mini, per the stack table) alongside the chat providers. `packages/providers/chat-model.ts`'s `ChatProviderId` deliberately excludes `openai` (its own test asserts this: "openai is the eval judge via its own path — not a chat provider here") because the chat route should only ever resolve to a provider users actually chat with. A separate `judge-model.ts` in the same package exports `resolveJudgeModel` with its own `JudgeProviderId` (`anthropic | openai | deepseek`) for the judge/gate roles (`EVAL_JUDGE_MODEL`, `GATE_PRIMARY_MODEL`, `GATE_SANITY_MODEL`), duplicating a handful of parsing lines rather than widening the chat contract.
+
+**Alternatives considered.**
+- **Let `packages/evals` depend on `apps/web`.** Inverts the monorepo's layering for one package; every other cross-package edge in this repo points apps → packages.
+- **Add `openai` to `ChatProviderId` in `chat-model.ts`.** Simpler on paper, but breaks the existing contract test and lets a judge-only provider leak into the chat path (BYOK resolution, price table lookups meant for user-facing chat).
+- **Duplicate the refusal pattern list in `packages/evals`.** Rejected — two pattern sets drift, and the eval should score the guardrail that actually ships, not a copy of it.
+
+**Consequences.**
+- `packages/evals` is fully testable in CI without secrets (34 unit tests, no network) — the eventual CI gate only needs credentials for the one live `apps/web eval:run` step, not the whole test suite.
+- Running the golden set for real requires `EVAL_WORKSPACE_ID` (a workspace pre-seeded with the 5 fixture PDFs) plus `GATE_PRIMARY_MODEL` / `EVAL_JUDGE_MODEL` / retrieval provider keys.
+- The CI workflow itself (`.github/workflows/`) is deferred — this repo has no `.github/` directory yet, and gating PRs needs the above as repo secrets, a decision left open pending that setup.
+- `diff.ts`'s regression tolerances (e.g. faithfulness_avg within 0.2, hit_at_k within 0.04) are a starting policy, not calibrated against a real run yet; expect to tighten or loosen them once more than two baseline scorecards exist.
+
+**First live run (2026-07-26).** Ran the golden set against `anthropic:claude-sonnet-4-6` and `deepseek:deepseek-v4-flash` as `GATE_PRIMARY_MODEL`, judged by `openai:gpt-5-mini`. Retrieval (hit@k 0.90, MRR 0.80) and judge dimensions (faithfulness/relevance/citation_accuracy all 5.0 avg) were identical between runs, as expected — retrieval doesn't depend on the chat model, and both models nailed every scored answer. Cost and latency scaled with the price table as expected (Sonnet ~4x DeepSeek's cost, ~25% more latency).
+
+`refusal_correctness_rate` came back 0.5 (Sonnet) vs 0.75 (DeepSeek) on the 4 `no_answer` items — not a real quality gap. Reading the actual answers (`NA3`, `NA4_ES`) showed both models gave genuine, grounded refusals that `isRefusal` (`packages/prompts/src/refusal-detector.ts`) didn't recognize: an English refusal phrased as "the documents do not contain any information about..." (subject-first, not "I couldn't find" or "not mentioned in"), and a Spanish refusal phrased as "el documento no menciona..." (active voice, not the reflexive "no se menciona" the pattern list only covered). Fixed by adding both phrasings to `REFUSAL_PATTERNS` (plus "no contiene información" for symmetry) with regression tests pinned to the exact answer text from this run. This is exactly the loop the eval is meant to produce: a real run surfaced a detector gap in shared production code, not just eval-only tooling.
+- The perfect 5.0 judge averages across two different chat models are a flag to watch, not a clean bill of health — either the golden set's non-refusal items are easy enough that both models max them out, or GPT-5-mini isn't scoring as strictly as its "be strict" instruction asks. Worth a deliberate bad-answer sanity check on the judge itself before trusting the rubric to catch a real regression.

@@ -7,7 +7,8 @@
   "exports": {
     "./price-table": "./src/price-table.ts",
     "./chat-model": "./src/chat-model.ts",
-    "./judge-model": "./src/judge-model.ts"
+    "./judge-model": "./src/judge-model.ts",
+    "./tier-models": "./src/tier-models.ts"
   },
   "scripts": {
     "typecheck": "tsc --noEmit",

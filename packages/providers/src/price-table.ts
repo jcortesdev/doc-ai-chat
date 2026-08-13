@@ -10,12 +10,21 @@ const PRICE_TABLE: Record<string, ModelPrice> = {
   // Voyage AI embeddings — output tokens are not billed.
   'voyage-3': { inputPerMillion: 0.06, outputPerMillion: 0 },
   // Chat models (M3). Verify against each provider's pricing page when adding.
-  // Anthropic Sonnet 4.6 — prod demo default.
+  // Anthropic Sonnet 4.6 — prod demo default, and the "mid" tier in the M7 benchmark.
   'claude-sonnet-4-6': { inputPerMillion: 3.0, outputPerMillion: 15.0 },
-  // DeepSeek V4-Flash — dev iteration (and currently prod while benchmarking).
+  // DeepSeek V4-Flash — dev iteration (and currently prod while benchmarking);
+  // the "mid" tier in the M7 benchmark.
   'deepseek-v4-flash': { inputPerMillion: 0.14, outputPerMillion: 0.28 },
   // OpenAI GPT-5-mini — eval judge (M5, ADR-016 EVAL_JUDGE_MODEL default).
   'gpt-5-mini': { inputPerMillion: 0.25, outputPerMillion: 2.0 },
+  // --- M7: the "flagship" tier per provider (model selector + benchmark). ---
+  // TODO verify against each provider's pricing page before the benchmark run
+  // this feeds into `/benchmark` is treated as final — these are placeholders
+  // entered at M7 kickoff, not yet confirmed live prices.
+  'claude-opus-4-7': { inputPerMillion: 15.0, outputPerMillion: 75.0 },
+  'gpt-5': { inputPerMillion: 1.25, outputPerMillion: 10.0 },
+  'gpt-5.5': { inputPerMillion: 3.0, outputPerMillion: 15.0 },
+  'deepseek-v4-pro': { inputPerMillion: 0.55, outputPerMillion: 2.19 },
 };
 
 export function getModelPrice(model: string): ModelPrice {

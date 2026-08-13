@@ -143,15 +143,20 @@
   },
   "settings": {
     "title": "Ajustes",
-    "hint": "Usá tu propia key de Anthropic para chatear sin los límites del free-tier.",
-    "byokTitle": "API key de Anthropic (BYOK)",
-    "byokHint": "Con tu propia key, el chat corre en Claude y se saltea la cuota diaria, el bloqueo del trial semanal y el presupuesto del proyecto — las llamadas las paga tu key.",
-    "placeholder": "sk-ant-…",
+    "hint": "Usá tu propia key de cualquier proveedor para chatear sin los límites del free-tier, y elegí qué tier de modelo usar.",
+    "byokTitle": "API keys (BYOK)",
+    "byokHint": "Agregá tu propia key de Anthropic, OpenAI o DeepSeek. Una vez guardada, el chat en ese proveedor se saltea la cuota diaria, el bloqueo del trial semanal y el presupuesto del proyecto — las llamadas las paga tu key.",
+    "placeholder": "sk-…",
     "save": "Guardar key",
     "clear": "Quitar key",
     "active": "Key activa:",
-    "invalid": "Eso no parece una key de Anthropic (debería empezar con «sk-ant-»).",
-    "securityNote": "Se guarda solo en esta pestaña del navegador (sessionStorage), se envía con cada request y se borra al cerrar la pestaña. Nunca la guardamos ni la logueamos."
+    "keyLabel": "API key de {provider}",
+    "invalid": "Eso no parece una key válida de {provider}.",
+    "tierPicker": "Tier de modelo",
+    "tierLocked": "Agregá tu key de {provider} para desbloquear este tier.",
+    "currentlyUsing": "El chat está usando {model}.",
+    "noSelection": "Usando el modelo default del free-tier — agregá una key arriba y elegí un tier para usar la tuya.",
+    "securityNote": "Cada key se guarda solo en esta pestaña del navegador (sessionStorage), se envía con cada request y se borra al cerrar la pestaña o cambiar de cuenta. Nunca las guardamos ni las logueamos."
   },
   "account": {
     "title": "Cuenta",

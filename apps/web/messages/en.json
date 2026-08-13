@@ -143,15 +143,20 @@
   },
   "settings": {
     "title": "Settings",
-    "hint": "Bring your own Anthropic key to chat without the free-tier limits.",
-    "byokTitle": "Anthropic API key (BYOK)",
-    "byokHint": "With your own key, chat runs on Claude and skips the daily quota, weekly trial lock, and project budget — your key pays for the calls.",
-    "placeholder": "sk-ant-…",
+    "hint": "Bring your own key for any provider to chat without the free-tier limits, and pick which model tier to use.",
+    "byokTitle": "API keys (BYOK)",
+    "byokHint": "Add your own key for Anthropic, OpenAI, or DeepSeek. Once a key is saved, chat on that provider skips the daily quota, weekly trial lock, and project budget — your key pays for the calls.",
+    "placeholder": "sk-…",
     "save": "Save key",
     "clear": "Remove key",
     "active": "Key active:",
-    "invalid": "That doesn't look like an Anthropic key (it should start with \"sk-ant-\").",
-    "securityNote": "Stored only in this browser tab (sessionStorage), sent with each request, and cleared when you close the tab. We never save or log it."
+    "keyLabel": "{provider} API key",
+    "invalid": "That doesn't look like a valid {provider} key.",
+    "tierPicker": "Model tier",
+    "tierLocked": "Add your {provider} key to unlock this tier.",
+    "currentlyUsing": "Chat is currently using {model}.",
+    "noSelection": "Using the default free-tier model — add a key above and pick a tier to use your own.",
+    "securityNote": "Each key is stored only in this browser tab (sessionStorage), sent with each request, and cleared when you close the tab or switch accounts. We never save or log it."
   },
   "account": {
     "title": "Account",

@@ -12,6 +12,7 @@
     "./refusal-correctness": "./src/refusal-correctness.ts",
     "./judge": "./src/judge.ts",
     "./runner": "./src/runner.ts",
+    "./benchmark": "./src/benchmark.ts",
     "./diff": "./src/diff.ts"
   },
   "scripts": {

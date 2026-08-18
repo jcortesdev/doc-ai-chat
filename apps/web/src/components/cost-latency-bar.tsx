@@ -3,7 +3,10 @@
 import { useTranslations } from 'next-intl';
 
 // Per-response usage the route emits as message metadata on finish (task 7).
+// `model` added in M7 — the resolved model id was always computed server-side
+// but never sent to the client until the model became user-selectable.
 export type ChatUsage = {
+  model: string;
   inputTokens: number;
   outputTokens: number;
   costUsd: number;
@@ -39,6 +42,14 @@ export function CostLatencyBar({ usages }: { usages: ChatUsage[] }) {
 
   return (
     <div className="sticky top-0 z-10 flex flex-wrap items-center gap-x-4 gap-y-1 border-foreground/10 border-b bg-background/80 px-1 py-2 text-foreground/70 text-xs backdrop-blur">
+      {/* `model` is absent on messages persisted before M7 (localStorage chat
+          history predates the field) — hide the row rather than show an empty
+          "Model:" label for those older cached turns. */}
+      {last?.model && (
+        <span>
+          {t('barModel')}: <span className="font-mono text-foreground">{last.model}</span>
+        </span>
+      )}
       <span>
         {t('barCost')}:{' '}
         <span className="font-mono text-foreground tabular-nums">${totalCost.toFixed(6)}</span>

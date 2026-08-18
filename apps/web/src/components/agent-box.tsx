@@ -2,7 +2,7 @@
 
 import { AvailableDocuments } from '@/components/available-documents';
 import { ErrorState, type ErrorVariant } from '@/components/error-state';
-import { BYOK_STORAGE_KEY } from '@/lib/byok';
+import { byokRequestHeaders } from '@/lib/byok';
 import type { ReadyDocument } from '@/lib/documents';
 import { useChat } from '@ai-sdk/react';
 import { DefaultChatTransport, type UIMessage } from 'ai';
@@ -20,6 +20,9 @@ type AgentUsage = { inputTokens: number; outputTokens: number; costUsd: number; 
 type AgentCapReason = 'max_iterations' | 'max_tokens' | 'max_wall_clock';
 type AgentMetadata = {
   tier?: 'free' | 'pro';
+  // M7: the resolved model id — a BYOK-backed pro run may not be
+  // AGENT_PRO_MODEL's env default anymore (ADR-020's caps override).
+  model?: string;
   maxIterations?: number;
   capped?: boolean;
   capReason?: AgentCapReason | null;
@@ -84,13 +87,9 @@ function messageText(message: AgentUIMessage): string {
 // contract) — the route only ever reads the latest query, so no history is sent.
 const transport = new DefaultChatTransport<AgentUIMessage>({
   api: '/api/agent',
-  headers: (): Record<string, string> => {
-    if (typeof window === 'undefined') {
-      return {};
-    }
-    const key = window.sessionStorage.getItem(BYOK_STORAGE_KEY);
-    return key ? { 'x-user-api-key': key } : {};
-  },
+  // BYOK: same header contract as chat's transport (M7) — a BYOK-backed pro
+  // run uses the selected provider+tier's model instead of AGENT_PRO_MODEL.
+  headers: byokRequestHeaders,
   prepareSendMessagesRequest: ({ messages }) => {
     const last = messages.at(-1);
     const locale = typeof document !== 'undefined' ? document.documentElement.lang : 'en';
@@ -315,6 +314,7 @@ export function AgentBox({ documents, userId }: { documents: ReadyDocument[]; us
 
   const lastAssistant = [...messages].reverse().find((m) => m.role === 'assistant');
   const tier = lastAssistant?.metadata?.tier;
+  const model = lastAssistant?.metadata?.model;
   const maxIterations = lastAssistant?.metadata?.maxIterations;
 
   return (
@@ -334,6 +334,7 @@ export function AgentBox({ documents, userId }: { documents: ReadyDocument[]; us
             {tier === 'pro'
               ? t('tierPro', { n: maxIterations })
               : t('tierFree', { n: maxIterations })}
+            {model && <span className="block font-mono text-foreground/40">{model}</span>}
           </p>
         )}
         <AvailableDocuments documents={documents} />

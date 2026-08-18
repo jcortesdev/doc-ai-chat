@@ -1,4 +1,4 @@
-import type { ProviderTier } from '@doc-ai-chat/providers/tier-models';
+import { type ProviderTier, tierModelRef } from '@doc-ai-chat/providers/tier-models';
 
 // BYOK (bring-your-own-key) helpers shared by the account form and the chat
 // transport. Each provider's key lives ONLY in sessionStorage and is sent
@@ -84,4 +84,45 @@ export function readByokPreference(raw: string | null): ByokPreference | null {
     // rather than throwing, same fail-safe posture as tiers.ts's envIntCap.
   }
   return null;
+}
+
+// Client-side: computes the request headers for the currently active
+// provider+tier preference, for chat-box.tsx / agent-box.tsx's transports.
+// Returns {} whenever there's no usable preference — the key was cleared, no
+// tier was ever picked, etc. — and both routes fall back to their own
+// today's-default behavior in that case (CHAT_BYOK_MODEL for chat,
+// AGENT_PRO_MODEL/AGENT_FREE_MODEL for the agent; see ADR-020's BYOK-override
+// note). A preference with no matching key is exactly the "cleared the active
+// provider's key" case handleClear already guards client-side, but this is
+// re-checked here too since sessionStorage could have been edited directly.
+export function byokRequestHeaders(): Record<string, string> {
+  if (typeof window === 'undefined') {
+    return {};
+  }
+  const preference = readByokPreference(window.sessionStorage.getItem(BYOK_PREFERENCE_KEY));
+  if (!preference) {
+    return {};
+  }
+  const key = window.sessionStorage.getItem(byokStorageKey(preference.provider));
+  if (!key) {
+    return {};
+  }
+  return {
+    'x-user-api-key': key,
+    'x-user-model-ref': tierModelRef(preference.provider, preference.tier),
+  };
+}
+
+// Server-side: extracts the provider a `provider:model_id` ref claims, without
+// pulling in chat-model.ts's SDK-heavy resolver just to read one field. Used
+// by the chat/agent routes to validate a BYOK key's format against the
+// provider the client says it belongs to.
+export function parseByokProvider(modelRef: string | undefined): ByokProvider | null {
+  if (!modelRef) {
+    return null;
+  }
+  const provider = modelRef.split(':')[0];
+  return provider === 'anthropic' || provider === 'openai' || provider === 'deepseek'
+    ? provider
+    : null;
 }

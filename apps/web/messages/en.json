@@ -31,6 +31,7 @@
     "send": "Send",
     "thinking": "Thinking…",
     "empty": "Ask a question to get started.",
+    "barModel": "Model",
     "barCost": "Conversation cost",
     "barTokensPerSec": "Tokens/s",
     "barLatency": "Latency p50/p95",
@@ -220,7 +221,7 @@
     },
     "invalid_byok": {
       "title": "Invalid API key",
-      "body": "Anthropic rejected that key. Review it in settings and try again."
+      "body": "That key was rejected. Make sure it matches the provider you selected, review it in settings, and try again."
     },
     "model_overload": {
       "title": "Model busy",

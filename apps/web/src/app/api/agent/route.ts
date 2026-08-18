@@ -1,6 +1,6 @@
 import { runAgent } from '@/lib/agent';
 import { checkProjectBudget } from '@/lib/budget';
-import { isValidAnthropicKey } from '@/lib/byok';
+import { isValidProviderKey, parseByokProvider } from '@/lib/byok';
 import { enforceDailyQuota, rateLimitHeaders } from '@/lib/rate-limit';
 import {
   getAgentCaps,
@@ -65,11 +65,21 @@ export async function POST(request: Request) {
   }
   const { query, locale = 'en' } = parsed.data;
 
-  // BYOK (same contract as chat): a user-supplied Anthropic key pays for this
-  // run and unlocks the pro-tier caps/model (ADR-014). Header only, never body,
-  // never logged/persisted.
+  // BYOK (same contract as chat): a user-supplied key pays for this run and
+  // unlocks the pro-tier caps (ADR-014). Header only, never body, never
+  // logged/persisted. M7: which model the pro tier actually runs is now
+  // selectable too, but ONLY when a real BYOK key backs the choice — see the
+  // caps override below and ADR-020's note. Privileged-without-BYOK and the
+  // free tier are untouched: they always get the env-configured
+  // AGENT_PRO_MODEL / AGENT_FREE_MODEL default, same as before M7.
   const headerKey = request.headers.get('x-user-api-key')?.trim();
-  const userApiKey = headerKey && isValidAnthropicKey(headerKey) ? headerKey : undefined;
+  const headerModelRef = request.headers.get('x-user-model-ref')?.trim();
+  const byokProvider = parseByokProvider(headerModelRef);
+  const userApiKey =
+    headerKey && byokProvider && isValidProviderKey(byokProvider, headerKey)
+      ? headerKey
+      : undefined;
+  const userModelRef = userApiKey ? headerModelRef : undefined;
   const isByok = userApiKey !== undefined;
 
   try {
@@ -101,7 +111,13 @@ export async function POST(request: Request) {
     }
 
     const tier = resolveAgentTier(isPrivileged, isByok);
-    const caps = getAgentCaps(tier);
+    const baseCaps = getAgentCaps(tier);
+    // M7: a BYOK-backed pro run uses the user's own provider+tier choice
+    // instead of the env-configured AGENT_PRO_MODEL default — the iteration/
+    // token/wall-clock caps stay exactly what the tier defines, only the
+    // model changes. Privileged-without-BYOK (owner, no key) and the free
+    // tier never hit this branch, so they keep today's env-defined model.
+    const caps = isByok && userModelRef ? { ...baseCaps, modelRef: userModelRef } : baseCaps;
 
     const { result, modelId, startedAt, capState } = runAgent({
       query,
@@ -121,6 +137,10 @@ export async function POST(request: Request) {
         if (part.type === 'start') {
           return {
             tier,
+            // M7: the resolved model id — known before streaming starts
+            // (caps.modelRef, possibly BYOK-overridden above), so it's
+            // available from the first metadata part, not just on finish.
+            model: modelId,
             maxIterations: caps.maxIterations,
             maxWallClockMs: caps.maxWallClockMs,
           };
@@ -133,6 +153,7 @@ export async function POST(request: Request) {
             // stream events isn't a contract worth depending on (same reasoning
             // as /api/chat repeating `sources` on finish).
             tier,
+            model: modelId,
             maxIterations: caps.maxIterations,
             capped: capState.capped,
             capReason: capState.reason,

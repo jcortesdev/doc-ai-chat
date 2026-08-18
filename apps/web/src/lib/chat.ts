@@ -42,14 +42,25 @@ export type StreamChatArgs = {
   context?: ChatContext;
   // BYOK key (from X-User-API-Key); selects the BYOK model and pays for the call.
   userApiKey?: string;
+  // M7 model selector: an explicit `provider:model_id` ref the user picked in
+  // /account (X-User-Model-Ref), honored only alongside userApiKey — a chosen
+  // model with no key to pay for it falls back to byokModelRef() below, same
+  // as a BYOK user who saved a key but never picked a tier.
+  userModelRef?: string;
 };
 
 // Streams a chat completion through the selected model (AI SDK as transport,
 // ADR-005) and logs one usage_events row with cost on finish. Returns the stream
 // result plus the resolved `modelId` + `startedAt` so the route can emit live
 // cost/latency as message metadata (task 7).
-export function streamChat({ system, messages, context = {}, userApiKey }: StreamChatArgs) {
-  const ref = userApiKey ? byokModelRef() : chatModelRef();
+export function streamChat({
+  system,
+  messages,
+  context = {},
+  userApiKey,
+  userModelRef,
+}: StreamChatArgs) {
+  const ref = userApiKey ? (userModelRef ?? byokModelRef()) : chatModelRef();
   const { modelId } = parseModelRef(ref);
   const startedAt = Date.now();
 

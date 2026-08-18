@@ -1,5 +1,5 @@
 import { checkProjectBudget } from '@/lib/budget';
-import { isValidAnthropicKey } from '@/lib/byok';
+import { isValidProviderKey, parseByokProvider } from '@/lib/byok';
 import { streamChat } from '@/lib/chat';
 import { retrieveChatContext } from '@/lib/chat-retrieve';
 import { enforceDailyQuota, enforceRateLimit, rateLimitHeaders } from '@/lib/rate-limit';
@@ -78,8 +78,18 @@ export async function POST(request: Request) {
   // BYOK (task 4): a user-supplied Anthropic key (sk-ant-…) pays for this request.
   // Read from the header only, never the body; never logged or persisted. A
   // malformed value is ignored (treated as no key, so the user falls to free tier).
+  // M7: the model ref (provider:model_id) is only trusted when a key for THAT
+  // provider is also present and passes its format check — a ref with no
+  // matching valid key falls through to the project/BYOK-default model
+  // (streamChat's own fallback), never runs on a key that doesn't match.
   const headerKey = request.headers.get('x-user-api-key')?.trim();
-  const userApiKey = headerKey && isValidAnthropicKey(headerKey) ? headerKey : undefined;
+  const headerModelRef = request.headers.get('x-user-model-ref')?.trim();
+  const byokProvider = parseByokProvider(headerModelRef);
+  const userApiKey =
+    headerKey && byokProvider && isValidProviderKey(byokProvider, headerKey)
+      ? headerKey
+      : undefined;
+  const userModelRef = userApiKey ? headerModelRef : undefined;
   const isByok = userApiKey !== undefined;
 
   try {
@@ -147,6 +157,7 @@ export async function POST(request: Request) {
       messages,
       context: { workspaceId, isPrivileged, isByok },
       userApiKey,
+      userModelRef,
     });
 
     return result.toUIMessageStreamResponse({
@@ -163,6 +174,10 @@ export async function POST(request: Request) {
           return {
             sources,
             usage: {
+              // M7: surfaces which model actually answered — was computed
+              // server-side before but never sent to the client (a real gap
+              // once the model is user-selectable, not a single fixed default).
+              model: modelId,
               inputTokens,
               outputTokens,
               costUsd: computeCostUsd(modelId, inputTokens, outputTokens),

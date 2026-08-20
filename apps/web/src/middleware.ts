@@ -12,6 +12,9 @@ const isPublicRoute = createRouteMatcher([
   '/',
   '/:locale',
   '/:locale/terms',
+  // M7: the benchmark report doesn't depend on the visitor's own account or
+  // documents — it's the same public artifact for every viewer.
+  '/:locale/benchmark',
   '/:locale/sign-in(.*)',
   '/:locale/sign-up(.*)',
   '/sign-in(.*)',

@@ -13,7 +13,9 @@
     "./judge": "./src/judge.ts",
     "./runner": "./src/runner.ts",
     "./benchmark": "./src/benchmark.ts",
-    "./diff": "./src/diff.ts"
+    "./leaderboard": "./src/leaderboard.ts",
+    "./diff": "./src/diff.ts",
+    "./benchmark-results/latest.json": "./benchmark-results/latest.json"
   },
   "scripts": {
     "typecheck": "tsc --noEmit",

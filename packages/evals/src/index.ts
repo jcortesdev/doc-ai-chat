@@ -4,6 +4,7 @@ export * from './refusal-correctness';
 export * from './judge';
 export * from './runner';
 export * from './benchmark';
+export * from './leaderboard';
 export * from './diff';
 export {
   GOLDEN_SET_PATH,

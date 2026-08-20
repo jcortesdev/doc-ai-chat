@@ -48,15 +48,43 @@ export async function Topbar() {
   const hasReadyDocs = userId ? (await countReadyDocumentsForUser(userId)) > 0 : false;
 
   return (
-    <header className="flex items-center justify-between px-6 py-4 sm:px-10">
-      <Link
-        href="/"
-        className="font-mono font-semibold text-sm tracking-tight transition-opacity hover:opacity-80"
-      >
-        DocAI
-      </Link>
-      <div className="flex items-center gap-3">
-        <Show when="signed-in">
+    // Two deliberate rows, always (not just as a mobile wrap fallback) — M7
+    // follow-up. The earlier fix (flex-wrap on one row) just let the browser
+    // reflow logo/links/controls wherever they happened to fit, which put
+    // "DocAI" at an ambiguous mid-height between two unrelated nav rows on a
+    // phone (reported live). Splitting on purpose into "identity controls"
+    // (brand, locale, account) and "page navigation" is a real information
+    // hierarchy, not a wrap accident — and it reads the same way at every
+    // viewport size instead of only "fixing itself" once it's wide enough.
+    <header className="flex flex-col gap-2 px-6 py-4 sm:px-10">
+      <div className="flex items-center justify-between gap-3">
+        <Link
+          href="/"
+          className="font-mono font-semibold text-sm tracking-tight transition-opacity hover:opacity-80"
+        >
+          DocAI
+        </Link>
+        <div className="flex items-center gap-3">
+          <LocaleSwitcher />
+          <Show
+            when="signed-in"
+            fallback={
+              <SignInButton>
+                <button
+                  type="button"
+                  className="rounded-md bg-foreground px-3 py-1.5 font-medium text-background text-xs transition-opacity hover:opacity-90"
+                >
+                  {t('signIn')}
+                </button>
+              </SignInButton>
+            }
+          >
+            <UserButton />
+          </Show>
+        </div>
+      </div>
+      <Show when="signed-in">
+        <nav className="flex flex-wrap items-center gap-x-3 gap-y-2">
           <GatedNavLink
             href="/chat"
             label={t('chat')}
@@ -75,30 +103,22 @@ export async function Topbar() {
             disabled={!hasReadyDocs}
             disabledTitle={t('uploadFirst')}
           />
+          {/* Not doc-gated like Chat/Search/Agent — the benchmark report
+              doesn't depend on the visitor's own documents. */}
+          <Link
+            href="/benchmark"
+            className="font-medium text-foreground/70 text-xs transition-colors hover:text-foreground"
+          >
+            {t('benchmark')}
+          </Link>
           <Link
             href="/account"
             className="font-medium text-foreground/70 text-xs transition-colors hover:text-foreground"
           >
             {t('account')}
           </Link>
-        </Show>
-        <LocaleSwitcher />
-        <Show
-          when="signed-in"
-          fallback={
-            <SignInButton>
-              <button
-                type="button"
-                className="rounded-md bg-foreground px-3 py-1.5 font-medium text-background text-xs transition-opacity hover:opacity-90"
-              >
-                {t('signIn')}
-              </button>
-            </SignInButton>
-          }
-        >
-          <UserButton />
-        </Show>
-      </div>
+        </nav>
+      </Show>
     </header>
   );
 }

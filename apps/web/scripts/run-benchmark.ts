@@ -26,7 +26,7 @@ import type { BenchmarkAdapters } from '@doc-ai-chat/evals/benchmark';
 import { runBenchmark } from '@doc-ai-chat/evals/benchmark';
 import { createAiSdkJudge } from '@doc-ai-chat/evals/judge';
 import type { RunnerAdapters } from '@doc-ai-chat/evals/runner';
-import { GoldenSet, type Scorecard } from '@doc-ai-chat/evals/schema';
+import { type BenchmarkReport, GoldenSet } from '@doc-ai-chat/evals/schema';
 import { EVALS_ROOT, GOLDEN_SET_PATH } from '@doc-ai-chat/evals/validate-golden-set';
 import {
   PROMPT_RAG_ANSWER_V2,
@@ -133,13 +133,6 @@ function buildAdapters(): BenchmarkAdapters {
 
 const REPO_ROOT = path.resolve(EVALS_ROOT, '..', '..');
 const DEFAULT_OUT_PATH = path.resolve(EVALS_ROOT, 'benchmark-results', 'latest.json');
-
-export type BenchmarkReport = {
-  generated_at: string;
-  golden_set_version: string;
-  judge_model: string;
-  runs: Scorecard[];
-};
 
 async function main(): Promise<void> {
   const args = process.argv.slice(2);

@@ -1,0 +1,2041 @@
+{
+  "generated_at": "2026-08-20T16:21:54.467Z",
+  "golden_set_version": "1.0.0",
+  "judge_model": "openai:gpt-5",
+  "runs": [
+    {
+      "run_id": "2026-08-20T16:04:50.607Z-anthropic:claude-sonnet-4-6",
+      "created_at": "2026-08-20T16:11:08.793Z",
+      "golden_set_version": "1.0.0",
+      "chat_model": "anthropic:claude-sonnet-4-6",
+      "judge_model": "openai:gpt-5",
+      "prompt_version": 2,
+      "entries": [
+        {
+          "item_id": "F1",
+          "type": "factual_single_hop",
+          "lang": "en",
+          "question": "What is Gated Sparse Attention (GSA)?",
+          "answer": "## Gated Sparse Attention (GSA)\n\nGSA is a routing variant for sparse transformer attention that introduces a **learned sigmoid gate at each attention head** to select a subset of key-value pairs to attend to per query. [1]\n\n### How it works\nFor each attention head, three quantities are computed [2][4]:\n1. **Standard attention scores**: `s = softmax(q · k / sqrt(d))`\n2. **Gate values**: `g = sigmoid(W_g · [q; k] + b_g)`\n3. **Routed attention**: `r = (s ⊙ g) / sum(s ⊙ g)`\n\nThe gating matrix `W_g` has shape `(2d, 1)`, adding only `2d` parameters per head. The bias `b_g` is initialized to `2.0` so the gate starts near `1.0` (dense behavior) and training gradually increases sparsity. [4]\n\n### Key advantage over top-k attention\nUnlike top-k sparse attention methods, GSA uses a sigmoid gate trained **jointly with the attention weights**, making it fully end-to-end differentiable — no straight-through estimators or other approximations are needed. [1][2]\n\n### Results\n- **38% FLOPs reduction** on WMT-22 EN-ES machine translation, with only a 0.4 BLEU drop [1]\n- **41% inference latency reduction** on long-context summarization (GovReport) [3]\n- Minimal accuracy loss on image classification (81.2% vs. 81.4% dense baseline on ImageNet-1k) [3]\n\n### Limitation\nGSA reduces FLOPs but **not memory**, since the full K and V matrices must still be materialized. [3]",
+          "retrieval": {
+            "hit_at_k": true,
+            "rank": 1,
+            "mrr": 1
+          },
+          "judge": {
+            "faithfulness": {
+              "score": 5,
+              "rationale": "All details (definition, mechanism with equations, parameter shape and init, differentiability vs. top‑k, empirical results, and limitation) are explicitly supported by the cited passages."
+            },
+            "answer_relevance": {
+              "score": 5,
+              "rationale": "The response directly defines GSA and succinctly explains how it works and why it differs from top‑k, fully addressing the question."
+            },
+            "citation_accuracy": {
+              "score": 5,
+              "rationale": "Citations are specific and appropriate: [1]/[2] for the core concept and differentiability, [2]/[4] for equations and parameters, and [3] for results and limitations."
+            }
+          },
+          "refusal_correct": null,
+          "cost_usd": 0.013016600000000001,
+          "latency_ms": 11834
+        },
+        {
+          "item_id": "F3",
+          "type": "factual_single_hop",
+          "lang": "en",
+          "question": "What Wi-Fi frequencies does the Helios H7 support?",
+          "answer": "The Helios H7 supports **2.4 GHz Wi-Fi (802.11 b/g/n) only**. It does not support 5 GHz Wi-Fi or Wi-Fi 6. [1][2] It is compatible with WPA2 or WPA3 security protocols. [3]",
+          "retrieval": {
+            "hit_at_k": true,
+            "rank": 1,
+            "mrr": 1
+          },
+          "judge": {
+            "faithfulness": {
+              "score": 5,
+              "rationale": "All claims (2.4 GHz only, no 5 GHz/Wi‑Fi 6, WPA2/WPA3 compatibility) are explicitly supported by the cited passages."
+            },
+            "answer_relevance": {
+              "score": 5,
+              "rationale": "It directly answers the question about supported Wi‑Fi frequencies and stays on-topic."
+            },
+            "citation_accuracy": {
+              "score": 5,
+              "rationale": "Citations [1][2] support the 2.4 GHz-only detail and lack of 5 GHz/Wi‑Fi 6, and [3] correctly supports the WPA2/WPA3 note."
+            }
+          },
+          "refusal_correct": null,
+          "cost_usd": 0.00875072,
+          "latency_ms": 4650
+        },
+        {
+          "item_id": "F4",
+          "type": "factual_single_hop",
+          "lang": "en",
+          "question": "What is the operating temperature range of the Helios H7?",
+          "answer": "The Helios H7 has an operating temperature range of **-10°C to 50°C (14°F to 122°F)**. [1][2]",
+          "retrieval": {
+            "hit_at_k": true,
+            "rank": 1,
+            "mrr": 1
+          },
+          "judge": {
+            "faithfulness": {
+              "score": 5,
+              "rationale": "The stated range exactly matches and is explicitly supported by the cited passages."
+            },
+            "answer_relevance": {
+              "score": 5,
+              "rationale": "It directly and completely answers the question about the operating temperature range."
+            },
+            "citation_accuracy": {
+              "score": 5,
+              "rationale": "Both [1] and [2] explicitly provide the operating temperature range, making the citations precise and relevant."
+            }
+          },
+          "refusal_correct": null,
+          "cost_usd": 0.008207780000000001,
+          "latency_ms": 4168
+        },
+        {
+          "item_id": "F5_ES",
+          "type": "factual_single_hop",
+          "lang": "es",
+          "question": "¿Qué incluye la caja del Helios H7?",
+          "answer": "La caja del Helios H7 incluye los siguientes elementos [1]:\n\n- **Termostato Helios H7**\n- **Placa de montaje de pared**\n- **Cuatro tornillos #6 y cuatro anclajes para drywall**\n- **Kit extensor de corriente (PEK)**\n- **Tarjeta de inicio rápido** (en inglés y español)\n- **Cable USB-C** (solo para actualizaciones de firmware, no para alimentación eléctrica)",
+          "retrieval": {
+            "hit_at_k": false,
+            "rank": null,
+            "mrr": 0
+          },
+          "judge": {
+            "faithfulness": {
+              "score": 5,
+              "rationale": "Todos los elementos listados coinciden exactamente con la sección “What’s in the box” del pasaje [1], sin afirmaciones no respaldadas ni contradicciones."
+            },
+            "answer_relevance": {
+              "score": 5,
+              "rationale": "Responde directa y completamente a la pregunta al enumerar el contenido de la caja del Helios H7."
+            },
+            "citation_accuracy": {
+              "score": 5,
+              "rationale": "La cita [1] es precisamente la que enumera el contenido de la caja y no se incluyen fuentes irrelevantes."
+            }
+          },
+          "refusal_correct": null,
+          "cost_usd": 0.009551780000000001,
+          "latency_ms": 4750
+        },
+        {
+          "item_id": "F6",
+          "type": "factual_single_hop",
+          "lang": "en",
+          "question": "Who audited the Q1 2026 report?",
+          "answer": "The Q1 2026 financial summary was reviewed by **Greenfield & Associates**. [1][2]",
+          "retrieval": {
+            "hit_at_k": true,
+            "rank": 1,
+            "mrr": 1
+          },
+          "judge": {
+            "faithfulness": {
+              "score": 5,
+              "rationale": "The answer states the summary was reviewed by Greenfield & Associates, exactly as indicated in the cited passages."
+            },
+            "answer_relevance": {
+              "score": 5,
+              "rationale": "It directly identifies the firm responsible for reviewing/auditing the Q1 2026 report, which is what the question asks."
+            },
+            "citation_accuracy": {
+              "score": 5,
+              "rationale": "Both cited passages [1] and [2] explicitly say the summary was reviewed by Greenfield & Associates, supporting the claim."
+            }
+          },
+          "refusal_correct": null,
+          "cost_usd": 0.008186780000000001,
+          "latency_ms": 4073
+        },
+        {
+          "item_id": "F7",
+          "type": "factual_single_hop",
+          "lang": "en",
+          "question": "When did the Indianapolis distribution center close?",
+          "answer": "The Indianapolis distribution center closed on **February 14, 2026**. [2]",
+          "retrieval": {
+            "hit_at_k": true,
+            "rank": 1,
+            "mrr": 1
+          },
+          "judge": {
+            "faithfulness": {
+              "score": 4,
+              "rationale": "The closure date is correct, and [2] confirms February 14, though it does not explicitly state the year 2026 in that bullet (implied by the Q1 2026 context)."
+            },
+            "answer_relevance": {
+              "score": 5,
+              "rationale": "It directly answers the question with a specific date."
+            },
+            "citation_accuracy": {
+              "score": 4,
+              "rationale": "Citation [2] supports the February 14 closure, but citing [1] (which explicitly includes 2026) would have been more precise."
+            }
+          },
+          "refusal_correct": null,
+          "cost_usd": 0.007886480000000001,
+          "latency_ms": 4421
+        },
+        {
+          "item_id": "F9_ES",
+          "type": "factual_single_hop",
+          "lang": "es",
+          "question": "¿Cuántos autobuses eléctricos se incorporarán en el plan piloto?",
+          "answer": "Se incorporarán **doce autobuses eléctricos** de fabricación nacional, con capacidad para 38 pasajeros sentados y 22 de pie, y una autonomía nominal de 280 kilómetros por carga. [1]",
+          "retrieval": {
+            "hit_at_k": true,
+            "rank": 1,
+            "mrr": 1
+          },
+          "judge": {
+            "faithfulness": {
+              "score": 5,
+              "rationale": "All stated details—twelve buses, their capacity, and autonomy—are explicitly supported by passage [1]."
+            },
+            "answer_relevance": {
+              "score": 5,
+              "rationale": "It directly answers the question about the number of buses (twelve) while adding relevant context."
+            },
+            "citation_accuracy": {
+              "score": 5,
+              "rationale": "The cited passage [1] precisely supports the answer and all included specifics."
+            }
+          },
+          "refusal_correct": null,
+          "cost_usd": 0.0085502,
+          "latency_ms": 4981
+        },
+        {
+          "item_id": "F10_ES",
+          "type": "factual_single_hop",
+          "lang": "es",
+          "question": "¿Cuándo entra en vigencia el plan piloto?",
+          "answer": "El plan piloto entra en vigencia el **1 de abril de 2026**. [2][3]",
+          "retrieval": {
+            "hit_at_k": true,
+            "rank": 1,
+            "mrr": 1
+          },
+          "judge": {
+            "faithfulness": {
+              "score": 5,
+              "rationale": "La fecha dada coincide exactamente con lo señalado en los pasajes [2] y [3]."
+            },
+            "answer_relevance": {
+              "score": 5,
+              "rationale": "Responde de forma directa y concisa a la pregunta sobre cuándo entra en vigencia el plan piloto."
+            },
+            "citation_accuracy": {
+              "score": 5,
+              "rationale": "Las citas [2] y [3] respaldan explícitamente la fecha indicada de entrada en vigencia."
+            }
+          },
+          "refusal_correct": null,
+          "cost_usd": 0.00783278,
+          "latency_ms": 4319
+        },
+        {
+          "item_id": "MH1",
+          "type": "multi_hop",
+          "lang": "en",
+          "question": "Why doesn't Gated Sparse Attention reduce memory usage even though it reduces FLOPs?",
+          "answer": "Because GSA still requires the full K and V matrices to be materialized, even though it skips some of the floating-point operations. The gate selects which key-value pairs to *attend* to per query, but it does not eliminate the need to store those matrices in memory beforehand. [1]\n\nThe paper notes that achieving actual memory savings would require a separate technique — such as paged attention or sliding-window attention — which was not combined with GSA in this study. [1]\n\nIn short: FLOPs and memory are distinct costs. GSA reduces *compute* by pruning attention operations, but the underlying data (K and V matrices) must still be fully loaded into memory, so memory footprint is unchanged. [1]",
+          "retrieval": {
+            "hit_at_k": true,
+            "rank": 1,
+            "mrr": 1
+          },
+          "judge": {
+            "faithfulness": {
+              "score": 5,
+              "rationale": "All claims (full K/V materialization, FLOPs vs memory distinction, and need for paged/sliding-window attention) are explicitly stated in passage [1]."
+            },
+            "answer_relevance": {
+              "score": 5,
+              "rationale": "It directly explains why memory is not reduced despite lower FLOPs, matching the question’s scope."
+            },
+            "citation_accuracy": {
+              "score": 5,
+              "rationale": "The single citation [1] fully supports every point made, with no extraneous or missing references."
+            }
+          },
+          "refusal_correct": null,
+          "cost_usd": 0.00914408,
+          "latency_ms": 6228
+        },
+        {
+          "item_id": "MH2",
+          "type": "multi_hop",
+          "lang": "en",
+          "question": "If my existing thermostat wiring has no C-wire, what does Helios recommend and what symptom would tell me I have the problem?",
+          "answer": "If your wiring lacks a C-wire, Helios recommends using the included **Power Extender Kit (PEK)**, installed at the furnace control board. [1]\n\nThe symptom that tells you the C-wire is missing (or the PEK is needed) is a **blank screen** on the H7 unit. [2]",
+          "retrieval": {
+            "hit_at_k": true,
+            "rank": 1,
+            "mrr": 1
+          },
+          "judge": {
+            "faithfulness": {
+              "score": 5,
+              "rationale": "Both claims—the PEK recommendation at the furnace control board and the blank screen symptom—are explicitly stated in the cited passages."
+            },
+            "answer_relevance": {
+              "score": 5,
+              "rationale": "The response directly addresses both parts of the question: what to do without a C-wire and the symptom indicating the issue."
+            },
+            "citation_accuracy": {
+              "score": 5,
+              "rationale": "The PEK recommendation is correctly supported by [1], and the blank screen symptom due to no C-wire is correctly supported by [2]."
+            }
+          },
+          "refusal_correct": null,
+          "cost_usd": 0.00886262,
+          "latency_ms": 5005
+        },
+        {
+          "item_id": "MH3",
+          "type": "multi_hop",
+          "lang": "en",
+          "question": "Why did Northwind's warehousing revenue decline in Q1 2026?",
+          "answer": "Northwind's warehousing revenue declined 2.7% (from $22.4M to $21.8M) due to the **planned closure of the Indianapolis distribution center on February 14, 2026**. [2] This closure also eliminated 86 positions and resulted in severance and transition costs of $1.6 million recognized in Q1. [4]",
+          "retrieval": {
+            "hit_at_k": true,
+            "rank": 2,
+            "mrr": 0.5
+          },
+          "judge": {
+            "faithfulness": {
+              "score": 5,
+              "rationale": "All details (the 2.7% decline from $22.4M to $21.8M, the planned Indianapolis DC closure on Feb 14, 2026, and the 86 positions and $1.6M severance costs) are explicitly supported by passages [2] and [4]."
+            },
+            "answer_relevance": {
+              "score": 5,
+              "rationale": "It directly explains the reason for the Q1 2026 warehousing revenue decline—the planned closure of the Indianapolis distribution center—matching the question’s intent."
+            },
+            "citation_accuracy": {
+              "score": 5,
+              "rationale": "Passage [2] supports the cause and revenue figures, and passage [4] supports the job eliminations and severance costs; citations are precise and sufficient."
+            }
+          },
+          "refusal_correct": null,
+          "cost_usd": 0.00887708,
+          "latency_ms": 4370
+        },
+        {
+          "item_id": "MH4",
+          "type": "multi_hop",
+          "lang": "en",
+          "question": "Under what circumstances can a Lighthouse Analytics customer get a refund?",
+          "answer": "Based on the Terms of Service, refunds are issued only in three circumstances [5]:\n\n1. **Service credit** – When downtime exceeds the 99.5% monthly uptime target (per Section 6).\n2. **Billing error** – When a billing error is confirmed by the support team.\n3. **Early cancellation** – When a subscription is cancelled within **14 days of the initial subscription**, with the refund prorated to the days used.",
+          "retrieval": {
+            "hit_at_k": true,
+            "rank": 2,
+            "mrr": 0.5
+          },
+          "judge": {
+            "faithfulness": {
+              "score": 5,
+              "rationale": "The answer accurately lists the three refund circumstances exactly as stated in the provided Terms (service credit for uptime shortfall, confirmed billing error, and prorated refund for cancellation within 14 days)."
+            },
+            "answer_relevance": {
+              "score": 5,
+              "rationale": "It directly answers the question by enumerating the specific circumstances under which a customer can receive a refund."
+            },
+            "citation_accuracy": {
+              "score": 3,
+              "rationale": "It cites only [5], which supports the three conditions, but includes the 99.5% uptime detail that is substantiated in Section 6 ([4]/[2]) and not in [5], so an additional citation is missing."
+            }
+          },
+          "refusal_correct": null,
+          "cost_usd": 0.007787780000000001,
+          "latency_ms": 5157
+        },
+        {
+          "item_id": "MH5_ES",
+          "type": "multi_hop",
+          "lang": "es",
+          "question": "¿Qué puede hacer la Secretaría de Movilidad si las metas trimestrales del plan no se alcanzan?",
+          "answer": "Si las metas trimestrales no se alcanzan, la Secretaría de Movilidad podrá **ajustar la tarifa de circulación** o **ampliar las zonas de bajas emisiones**, pero siempre con previa notificación al Consejo Municipal con al menos **60 días de anticipación**. [1]",
+          "retrieval": {
+            "hit_at_k": true,
+            "rank": 1,
+            "mrr": 1
+          },
+          "judge": {
+            "faithfulness": {
+              "score": 5,
+              "rationale": "La respuesta repite exactamente lo establecido en el pasaje [1]: ajustar la tarifa o ampliar las zonas, con notificación previa de 60 días al Consejo Municipal."
+            },
+            "answer_relevance": {
+              "score": 5,
+              "rationale": "Responde de forma directa y completa a qué puede hacer la Secretaría si no se alcanzan las metas trimestrales."
+            },
+            "citation_accuracy": {
+              "score": 5,
+              "rationale": "La cita [1] es suficiente y específica para respaldar todas las afirmaciones de la respuesta."
+            }
+          },
+          "refusal_correct": null,
+          "cost_usd": 0.0087245,
+          "latency_ms": 4549
+        },
+        {
+          "item_id": "S1",
+          "type": "summarization",
+          "lang": "en",
+          "question": "Summarize the contribution of this paper in one sentence.",
+          "answer": "The paper introduces **Gated Sparse Attention (GSA)**, a routing method for sparse transformer attention that uses a sigmoid-based learned gate to select key-value pairs per query, reducing compute by 38% on the WMT-22 EN-ES benchmark while preserving translation quality within 0.4 BLEU points, and is end-to-end differentiable without requiring a hard top-k operator. [3][1]",
+          "retrieval": {
+            "hit_at_k": false,
+            "rank": null,
+            "mrr": 0
+          },
+          "judge": {
+            "faithfulness": {
+              "score": 5,
+              "rationale": "All claims (GSA method, sigmoid gate selecting key-values, 38% compute reduction on WMT-22 EN-ES with ≤0.4 BLEU loss, end-to-end differentiability, no hard top-k) are explicitly supported by passages [3] and [1]."
+            },
+            "answer_relevance": {
+              "score": 5,
+              "rationale": "It concisely summarizes the paper’s main contribution in one sentence, directly addressing the prompt."
+            },
+            "citation_accuracy": {
+              "score": 5,
+              "rationale": "Passage [3] supports the method, performance, and hard top-k removal, while [1] supports the differentiability and sigmoid gate formulation; both are appropriate and sufficient."
+            }
+          },
+          "refusal_correct": null,
+          "cost_usd": 0.00856172,
+          "latency_ms": 4115
+        },
+        {
+          "item_id": "S2",
+          "type": "summarization",
+          "lang": "en",
+          "question": "Summarize the key financial highlights of Q1 2026 for Northwind Logistics in 3 bullet points.",
+          "answer": "Here are three key financial highlights for Northwind Logistics in Q1 2026:\n\n- **Strong revenue growth:** Consolidated revenue reached $148.2 million, a 12.4% increase year-over-year, led by Last-mile delivery (+39.5%) and International freight (+29.7%). [1][3]\n\n- **Improved profitability:** Operating income rose to $19.7 million (vs. $14.1 million in Q1 2025), producing a 13.3% operating margin — the highest since Q2 2023 — and net income of $14.2 million. [2]\n\n- **Positive cash flow and debt reduction:** Free cash flow returned to positive at $11.4 million, and long-term debt dropped from $151.8 million to $142.3 million following the early repayment of a $9.5 million term loan. [2]",
+          "retrieval": {
+            "hit_at_k": true,
+            "rank": 1,
+            "mrr": 1
+          },
+          "judge": {
+            "faithfulness": {
+              "score": 5,
+              "rationale": "All numerical figures and statements (revenue and growth, operating margin highest since Q2 2023, net income, free cash flow, debt reduction and loan repayment) are directly supported by the provided passages with no fabrication."
+            },
+            "answer_relevance": {
+              "score": 5,
+              "rationale": "It delivers exactly three concise bullet points focused on the key Q1 2026 financial highlights—revenue growth, profitability, and cash flow/debt—matching the requested scope."
+            },
+            "citation_accuracy": {
+              "score": 4,
+              "rationale": "Citations mostly align with the claims, but the note that free cash flow ‘returned to positive’ is supported by [1] rather than [2], which is the only citation provided for that bullet."
+            }
+          },
+          "refusal_correct": null,
+          "cost_usd": 0.0106715,
+          "latency_ms": 6914
+        },
+        {
+          "item_id": "S3",
+          "type": "summarization",
+          "lang": "en",
+          "question": "Summarize the data ownership terms in two sentences.",
+          "answer": "Users retain all rights to data they upload, granting Lighthouse Analytics only a non-exclusive, royalty-free license to process it solely for providing the Service. [1] Lighthouse Analytics will not use uploaded data to train machine learning models without the user's explicit written consent. [1]",
+          "retrieval": {
+            "hit_at_k": true,
+            "rank": 1,
+            "mrr": 1
+          },
+          "judge": {
+            "faithfulness": {
+              "score": 5,
+              "rationale": "Both statements are verbatim or near-verbatim from passage [1] and make no unsupported claims."
+            },
+            "answer_relevance": {
+              "score": 5,
+              "rationale": "It directly summarizes the data ownership terms in exactly two sentences as requested."
+            },
+            "citation_accuracy": {
+              "score": 5,
+              "rationale": "Passage [1] precisely supports both points about rights retention, license scope, and ML training consent."
+            }
+          },
+          "refusal_correct": null,
+          "cost_usd": 0.00785366,
+          "latency_ms": 4893
+        },
+        {
+          "item_id": "NA1",
+          "type": "no_answer",
+          "lang": "en",
+          "question": "Does the Helios H7 support Apple HomeKit?",
+          "answer": "I couldn't find any mention of Apple HomeKit in the provided documentation. The guide covers Wi-Fi connectivity (2.4 GHz, WPA2/WPA3) and the Helios app, but does not reference HomeKit or any other smart home platform integrations. [2][5]\n\nFor a definitive answer, I'd recommend contacting Helios support at support@helios-example.com. [5]",
+          "retrieval": null,
+          "judge": null,
+          "refusal_correct": true,
+          "cost_usd": 0.00902966,
+          "latency_ms": 4496
+        },
+        {
+          "item_id": "NA2",
+          "type": "no_answer",
+          "lang": "en",
+          "question": "Who is the CEO of Northwind Logistics?",
+          "answer": "I couldn't find that in your documents. The provided Northwind Logistics Q1 2026 Financial Summary does not mention the CEO or any executive by name.",
+          "retrieval": null,
+          "judge": null,
+          "refusal_correct": true,
+          "cost_usd": 0.00794654,
+          "latency_ms": 3352
+        },
+        {
+          "item_id": "NA3",
+          "type": "no_answer",
+          "lang": "en",
+          "question": "What is the price of the Lighthouse Analytics service?",
+          "answer": "The documents don't include any pricing information for Lighthouse Analytics. The Terms of Service only describe billing mechanics (e.g., automatic renewal, refund conditions) but do not specify any prices or plans. You would need to check Lighthouse Analytics' website or contact them directly for pricing details.",
+          "retrieval": null,
+          "judge": null,
+          "refusal_correct": false,
+          "cost_usd": 0.007148659999999999,
+          "latency_ms": 4019
+        },
+        {
+          "item_id": "NA4_ES",
+          "type": "no_answer",
+          "lang": "es",
+          "question": "¿Cuántas estaciones de carga habrá en zonas residenciales?",
+          "answer": "No encontré esa información en los documentos disponibles. El plan solo menciona cuatro estaciones de carga rápida ubicadas en los terminales de **Las Tortugas, Plaza Mayor, Estación Norte y Parque Industrial** [1], sin hacer referencia a estaciones en zonas residenciales.",
+          "retrieval": null,
+          "judge": null,
+          "refusal_correct": true,
+          "cost_usd": 0.00794402,
+          "latency_ms": 3759
+        },
+        {
+          "item_id": "N1",
+          "type": "numeric",
+          "lang": "en",
+          "question": "What BLEU score does GSA achieve on the WMT-22 EN-ES benchmark?",
+          "answer": "GSA achieves a BLEU score of **34.4** on the WMT-22 EN-ES benchmark, compared to the dense baseline of 34.8 BLEU, while using only 62% of the FLOPs. [2]",
+          "retrieval": {
+            "hit_at_k": true,
+            "rank": 2,
+            "mrr": 0.5
+          },
+          "judge": {
+            "faithfulness": {
+              "score": 5,
+              "rationale": "All facts stated (34.4 BLEU for GSA, 34.8 baseline, 62% FLOPs) are directly supported by passage [2]."
+            },
+            "answer_relevance": {
+              "score": 5,
+              "rationale": "It directly answers the question with the BLEU score and provides brief, relevant context."
+            },
+            "citation_accuracy": {
+              "score": 5,
+              "rationale": "The single citation [2] precisely contains the reported BLEU scores and FLOPs information."
+            }
+          },
+          "refusal_correct": null,
+          "cost_usd": 0.0079742,
+          "latency_ms": 2869
+        },
+        {
+          "item_id": "N2",
+          "type": "numeric",
+          "lang": "en",
+          "question": "How many heating and cooling stages does the Helios H7 support at maximum?",
+          "answer": "The Helios H7 supports a maximum of **2 heating stages and 2 cooling stages**. [1]",
+          "retrieval": {
+            "hit_at_k": true,
+            "rank": 1,
+            "mrr": 1
+          },
+          "judge": {
+            "faithfulness": {
+              "score": 5,
+              "rationale": "The answer precisely matches passage [1], which states “Up to 2 heating stages + 2 cooling stages.”"
+            },
+            "answer_relevance": {
+              "score": 5,
+              "rationale": "It directly and succinctly answers the question about the maximum supported heating and cooling stages."
+            },
+            "citation_accuracy": {
+              "score": 5,
+              "rationale": "The cited passage [1] explicitly contains the exact specification supporting the claim."
+            }
+          },
+          "refusal_correct": null,
+          "cost_usd": 0.00803996,
+          "latency_ms": 4902
+        },
+        {
+          "item_id": "N3",
+          "type": "numeric",
+          "lang": "en",
+          "question": "What was Northwind's total revenue in Q1 2026?",
+          "answer": "Northwind Logistics reported total consolidated revenue of **$148.2 million** in Q1 2026, a 12.4% increase year-over-year. [1]",
+          "retrieval": {
+            "hit_at_k": true,
+            "rank": 1,
+            "mrr": 1
+          },
+          "judge": {
+            "faithfulness": {
+              "score": 5,
+              "rationale": "The answer states $148.2 million and 12.4% YoY increase, both directly supported by passage [1]."
+            },
+            "answer_relevance": {
+              "score": 5,
+              "rationale": "It directly provides the total Q1 2026 revenue figure requested."
+            },
+            "citation_accuracy": {
+              "score": 5,
+              "rationale": "Citation [1] precisely contains the revenue figure and YoY increase used in the answer."
+            }
+          },
+          "refusal_correct": null,
+          "cost_usd": 0.00823796,
+          "latency_ms": 3671
+        },
+        {
+          "item_id": "C1",
+          "type": "contradiction_or_cross_doc",
+          "lang": "en",
+          "question": "Both the Helios H7 manual and the Lighthouse Analytics Terms of Service describe data the company collects from users. How do their data-ownership terms compare?",
+          "answer": "## Data Ownership Comparison\n\n**Lighthouse Analytics (Terms of Service):**\nLighthouse Analytics has an explicit data-ownership clause: users **retain all rights** to data they upload. The company receives only a non-exclusive, royalty-free license to process that data solely for delivering the service. Critically, Lighthouse commits **not to use uploaded data to train machine learning models** without the user's explicit written consent. [1]\n\n**Helios H7 (User Manual):**\nThe Helios H7 manual does **not include any data-ownership terms**. It mentions data the device collects and shares — such as monthly energy reports and anonymized ZIP-code comparisons — but says nothing about who owns that data, what rights users retain, or how Helios may use it. [4]\n\n---\n\n**Summary:**\nLighthouse Analytics provides clear, user-favorable data-ownership language with explicit protections. The Helios H7 manual is silent on ownership rights entirely, leaving users without any stated guarantees about control over their device data. If data ownership is a concern for Helios users, they would need to consult a separate privacy policy or terms of service document not present in the provided materials.",
+          "retrieval": {
+            "hit_at_k": true,
+            "rank": 1,
+            "mrr": 1
+          },
+          "judge": {
+            "faithfulness": {
+              "score": 5,
+              "rationale": "The answer accurately reflects [1] on user-retained rights and ML training consent and correctly notes that the Helios manual excerpt [4] describes reports but provides no ownership terms."
+            },
+            "answer_relevance": {
+              "score": 5,
+              "rationale": "It directly compares the two sources’ data-ownership positions, highlighting Lighthouse’s explicit terms versus the Helios manual’s silence, which matches the question."
+            },
+            "citation_accuracy": {
+              "score": 5,
+              "rationale": "The Lighthouse claims are supported by [1], and the Helios discussion is grounded in [4], the relevant passages for each point."
+            }
+          },
+          "refusal_correct": null,
+          "cost_usd": 0.01116692,
+          "latency_ms": 8988
+        },
+        {
+          "item_id": "C2",
+          "type": "contradiction_or_cross_doc",
+          "lang": "en",
+          "question": "The Northwind report mentions improved route optimization. The Valdivia Norte plan mentions reducing CO emissions. Do both documents describe the same kind of operational change, and what is the key difference in scope?",
+          "answer": "No, they do not describe the same kind of operational change, though both touch on efficiency improvements in transportation.\n\n**Northwind Logistics** improved route optimization through the deployment of the **FleetSmart platform** across 87% of long-haul vehicles, which helped reduce fuel costs as a percentage of revenue from 13.8% to 12.3%. [5] This is a **software/technology-driven efficiency gain** applied to an existing private freight fleet, with no fundamental change to vehicle type or infrastructure.\n\n**Valdivia Norte's PPMEU** targets an **18% reduction in CO emissions** through a much more structural transformation: replacing existing urban transport with a **fleet of electric buses** and establishing **low-emission zones** in the historic city center. [1] This also involves building entirely new charging infrastructure (four fast-charging stations at a total investment of 880 million pesos) and a three-year concession contract with operator TransValdivia. [4]\n\n**Key difference in scope:**\n- Northwind's change is **incremental and operational** — optimizing routes within an existing fuel-based system.\n- Valdivia Norte's change is **infrastructural and systemic** — overhauling the mode of transport itself (combustion → electric), rebuilding supporting infrastructure, and reshaping urban policy through emissions zones. [1][4]\n\nThe two documents address transportation efficiency at entirely different scales and through fundamentally different mechanisms.",
+          "retrieval": {
+            "hit_at_k": true,
+            "rank": 5,
+            "mrr": 0.2
+          },
+          "judge": {
+            "faithfulness": {
+              "score": 4,
+              "rationale": "The answer is largely grounded in the cited passages, but it makes minor unsupported inferences (e.g., calling Northwind a private fleet and stating there was no infrastructure change) beyond what is explicitly stated."
+            },
+            "answer_relevance": {
+              "score": 5,
+              "rationale": "It directly addresses whether the changes are the same and clearly explains the key difference in scope between incremental route optimization and a systemic electrification and policy shift."
+            },
+            "citation_accuracy": {
+              "score": 5,
+              "rationale": "The cited passages precisely support the claims made: [5] for FleetSmart-driven route optimization and fuel cost metrics, and [1]/[4] for Valdivia’s electric buses, low-emission zones, charging infrastructure, and concession details."
+            }
+          },
+          "refusal_correct": null,
+          "cost_usd": 0.012109400000000001,
+          "latency_ms": 10796
+        }
+      ],
+      "summary": {
+        "hit_at_k": 0.9047619047619048,
+        "mrr": 0.7952380952380952,
+        "faithfulness_avg": 4.904761904761905,
+        "answer_relevance_avg": 5,
+        "citation_accuracy_avg": 4.809523809523809,
+        "refusal_correctness_rate": 0.75,
+        "total_cost_usd": 0.22206338,
+        "latency_p50_ms": 4549,
+        "latency_p95_ms": 10796
+      }
+    },
+    {
+      "run_id": "2026-08-20T16:04:50.607Z-openai:gpt-5-mini",
+      "created_at": "2026-08-20T16:17:16.295Z",
+      "golden_set_version": "1.0.0",
+      "chat_model": "openai:gpt-5-mini",
+      "judge_model": "openai:gpt-5",
+      "prompt_version": 2,
+      "entries": [
+        {
+          "item_id": "F1",
+          "type": "factual_single_hop",
+          "lang": "en",
+          "question": "What is Gated Sparse Attention (GSA)?",
+          "answer": "Gated Sparse Attention (GSA) is a routing variant for sparse transformer attention that introduces a learned gate at each attention head to select a subset of key–value pairs per query [1][2].  \nInstead of a hard top-k operator, GSA uses a sigmoid gate g(q,k) trained jointly with the attention weights, making the routing end-to-end differentiable [1][2].  \nFor each head it computes standard attention scores s = softmax(q·k / sqrt(d)), gate values g = sigmoid(W_g · [q; k] + b_g), and routed attention r = (s g) / sum(s g) [2][4].  \nThe gating matrix W_g has shape (2d,1) (adding 2d parameters per head) and b_g is initialized to 2.0 so g starts close to 1.0 [4].  \nIn experiments, GSA reduced FLOPs by 38% on WMT‑22 EN‑ES (to 62% of baseline) with a BLEU drop within 0.4 points, reduced p95 latency by 41% on a long‑context summarization benchmark, and matched near‑baseline ImageNet accuracy with ViT‑Base [1][3][5].  \nA noted limitation is that GSA reduces FLOPs but not memory—the full K and V matrices still must be materialized—and training cost is about 1.08× the dense baseline due to the gate computation [3].",
+          "retrieval": {
+            "hit_at_k": true,
+            "rank": 1,
+            "mrr": 1
+          },
+          "judge": {
+            "faithfulness": {
+              "score": 5,
+              "rationale": "All statements about GSA’s mechanism, equations, parameterization, initialization, results, and limitations are directly supported by the provided passages."
+            },
+            "answer_relevance": {
+              "score": 5,
+              "rationale": "The response clearly defines GSA and its core idea (a learned sigmoid gate for sparse attention), squarely addressing the question."
+            },
+            "citation_accuracy": {
+              "score": 4,
+              "rationale": "Most claims are correctly supported by the cited passages, but the specific “62% of baseline” FLOPs detail is not covered by the citations attached to that sentence (it requires [4])."
+            }
+          },
+          "refusal_correct": null,
+          "cost_usd": 0.0026212500000000003,
+          "latency_ms": 8824
+        },
+        {
+          "item_id": "F3",
+          "type": "factual_single_hop",
+          "lang": "en",
+          "question": "What Wi-Fi frequencies does the Helios H7 support?",
+          "answer": "The H7 supports 2.4 GHz Wi‑Fi (802.11 b/g/n) and does not support 5 GHz or Wi‑Fi 6. [1][2]\nIt uses WPA2 or WPA3 security for Wi‑Fi. [3]",
+          "retrieval": {
+            "hit_at_k": true,
+            "rank": 1,
+            "mrr": 1
+          },
+          "judge": {
+            "faithfulness": {
+              "score": 5,
+              "rationale": "All claims (2.4 GHz support, no 5 GHz/Wi‑Fi 6, WPA2/WPA3) are explicitly supported by the cited passages [1], [2], and [3]."
+            },
+            "answer_relevance": {
+              "score": 5,
+              "rationale": "It directly answers the frequency question by stating 2.4 GHz support and clarifying the lack of 5 GHz, matching the reference; the added security note does not detract."
+            },
+            "citation_accuracy": {
+              "score": 5,
+              "rationale": "The citations precisely back the respective claims: [1]/[2] for frequency support and exclusions, and [3] for WPA2/WPA3 security."
+            }
+          },
+          "refusal_correct": null,
+          "cost_usd": 0.00217875,
+          "latency_ms": 8033
+        },
+        {
+          "item_id": "F4",
+          "type": "factual_single_hop",
+          "lang": "en",
+          "question": "What is the operating temperature range of the Helios H7?",
+          "answer": "The operating temperature range is −10°C to 50°C (14°F to 122°F). [1][2]",
+          "retrieval": {
+            "hit_at_k": true,
+            "rank": 1,
+            "mrr": 1
+          },
+          "judge": {
+            "faithfulness": {
+              "score": 5,
+              "rationale": "The stated temperature range exactly matches the specifications in passages [1] and [2] with no additional unsupported claims."
+            },
+            "answer_relevance": {
+              "score": 5,
+              "rationale": "It directly provides the operating temperature range, precisely addressing the question."
+            },
+            "citation_accuracy": {
+              "score": 5,
+              "rationale": "Both cited passages explicitly list the operating temperature range, making the citations precise and appropriate."
+            }
+          },
+          "refusal_correct": null,
+          "cost_usd": 0.0009530000000000001,
+          "latency_ms": 3446
+        },
+        {
+          "item_id": "F5_ES",
+          "type": "factual_single_hop",
+          "lang": "es",
+          "question": "¿Qué incluye la caja del Helios H7?",
+          "answer": "La caja incluye el termostato Helios H7, la placa de montaje para la pared, cuatro tornillos #6 y cuatro tacos para paneles de yeso, el Power Extender Kit (PEK), una tarjeta de inicio rápido (inglés y español) y un cable USB-C (solo para actualizaciones de firmware — no para alimentación). [1]",
+          "retrieval": {
+            "hit_at_k": false,
+            "rank": null,
+            "mrr": 0
+          },
+          "judge": {
+            "faithfulness": {
+              "score": 5,
+              "rationale": "Cada elemento listado coincide exactamente con el apartado “What’s in the box” del pasaje [1], sin inventar ni omitir información."
+            },
+            "answer_relevance": {
+              "score": 5,
+              "rationale": "Responde directamente a la pregunta listando todo lo que incluye la caja del Helios H7."
+            },
+            "citation_accuracy": {
+              "score": 5,
+              "rationale": "La cita [1] es la fuente precisa que contiene la lista de contenidos de la caja y respalda íntegramente la respuesta."
+            }
+          },
+          "refusal_correct": null,
+          "cost_usd": 0.00140425,
+          "latency_ms": 5315
+        },
+        {
+          "item_id": "F6",
+          "type": "factual_single_hop",
+          "lang": "en",
+          "question": "Who audited the Q1 2026 report?",
+          "answer": "The Q1 2026 report was reviewed by Greenfield & Associates [1][2].",
+          "retrieval": {
+            "hit_at_k": true,
+            "rank": 1,
+            "mrr": 1
+          },
+          "judge": {
+            "faithfulness": {
+              "score": 5,
+              "rationale": "The claim that Greenfield & Associates reviewed the Q1 2026 report is directly supported by passages [1] and [2]."
+            },
+            "answer_relevance": {
+              "score": 5,
+              "rationale": "It directly answers the question by identifying Greenfield & Associates as the reviewing auditor, matching the scope indicated in the reference."
+            },
+            "citation_accuracy": {
+              "score": 5,
+              "rationale": "Both cited passages explicitly state that Greenfield & Associates reviewed the report, with no irrelevant citations included."
+            }
+          },
+          "refusal_correct": null,
+          "cost_usd": 0.0008715,
+          "latency_ms": 2858
+        },
+        {
+          "item_id": "F7",
+          "type": "factual_single_hop",
+          "lang": "en",
+          "question": "When did the Indianapolis distribution center close?",
+          "answer": "The Indianapolis distribution center closed on February 14, 2026 [1][2].",
+          "retrieval": {
+            "hit_at_k": true,
+            "rank": 1,
+            "mrr": 1
+          },
+          "judge": {
+            "faithfulness": {
+              "score": 5,
+              "rationale": "The stated date is explicitly supported by passages [1] and [2], which both note the closure on February 14, 2026."
+            },
+            "answer_relevance": {
+              "score": 5,
+              "rationale": "It directly answers the question about when the Indianapolis distribution center closed with a specific date."
+            },
+            "citation_accuracy": {
+              "score": 5,
+              "rationale": "Both cited passages precisely confirm the closure date, making the citations accurate and appropriate."
+            }
+          },
+          "refusal_correct": null,
+          "cost_usd": 0.0009765,
+          "latency_ms": 2679
+        },
+        {
+          "item_id": "F9_ES",
+          "type": "factual_single_hop",
+          "lang": "es",
+          "question": "¿Cuántos autobuses eléctricos se incorporarán en el plan piloto?",
+          "answer": "Se incorporarán doce autobuses eléctricos. [1]",
+          "retrieval": {
+            "hit_at_k": true,
+            "rank": 1,
+            "mrr": 1
+          },
+          "judge": {
+            "faithfulness": {
+              "score": 5,
+              "rationale": "La afirmación de que se incorporarán doce autobuses eléctricos está explícitamente respaldada por el pasaje [1]."
+            },
+            "answer_relevance": {
+              "score": 5,
+              "rationale": "Responde directamente a la pregunta sobre cuántos autobuses eléctricos se incorporarán en el plan piloto con el número correcto."
+            },
+            "citation_accuracy": {
+              "score": 5,
+              "rationale": "Cita únicamente el pasaje [1], que es la fuente precisa donde se indica el número de autobuses."
+            }
+          },
+          "refusal_correct": null,
+          "cost_usd": 0.00075725,
+          "latency_ms": 2745
+        },
+        {
+          "item_id": "F10_ES",
+          "type": "factual_single_hop",
+          "lang": "es",
+          "question": "¿Cuándo entra en vigencia el plan piloto?",
+          "answer": "Entra en vigencia el 1 de abril de 2026. [1][3]",
+          "retrieval": {
+            "hit_at_k": true,
+            "rank": 1,
+            "mrr": 1
+          },
+          "judge": {
+            "faithfulness": {
+              "score": 5,
+              "rationale": "La afirmación coincide con los pasajes, especialmente [3] que dice explícitamente que entra en vigencia el 1 de abril de 2026, y [1] que establece el período desde esa fecha."
+            },
+            "answer_relevance": {
+              "score": 5,
+              "rationale": "Responde directa y concisamente a la pregunta sobre la fecha de entrada en vigencia."
+            },
+            "citation_accuracy": {
+              "score": 5,
+              "rationale": "[3] respalda de forma explícita la fecha y [1] la corrobora al indicar el inicio del período; ambas citas son pertinentes."
+            }
+          },
+          "refusal_correct": null,
+          "cost_usd": 0.00120775,
+          "latency_ms": 4336
+        },
+        {
+          "item_id": "MH1",
+          "type": "multi_hop",
+          "lang": "en",
+          "question": "Why doesn't Gated Sparse Attention reduce memory usage even though it reduces FLOPs?",
+          "answer": "Because GSA still requires the full key and value matrices to be materialized, it reduces FLOPs but not memory usage [1]. The gate computation itself uses q and k (g = sigmoid(W_g · [q; k] + b_g)), so keys must be available for gating and for forming the routed attention, which means K and V must be stored in memory [4]. Memory savings would need a separate technique (e.g., paged attention or sliding-window attention), which this study did not combine with GSA [1].",
+          "retrieval": {
+            "hit_at_k": true,
+            "rank": 1,
+            "mrr": 1
+          },
+          "judge": {
+            "faithfulness": {
+              "score": 5,
+              "rationale": "All claims (K/V must be materialized, FLOPs reduction without memory savings, need for paged/sliding-window attention) are explicitly supported by the cited passages."
+            },
+            "answer_relevance": {
+              "score": 5,
+              "rationale": "The answer directly explains why memory is not reduced despite FLOPs reduction and mentions the required techniques for memory savings."
+            },
+            "citation_accuracy": {
+              "score": 5,
+              "rationale": "Citation [1] substantiates the core claim about memory and alternatives, and [4] accurately supports the gating computation detail using q and k."
+            }
+          },
+          "refusal_correct": null,
+          "cost_usd": 0.00179875,
+          "latency_ms": 7201
+        },
+        {
+          "item_id": "MH2",
+          "type": "multi_hop",
+          "lang": "en",
+          "question": "If my existing thermostat wiring has no C-wire, what does Helios recommend and what symptom would tell me I have the problem?",
+          "answer": "Use the included Power Extender Kit (PEK) at the furnace control board if your wiring lacks a C‑wire [1].  \nA blank screen on the thermostat is the symptom Helios lists for “No C‑wire power” [2].",
+          "retrieval": {
+            "hit_at_k": true,
+            "rank": 1,
+            "mrr": 1
+          },
+          "judge": {
+            "faithfulness": {
+              "score": 5,
+              "rationale": "Both the PEK-at-the-furnace recommendation and the 'blank screen' symptom are explicitly stated in the cited passages."
+            },
+            "answer_relevance": {
+              "score": 5,
+              "rationale": "It directly answers both parts of the question: what to do without a C-wire and the symptom indicating that issue."
+            },
+            "citation_accuracy": {
+              "score": 5,
+              "rationale": "[1] supports the PEK recommendation at the furnace control board, and [2] supports the blank-screen symptom for no C-wire power."
+            }
+          },
+          "refusal_correct": null,
+          "cost_usd": 0.00136425,
+          "latency_ms": 4737
+        },
+        {
+          "item_id": "MH3",
+          "type": "multi_hop",
+          "lang": "en",
+          "question": "Why did Northwind's warehousing revenue decline in Q1 2026?",
+          "answer": "Warehousing revenue declined 2.7% in Q1 2026 due to the planned closure of the Indianapolis distribution center on February 14, 2026 [2].",
+          "retrieval": {
+            "hit_at_k": true,
+            "rank": 2,
+            "mrr": 0.5
+          },
+          "judge": {
+            "faithfulness": {
+              "score": 5,
+              "rationale": "The answer exactly matches the cited passage stating the 2.7% decline was due to the planned closure of the Indianapolis distribution center on February 14, 2026."
+            },
+            "answer_relevance": {
+              "score": 5,
+              "rationale": "It directly explains the reason for the warehousing revenue decline in Q1 2026, which is precisely what the question asks."
+            },
+            "citation_accuracy": {
+              "score": 5,
+              "rationale": "The single citation [2] explicitly supports both the percentage decline and the stated reason (the planned closure), making it precise and sufficient."
+            }
+          },
+          "refusal_correct": null,
+          "cost_usd": 0.0011425,
+          "latency_ms": 3489
+        },
+        {
+          "item_id": "MH4",
+          "type": "multi_hop",
+          "lang": "en",
+          "question": "Under what circumstances can a Lighthouse Analytics customer get a refund?",
+          "answer": "Refunds are issued only in the following cases. [5]\n\n- Service credit per Section 6: customers may request a service credit if downtime exceeds the monthly uptime target; the Service targets 99.5% monthly uptime and planned maintenance windows are announced at least 48 hours in advance. [5][4] The service credit is 5% of your monthly fee per full hour of additional downtime, capped at 30% of the monthly fee. [2]\n\n- A billing error confirmed by the support team. [5]\n\n- Cancellation within 14 days of the initial subscription; refunds in this case are prorated to days used. [5]",
+          "retrieval": {
+            "hit_at_k": true,
+            "rank": 2,
+            "mrr": 0.5
+          },
+          "judge": {
+            "faithfulness": {
+              "score": 5,
+              "rationale": "All described refund circumstances and the service-credit specifics are directly supported by the cited passages, with no unsupported claims."
+            },
+            "answer_relevance": {
+              "score": 5,
+              "rationale": "It precisely lists the circumstances under which refunds are issued, matching the scope of the question."
+            },
+            "citation_accuracy": {
+              "score": 5,
+              "rationale": "Each claim is backed by the appropriate sources: [5] for refund conditions, [4] and [2] for uptime/service-credit details, and no irrelevant citations are included."
+            }
+          },
+          "refusal_correct": null,
+          "cost_usd": 0.0019765,
+          "latency_ms": 7069
+        },
+        {
+          "item_id": "MH5_ES",
+          "type": "multi_hop",
+          "lang": "es",
+          "question": "¿Qué puede hacer la Secretaría de Movilidad si las metas trimestrales del plan no se alcanzan?",
+          "answer": "La Secretaría podrá ajustar la tarifa de circulación o ampliar las zonas de bajas emisiones. [1]\n\nEsto debe hacerse previa notificación al Consejo Municipal con al menos sesenta días de anticipación. [1]",
+          "retrieval": {
+            "hit_at_k": true,
+            "rank": 1,
+            "mrr": 1
+          },
+          "judge": {
+            "faithfulness": {
+              "score": 5,
+              "rationale": "Las dos afirmaciones (ajustar la tarifa o ampliar las zonas y la notificación con 60 días) están explícitamente en el pasaje [1], sin agregar información externa."
+            },
+            "answer_relevance": {
+              "score": 5,
+              "rationale": "Responde directamente qué puede hacer la Secretaría si no se alcanzan las metas trimestrales, enumerando las acciones pertinentes."
+            },
+            "citation_accuracy": {
+              "score": 5,
+              "rationale": "Cita únicamente el pasaje [1], que contiene exactamente las medidas y la condición de notificación mencionadas."
+            }
+          },
+          "refusal_correct": null,
+          "cost_usd": 0.0011665,
+          "latency_ms": 4187
+        },
+        {
+          "item_id": "S1",
+          "type": "summarization",
+          "lang": "en",
+          "question": "Summarize the contribution of this paper in one sentence.",
+          "answer": "The paper proposes Gated Sparse Attention (GSA), a per-head learned sigmoid gating mechanism that enables differentiable sparse routing of key–value pairs—removing the need for a hard top-k operator—and reduces compute by 38% on WMT-22 EN–ES while preserving translation quality within 0.4 BLEU [3][1].",
+          "retrieval": {
+            "hit_at_k": false,
+            "rank": null,
+            "mrr": 0
+          },
+          "judge": {
+            "faithfulness": {
+              "score": 5,
+              "rationale": "Every claim (GSA name, per-head sigmoid gate, differentiable routing without hard top-k, 38% compute reduction on WMT-22 EN–ES, and ≤0.4 BLEU drop) is explicitly supported by passages [3] and reinforced by [1]."
+            },
+            "answer_relevance": {
+              "score": 5,
+              "rationale": "It concisely summarizes the paper’s main contribution in one sentence, matching the requested scope."
+            },
+            "citation_accuracy": {
+              "score": 5,
+              "rationale": "Citation [3] directly supports all technical and empirical details, and [1] corroborates the gate-with-sigmoid contribution; no irrelevant citations are included."
+            }
+          },
+          "refusal_correct": null,
+          "cost_usd": 0.0015305,
+          "latency_ms": 5148
+        },
+        {
+          "item_id": "S2",
+          "type": "summarization",
+          "lang": "en",
+          "question": "Summarize the key financial highlights of Q1 2026 for Northwind Logistics in 3 bullet points.",
+          "answer": "- Consolidated revenue of $148.2 million, up 12.4% year‑over‑year [1].\n- Operating income of $19.7 million with an operating margin of 13.3% (the highest since Q2 2023); net income was $14.2 million and EPS $1.84 [2].\n- Cash and equivalents of $86.1 million, free cash flow of $11.4 million (returned to positive), and total long‑term debt reduced to $142.3 million after early repayment of a $9.5 million term loan funded by the Indianapolis facility sale [1].",
+          "retrieval": {
+            "hit_at_k": true,
+            "rank": 1,
+            "mrr": 1
+          },
+          "judge": {
+            "faithfulness": {
+              "score": 5,
+              "rationale": "All figures and statements (revenue, margins, net income/EPS, cash, FCF, debt reduction, and loan repayment) align with the provided passages without fabrication."
+            },
+            "answer_relevance": {
+              "score": 5,
+              "rationale": "It delivers exactly three concise bullets capturing the key Q1 2026 financial highlights: revenue growth, operating results, and cash/debt metrics."
+            },
+            "citation_accuracy": {
+              "score": 3,
+              "rationale": "Bullets one and two are correctly sourced ([1] and [2] respectively), but the third bullet cites [1] for cash, debt, and loan repayment details that are only supported by [2]."
+            }
+          },
+          "refusal_correct": null,
+          "cost_usd": 0.00284825,
+          "latency_ms": 9570
+        },
+        {
+          "item_id": "S3",
+          "type": "summarization",
+          "lang": "en",
+          "question": "Summarize the data ownership terms in two sentences.",
+          "answer": "You retain all rights to data you upload, but by uploading you grant Lighthouse Analytics a non-exclusive, royalty-free license to process that data solely to provide the Service to you [1]. The company will not use your uploaded data to train machine learning models without your explicit written consent, and upon account termination they delete your uploaded data within 30 days unless retention is required by law [1][2].",
+          "retrieval": {
+            "hit_at_k": true,
+            "rank": 1,
+            "mrr": 1
+          },
+          "judge": {
+            "faithfulness": {
+              "score": 5,
+              "rationale": "All statements (ownership retention, limited license for service provision, no ML training without consent, and 30-day deletion on termination) are directly supported by the cited passages [1] and [2]."
+            },
+            "answer_relevance": {
+              "score": 4,
+              "rationale": "It correctly summarizes the core data ownership terms, but includes an extra point about data deletion on termination that goes beyond the data ownership section."
+            },
+            "citation_accuracy": {
+              "score": 5,
+              "rationale": "The answer accurately cites [1] for ownership, licensing, and ML training consent, and [2] for the deletion-upon-termination detail, with no irrelevant citations."
+            }
+          },
+          "refusal_correct": null,
+          "cost_usd": 0.00127975,
+          "latency_ms": 4273
+        },
+        {
+          "item_id": "NA1",
+          "type": "no_answer",
+          "lang": "en",
+          "question": "Does the Helios H7 support Apple HomeKit?",
+          "answer": "I couldn't find any mention of Apple HomeKit support in the provided Helios H7 documentation; the compatibility and specifications sections list supported HVAC types, power/Wi‑Fi details, and other features but do not mention HomeKit or related integrations [3][4][2]. \n\nFor definitive confirmation, contact Helios support at support@helios-example.com (listed in the warranty/contact info) [5].",
+          "retrieval": null,
+          "judge": null,
+          "refusal_correct": true,
+          "cost_usd": 0.0014665,
+          "latency_ms": 4598
+        },
+        {
+          "item_id": "NA2",
+          "type": "no_answer",
+          "lang": "en",
+          "question": "Who is the CEO of Northwind Logistics?",
+          "answer": "I couldn't find the CEO's name in the provided documents. [1][2][4]\n\nThe Q1 2026 financial summary and related excerpts list revenue, operating income, notable events, and other details but do not identify the CEO of Northwind Logistics. [1][2][4]",
+          "retrieval": null,
+          "judge": null,
+          "refusal_correct": true,
+          "cost_usd": 0.00158925,
+          "latency_ms": 5082
+        },
+        {
+          "item_id": "NA3",
+          "type": "no_answer",
+          "lang": "en",
+          "question": "What is the price of the Lighthouse Analytics service?",
+          "answer": "I couldn't find the price of Lighthouse Analytics in the provided documents. [5]\n\nThe documents include subscription and billing terms (renewal, refunds, cancellation) but do not list any specific pricing or subscription rates. [5]\n\nFor questions about these Terms you can contact legal@lighthouse-example.com (and for security issues: security@lighthouse-example.com) as listed in the materials. [2]",
+          "retrieval": null,
+          "judge": null,
+          "refusal_correct": true,
+          "cost_usd": 0.0017139999999999998,
+          "latency_ms": 6031
+        },
+        {
+          "item_id": "NA4_ES",
+          "type": "no_answer",
+          "lang": "es",
+          "question": "¿Cuántas estaciones de carga habrá en zonas residenciales?",
+          "answer": "Los documentos indican que se construirán cuatro estaciones de carga rápida en los terminales de Las Tortugas, Plaza Mayor, Estación Norte y Parque Industrial [1].  \nNinguno de esos lugares se describe como zona residencial en los pasajes proporcionados; por tanto, no puedo determinar cuántas estaciones habrá en zonas residenciales con la información disponible [1].",
+          "retrieval": null,
+          "judge": null,
+          "refusal_correct": false,
+          "cost_usd": 0.0016845,
+          "latency_ms": 6624
+        },
+        {
+          "item_id": "N1",
+          "type": "numeric",
+          "lang": "en",
+          "question": "What BLEU score does GSA achieve on the WMT-22 EN-ES benchmark?",
+          "answer": "GSA achieves 34.4 BLEU on WMT‑22 EN‑ES [2].",
+          "retrieval": {
+            "hit_at_k": true,
+            "rank": 2,
+            "mrr": 0.5
+          },
+          "judge": {
+            "faithfulness": {
+              "score": 5,
+              "rationale": "The stated BLEU score (34.4) is explicitly reported in the cited passage [2]."
+            },
+            "answer_relevance": {
+              "score": 5,
+              "rationale": "The answer directly and succinctly provides the BLEU score achieved by GSA on WMT-22 EN-ES as asked."
+            },
+            "citation_accuracy": {
+              "score": 5,
+              "rationale": "Citation [2] precisely contains the result that GSA achieves 34.4 BLEU, making the reference exact and sufficient."
+            }
+          },
+          "refusal_correct": null,
+          "cost_usd": 0.00100875,
+          "latency_ms": 3451
+        },
+        {
+          "item_id": "N2",
+          "type": "numeric",
+          "lang": "en",
+          "question": "How many heating and cooling stages does the Helios H7 support at maximum?",
+          "answer": "The Helios H7 supports up to 2 heating stages and up to 2 cooling stages [1].",
+          "retrieval": {
+            "hit_at_k": true,
+            "rank": 1,
+            "mrr": 1
+          },
+          "judge": {
+            "faithfulness": {
+              "score": 5,
+              "rationale": "The claim exactly matches passage [1], which states the H7 supports up to 2 heating stages and 2 cooling stages."
+            },
+            "answer_relevance": {
+              "score": 5,
+              "rationale": "It directly answers the question about the maximum supported stages for heating and cooling."
+            },
+            "citation_accuracy": {
+              "score": 5,
+              "rationale": "Citation [1] explicitly contains the stated maximum stages, making it the correct and sufficient source."
+            }
+          },
+          "refusal_correct": null,
+          "cost_usd": 0.0009757500000000001,
+          "latency_ms": 2980
+        },
+        {
+          "item_id": "N3",
+          "type": "numeric",
+          "lang": "en",
+          "question": "What was Northwind's total revenue in Q1 2026?",
+          "answer": "Northwind's total revenue in Q1 2026 was $148.2 million. [1][3]",
+          "retrieval": {
+            "hit_at_k": true,
+            "rank": 1,
+            "mrr": 1
+          },
+          "judge": {
+            "faithfulness": {
+              "score": 5,
+              "rationale": "The $148.2 million figure is explicitly stated in passages [1] and [3], with no unsupported additions."
+            },
+            "answer_relevance": {
+              "score": 5,
+              "rationale": "The response directly answers the question by stating Northwind's total Q1 2026 revenue."
+            },
+            "citation_accuracy": {
+              "score": 5,
+              "rationale": "Citations [1] and [3] precisely support the reported revenue figure without extraneous sources."
+            }
+          },
+          "refusal_correct": null,
+          "cost_usd": 0.0008719999999999999,
+          "latency_ms": 2490
+        },
+        {
+          "item_id": "C1",
+          "type": "contradiction_or_cross_doc",
+          "lang": "en",
+          "question": "Both the Helios H7 manual and the Lighthouse Analytics Terms of Service describe data the company collects from users. How do their data-ownership terms compare?",
+          "answer": "Lighthouse’s Terms explicitly state that users retain all rights to data they upload and that by uploading they grant Lighthouse a non‑exclusive, royalty‑free license to process that data solely to provide the Service; the Terms also say Lighthouse will not use uploaded data to train machine‑learning models without explicit written consent [1].  \nThe Helios H7 manual describes the contents and delivery of a monthly energy report (total runtime, estimated kWh, anonymized ZIP‑code comparisons, and emailed to the account address) [4].  \nThe Helios excerpts do not contain an explicit data‑ownership or licensing clause in the provided text (they focus on setup, reports, troubleshooting, warranty, and specs) [4][5].  \nConclusion: Lighthouse is explicit about data ownership and permitted processing in its Terms [1], while the Helios H7 manual (in the provided excerpts) describes what data is collected/reported but is silent about ownership and licensing [4][5].",
+          "retrieval": {
+            "hit_at_k": true,
+            "rank": 1,
+            "mrr": 1
+          },
+          "judge": {
+            "faithfulness": {
+              "score": 5,
+              "rationale": "All claims (user retention of rights, limited license for service provision, no ML training without consent per Lighthouse; Helios manual listing report data without ownership terms) are directly supported by [1], [4], and [5]."
+            },
+            "answer_relevance": {
+              "score": 5,
+              "rationale": "The response directly compares the two sources on data-ownership terms, noting Lighthouse’s explicit policy versus the Helios manual’s lack of such terms."
+            },
+            "citation_accuracy": {
+              "score": 5,
+              "rationale": "Passage [1] precisely supports the Lighthouse data-ownership terms, and [4]–[5] accurately show the Helios manual content and its silence on ownership."
+            }
+          },
+          "refusal_correct": null,
+          "cost_usd": 0.002765,
+          "latency_ms": 10866
+        },
+        {
+          "item_id": "C2",
+          "type": "contradiction_or_cross_doc",
+          "lang": "en",
+          "question": "The Northwind report mentions improved route optimization. The Valdivia Norte plan mentions reducing CO emissions. Do both documents describe the same kind of operational change, and what is the key difference in scope?",
+          "answer": "No — they describe different kinds of operational changes [5][1].  \nBoth aim to reduce fuel use or CO emissions as an outcome: Northwind reduces fuel costs via improved route optimization, and Valdivia Norte seeks an 18% reduction in CO emissions from urban transport [5][1].  \nNorthwind’s change is a software/operational optimization (deployment of the FleetSmart platform across 87% of long‑haul vehicles to improve routing and cut fuel use) at the company’s long‑haul freight operations [5].  \nValdivia Norte’s change is vehicle and infrastructure substitution plus local policy (introducing a fleet of electric buses, creating low‑emission zones, and installing fast chargers) as a municipal pilot for urban public transport [1][4].  \nThus the key scope difference is private, company‑level route optimization for long‑haul freight versus a municipal, city‑scale shift to electric public transit and emissions zones [5][1].",
+          "retrieval": {
+            "hit_at_k": true,
+            "rank": 5,
+            "mrr": 0.2
+          },
+          "judge": {
+            "faithfulness": {
+              "score": 5,
+              "rationale": "All key claims (FleetSmart-enabled route optimization and fuel cost reduction; 87% long-haul deployment; Valdivia’s 18% CO reduction target via electric buses, low-emission zones, and charging infrastructure; municipal pilot scope) are supported by [5], [1], and [4] without added facts."
+            },
+            "answer_relevance": {
+              "score": 5,
+              "rationale": "It directly answers that the changes are not the same and clearly contrasts the scopes—company-level route optimization for long-haul freight versus a municipal, city-scale shift to electric public transit and policy."
+            },
+            "citation_accuracy": {
+              "score": 5,
+              "rationale": "[5] supports the Northwind route optimization and scope, [1] supports the emissions-reduction goal and municipal plan, and [4] supports the charging infrastructure; no irrelevant or missing citations."
+            }
+          },
+          "refusal_correct": null,
+          "cost_usd": 0.002574,
+          "latency_ms": 9196
+        }
+      ],
+      "summary": {
+        "hit_at_k": 0.9047619047619048,
+        "mrr": 0.7952380952380952,
+        "faithfulness_avg": 5,
+        "answer_relevance_avg": 4.9523809523809526,
+        "citation_accuracy_avg": 4.857142857142857,
+        "refusal_correctness_rate": 0.75,
+        "total_cost_usd": 0.03872699999999999,
+        "latency_p50_ms": 4737,
+        "latency_p95_ms": 9570
+      }
+    },
+    {
+      "run_id": "2026-08-20T16:04:50.607Z-deepseek:deepseek-v4-flash",
+      "created_at": "2026-08-20T16:21:54.466Z",
+      "golden_set_version": "1.0.0",
+      "chat_model": "deepseek:deepseek-v4-flash",
+      "judge_model": "openai:gpt-5",
+      "prompt_version": 2,
+      "entries": [
+        {
+          "item_id": "F1",
+          "type": "factual_single_hop",
+          "lang": "en",
+          "question": "What is Gated Sparse Attention (GSA)?",
+          "answer": "Gated Sparse Attention (GSA) is a routing variant for sparse transformer attention that reduces compute by 38% on the WMT-22 EN-ES benchmark while preserving translation quality within 0.4 BLEU points [1]. It introduces a learned gate at each attention head that selects a subset of key-value pairs to attend to per query [1].\n\nUnlike top-k attention, GSA uses a sigmoid gate trained jointly with the attention weights, which removes the need for a hard top-k operator and allows backpropagation through the routing decision [1]. For each attention head, it computes standard attention scores s = softmax(q·k/√d), gate values g = sigmoid(W_g·[q;k] + b_g), and routed attention r = (s·g)/sum(s·g) [2][4]. The gating matrix W_g has shape (2d, 1), adding only 2d parameters per head, and b_g is initialized to 2.0 so the gate starts close to dense behavior [4].\n\nReported results: 34.4 BLEU vs. 34.8 for the dense baseline at 62% FLOPs [4], 41% inference latency reduction at p95 on GovReport, and 81.2% top-1 accuracy on ImageNet-1k vs. 81.4% for the dense baseline [3]. GSA reduces FLOPs but not memory — full K and V matrices must still be materialized, and training costs about 1.08× the dense baseline [3].",
+          "retrieval": {
+            "hit_at_k": true,
+            "rank": 1,
+            "mrr": 1
+          },
+          "judge": {
+            "faithfulness": {
+              "score": 5,
+              "rationale": "All claims (definition, mechanism, equations, parameterization, initialization, metrics, and limitations) are explicitly supported by the cited passages."
+            },
+            "answer_relevance": {
+              "score": 5,
+              "rationale": "It directly explains what GSA is and how it works, matching the scope of the question, with concise supporting details."
+            },
+            "citation_accuracy": {
+              "score": 5,
+              "rationale": "The answer correctly cites [1] for the concept and 38%/BLEU, [2]/[4] for equations and parameters, and [3]/[4] for results and limitations, with no unsupported claims."
+            }
+          },
+          "refusal_correct": null,
+          "cost_usd": 0.00037912000000000004,
+          "latency_ms": 5454
+        },
+        {
+          "item_id": "F3",
+          "type": "factual_single_hop",
+          "lang": "en",
+          "question": "What Wi-Fi frequencies does the Helios H7 support?",
+          "answer": "The Helios H7 supports 2.4 GHz Wi-Fi (802.11 b/g/n) and does not support 5 GHz Wi-Fi or Wi-Fi 6 [1][3].",
+          "retrieval": {
+            "hit_at_k": true,
+            "rank": 1,
+            "mrr": 1
+          },
+          "judge": {
+            "faithfulness": {
+              "score": 5,
+              "rationale": "All claims (2.4 GHz support, 802.11 b/g/n, and lack of 5 GHz/Wi‑Fi 6) are directly supported by the cited passages."
+            },
+            "answer_relevance": {
+              "score": 5,
+              "rationale": "It directly answers the question about supported Wi‑Fi frequencies and clarifies unsupported ones."
+            },
+            "citation_accuracy": {
+              "score": 5,
+              "rationale": "Passage [1] explicitly supports all details, and [3] corroborates 2.4 GHz-only, making the citations accurate and relevant."
+            }
+          },
+          "refusal_correct": null,
+          "cost_usd": 0.00027328000000000004,
+          "latency_ms": 1993
+        },
+        {
+          "item_id": "F4",
+          "type": "factual_single_hop",
+          "lang": "en",
+          "question": "What is the operating temperature range of the Helios H7?",
+          "answer": "The operating temperature range of the Helios H7 is -10°C to 50°C (14°F to 122°F) [1][2].",
+          "retrieval": {
+            "hit_at_k": true,
+            "rank": 1,
+            "mrr": 1
+          },
+          "judge": {
+            "faithfulness": {
+              "score": 5,
+              "rationale": "The stated temperature range exactly matches the information in the cited passages with no unsupported claims."
+            },
+            "answer_relevance": {
+              "score": 5,
+              "rationale": "It directly provides the operating temperature range requested, matching the reference answer."
+            },
+            "citation_accuracy": {
+              "score": 5,
+              "rationale": "Both cited passages explicitly list the same operating temperature range, precisely supporting the answer."
+            }
+          },
+          "refusal_correct": null,
+          "cost_usd": 0.00025774,
+          "latency_ms": 1500
+        },
+        {
+          "item_id": "F5_ES",
+          "type": "factual_single_hop",
+          "lang": "es",
+          "question": "¿Qué incluye la caja del Helios H7?",
+          "answer": "La caja del Helios H7 incluye [1]:\n\n- Termostato Helios H7\n- Placa de montaje para pared\n- Cuatro tornillos #6 y cuatro anclajes para drywall\n- Kit de Extensor de Alimentación (PEK)\n- Tarjeta de inicio rápido (inglés y español)\n- Cable USB-C (solo para actualizaciones de firmware, no para alimentación)\n\n[1]",
+          "retrieval": {
+            "hit_at_k": false,
+            "rank": null,
+            "mrr": 0
+          },
+          "judge": {
+            "faithfulness": {
+              "score": 5,
+              "rationale": "All listed items exactly match the “What’s in the box” section of passage [1], with no additions or contradictions."
+            },
+            "answer_relevance": {
+              "score": 5,
+              "rationale": "Directly answers the question by enumerating the box contents completely and succinctly."
+            },
+            "citation_accuracy": {
+              "score": 5,
+              "rationale": "Cites only passage [1], which is the precise source detailing the box contents and supports every item listed."
+            }
+          },
+          "refusal_correct": null,
+          "cost_usd": 0.00031234000000000004,
+          "latency_ms": 2813
+        },
+        {
+          "item_id": "F6",
+          "type": "factual_single_hop",
+          "lang": "en",
+          "question": "Who audited the Q1 2026 report?",
+          "answer": "The Q1 2026 report was reviewed by Greenfield & Associates [1][2].",
+          "retrieval": {
+            "hit_at_k": true,
+            "rank": 1,
+            "mrr": 1
+          },
+          "judge": {
+            "faithfulness": {
+              "score": 5,
+              "rationale": "The answer states the report was reviewed by Greenfield & Associates, exactly as passages [1] and [2] indicate, with no unsupported claims."
+            },
+            "answer_relevance": {
+              "score": 5,
+              "rationale": "It directly names the auditing/reviewing firm, addressing the question succinctly."
+            },
+            "citation_accuracy": {
+              "score": 5,
+              "rationale": "Both cited passages explicitly note the report was reviewed by Greenfield & Associates, making them precise and appropriate citations."
+            }
+          },
+          "refusal_correct": null,
+          "cost_usd": 0.00027538000000000004,
+          "latency_ms": 1839
+        },
+        {
+          "item_id": "F7",
+          "type": "factual_single_hop",
+          "lang": "en",
+          "question": "When did the Indianapolis distribution center close?",
+          "answer": "The Indianapolis distribution center closed on February 14, 2026 [1][2].",
+          "retrieval": {
+            "hit_at_k": true,
+            "rank": 1,
+            "mrr": 1
+          },
+          "judge": {
+            "faithfulness": {
+              "score": 5,
+              "rationale": "The answer exactly matches the passages, which state the Indianapolis distribution center closed on February 14, 2026 (explicitly in [1] and by date in [2])."
+            },
+            "answer_relevance": {
+              "score": 5,
+              "rationale": "It directly and succinctly answers the question with the specific date."
+            },
+            "citation_accuracy": {
+              "score": 5,
+              "rationale": "Citations [1] and [2] are the correct sources mentioning the February 14 closure, with [1] specifying the 2026 year."
+            }
+          },
+          "refusal_correct": null,
+          "cost_usd": 0.00026642,
+          "latency_ms": 1532
+        },
+        {
+          "item_id": "F9_ES",
+          "type": "factual_single_hop",
+          "lang": "es",
+          "question": "¿Cuántos autobuses eléctricos se incorporarán en el plan piloto?",
+          "answer": "Se incorporarán doce autobuses eléctricos de fabricación nacional, con capacidad para 38 pasajeros sentados y 22 de pie [1].",
+          "retrieval": {
+            "hit_at_k": true,
+            "rank": 1,
+            "mrr": 1
+          },
+          "judge": {
+            "faithfulness": {
+              "score": 5,
+              "rationale": "La respuesta repite exactamente la cifra y los detalles que aparecen en el pasaje [1], sin añadir información no sustentada."
+            },
+            "answer_relevance": {
+              "score": 5,
+              "rationale": "Responde directamente a cuántos autobuses se incorporarán, indicando claramente “doce autobuses eléctricos”."
+            },
+            "citation_accuracy": {
+              "score": 5,
+              "rationale": "Cita únicamente el pasaje [1], que es el que explícitamente contiene el dato de los doce autobuses y su capacidad."
+            }
+          },
+          "refusal_correct": null,
+          "cost_usd": 0.00026404,
+          "latency_ms": 1579
+        },
+        {
+          "item_id": "F10_ES",
+          "type": "factual_single_hop",
+          "lang": "es",
+          "question": "¿Cuándo entra en vigencia el plan piloto?",
+          "answer": "El plan piloto entra en vigencia el 1 de abril de 2026 [1][2], con un período de implementación que se extiende hasta el 31 de marzo de 2027 [1].",
+          "retrieval": {
+            "hit_at_k": true,
+            "rank": 1,
+            "mrr": 1
+          },
+          "judge": {
+            "faithfulness": {
+              "score": 5,
+              "rationale": "Todas las afirmaciones (fecha de entrada en vigencia y duración del período) están respaldadas por los pasajes [1] y [2]."
+            },
+            "answer_relevance": {
+              "score": 5,
+              "rationale": "Responde directamente a la pregunta indicando la fecha exacta de entrada en vigencia, con un detalle adicional no solicitado pero pertinente."
+            },
+            "citation_accuracy": {
+              "score": 5,
+              "rationale": "La fecha de vigencia está claramente respaldada por [2], y la duración hasta el 31 de marzo de 2027 por [1], por lo que las citas son precisas y suficientes."
+            }
+          },
+          "refusal_correct": null,
+          "cost_usd": 0.00027272,
+          "latency_ms": 2097
+        },
+        {
+          "item_id": "MH1",
+          "type": "multi_hop",
+          "lang": "en",
+          "question": "Why doesn't Gated Sparse Attention reduce memory usage even though it reduces FLOPs?",
+          "answer": "Gated Sparse Attention does not reduce memory because the full K and V matrices must still be materialized, even though it reduces FLOPs [1]. The method notes that memory savings would require a separate technique such as paged attention or sliding-window attention, which were not combined in the study [1].",
+          "retrieval": {
+            "hit_at_k": true,
+            "rank": 1,
+            "mrr": 1
+          },
+          "judge": {
+            "faithfulness": {
+              "score": 5,
+              "rationale": "All statements are directly supported by passage [1], which explicitly notes that GSA reduces FLOPs but not memory because K and V must be materialized and that memory savings require separate techniques."
+            },
+            "answer_relevance": {
+              "score": 5,
+              "rationale": "The answer directly explains why memory is not reduced, citing the need to materialize full K and V and the requirement of separate methods for memory savings."
+            },
+            "citation_accuracy": {
+              "score": 5,
+              "rationale": "The single citation [1] precisely supports both points made, with no irrelevant or missing references."
+            }
+          },
+          "refusal_correct": null,
+          "cost_usd": 0.00024164000000000005,
+          "latency_ms": 1719
+        },
+        {
+          "item_id": "MH2",
+          "type": "multi_hop",
+          "lang": "en",
+          "question": "If my existing thermostat wiring has no C-wire, what does Helios recommend and what symptom would tell me I have the problem?",
+          "answer": "Helios recommends using the included Power Extender Kit (PEK) at the furnace control board if your existing wiring lacks a C-wire [1]. The symptom that would tell you this is the problem is a blank screen on the thermostat [2].",
+          "retrieval": {
+            "hit_at_k": true,
+            "rank": 1,
+            "mrr": 1
+          },
+          "judge": {
+            "faithfulness": {
+              "score": 5,
+              "rationale": "Both the PEK recommendation at the furnace control board (from [1]) and the blank screen symptom (from [2]) are explicitly stated in the cited passages."
+            },
+            "answer_relevance": {
+              "score": 5,
+              "rationale": "The answer directly addresses both what to do without a C-wire and how to recognize the issue, matching the question's two asks."
+            },
+            "citation_accuracy": {
+              "score": 5,
+              "rationale": "Citation [1] supports the PEK recommendation/location, and citation [2] supports the blank screen symptom, with no extraneous or missing sources."
+            }
+          },
+          "refusal_correct": null,
+          "cost_usd": 0.00029274,
+          "latency_ms": 2252
+        },
+        {
+          "item_id": "MH3",
+          "type": "multi_hop",
+          "lang": "en",
+          "question": "Why did Northwind's warehousing revenue decline in Q1 2026?",
+          "answer": "Northwind's warehousing revenue declined 2.7% in Q1 2026 due to the planned closure of the Indianapolis distribution center on February 14, 2026 [1][2]. The facility was sold, and the proceeds were used to repay a $9.5 million term loan in March 2026 [3].",
+          "retrieval": {
+            "hit_at_k": true,
+            "rank": 2,
+            "mrr": 0.5
+          },
+          "judge": {
+            "faithfulness": {
+              "score": 5,
+              "rationale": "All statements—the 2.7% decline, the cause being the planned Indianapolis DC closure, and the sale proceeds used to repay a $9.5M loan—are directly supported by the cited passages ([2] and [3], with the percentage also in [1]/[2])."
+            },
+            "answer_relevance": {
+              "score": 5,
+              "rationale": "It clearly answers the question by giving the specific reason for the warehousing revenue decline (the planned closure of the Indianapolis distribution center)."
+            },
+            "citation_accuracy": {
+              "score": 5,
+              "rationale": "The cause and percentage are supported by [2] (and [1] for the figure), and the loan repayment detail is correctly attributed to [3]; no irrelevant citations are included."
+            }
+          },
+          "refusal_correct": null,
+          "cost_usd": 0.00028798,
+          "latency_ms": 2533
+        },
+        {
+          "item_id": "MH4",
+          "type": "multi_hop",
+          "lang": "en",
+          "question": "Under what circumstances can a Lighthouse Analytics customer get a refund?",
+          "answer": "A customer can get a refund from Lighthouse Analytics in three cases: a service credit per Section 6, a billing error confirmed by the support team, or a cancellation within 14 days of the initial subscription (prorated to days used) [5].",
+          "retrieval": {
+            "hit_at_k": true,
+            "rank": 2,
+            "mrr": 0.5
+          },
+          "judge": {
+            "faithfulness": {
+              "score": 5,
+              "rationale": "The answer exactly reproduces the three refund conditions stated in passage [5] without adding unsupported details."
+            },
+            "answer_relevance": {
+              "score": 5,
+              "rationale": "It directly lists the circumstances under which a customer can receive a refund, matching the question’s scope."
+            },
+            "citation_accuracy": {
+              "score": 5,
+              "rationale": "The single citation [5] precisely contains the refund policy enumerating these three cases, and no extraneous citations are used."
+            }
+          },
+          "refusal_correct": null,
+          "cost_usd": 0.00022610000000000002,
+          "latency_ms": 1757
+        },
+        {
+          "item_id": "MH5_ES",
+          "type": "multi_hop",
+          "lang": "es",
+          "question": "¿Qué puede hacer la Secretaría de Movilidad si las metas trimestrales del plan no se alcanzan?",
+          "answer": "La Secretaría de Movilidad podrá ajustar la tarifa de circulación o ampliar las zonas de bajas emisiones, previa notificación al Consejo Municipal con al menos sesenta días de anticipación [1].",
+          "retrieval": {
+            "hit_at_k": true,
+            "rank": 1,
+            "mrr": 1
+          },
+          "judge": {
+            "faithfulness": {
+              "score": 5,
+              "rationale": "La respuesta reproduce fielmente las acciones permitidas y la notificación previa descritas en el pasaje [1], sin añadir información externa."
+            },
+            "answer_relevance": {
+              "score": 5,
+              "rationale": "Responde directamente qué puede hacer la Secretaría si no se alcanzan las metas trimestrales."
+            },
+            "citation_accuracy": {
+              "score": 5,
+              "rationale": "Cita únicamente el pasaje [1], que contiene exactamente esa disposición."
+            }
+          },
+          "refusal_correct": null,
+          "cost_usd": 0.00026978,
+          "latency_ms": 1721
+        },
+        {
+          "item_id": "S1",
+          "type": "summarization",
+          "lang": "en",
+          "question": "Summarize the contribution of this paper in one sentence.",
+          "answer": "The paper introduces Gated Sparse Attention (GSA), a sparse-transformer routing variant that uses a learned sigmoid gate at each attention head to select key-value pairs per query, reducing compute by 38% on WMT-22 EN-ES while keeping translation quality within 0.4 BLEU points, and is end-to-end differentiable with negligible added parameters [1][3].",
+          "retrieval": {
+            "hit_at_k": false,
+            "rank": null,
+            "mrr": 0
+          },
+          "judge": {
+            "faithfulness": {
+              "score": 5,
+              "rationale": "All claims (GSA name, sigmoid gating per head, per-query selection, 38% compute reduction on WMT-22 EN-ES, within 0.4 BLEU, end-to-end differentiability, negligible parameters) are directly supported by passages [1] and [3]."
+            },
+            "answer_relevance": {
+              "score": 5,
+              "rationale": "It concisely summarizes the paper’s main contribution in one sentence, matching the requested scope."
+            },
+            "citation_accuracy": {
+              "score": 5,
+              "rationale": "Citations [1] and [3] precisely support the stated method, empirical results, and differentiability/parameter claims without relying on unrelated passages."
+            }
+          },
+          "refusal_correct": null,
+          "cost_usd": 0.00029134,
+          "latency_ms": 3137
+        },
+        {
+          "item_id": "S2",
+          "type": "summarization",
+          "lang": "en",
+          "question": "Summarize the key financial highlights of Q1 2026 for Northwind Logistics in 3 bullet points.",
+          "answer": "- Consolidated revenue was $148.2 million, up 12.4% year-over-year, led by strong growth in last-mile delivery (+39.5%) and international freight (+29.7%) [1][3].\n- Operating income rose to $19.7 million (13.3% operating margin, the highest since Q2 2023), with net income of $14.2 million and EPS of $1.84 [2].\n- Free cash flow returned to positive at $11.4 million, and long-term debt fell to $142.3 million from $151.8 million, helped by early repayment of a $9.5 million term loan [1][2][4].",
+          "retrieval": {
+            "hit_at_k": true,
+            "rank": 1,
+            "mrr": 1
+          },
+          "judge": {
+            "faithfulness": {
+              "score": 5,
+              "rationale": "All reported figures (revenue, segment growth, operating income/margin, net income, EPS, free cash flow, and debt reduction with term loan repayment) are directly supported by the cited passages."
+            },
+            "answer_relevance": {
+              "score": 5,
+              "rationale": "It provides exactly three concise bullet points that summarize the key Q1 2026 financial highlights requested."
+            },
+            "citation_accuracy": {
+              "score": 4,
+              "rationale": "Citations [1]–[3] precisely support the claims, but [4] is unnecessary for the third bullet and appears tacked on."
+            }
+          },
+          "refusal_correct": null,
+          "cost_usd": 0.00030884,
+          "latency_ms": 2468
+        },
+        {
+          "item_id": "S3",
+          "type": "summarization",
+          "lang": "en",
+          "question": "Summarize the data ownership terms in two sentences.",
+          "answer": "Users retain all rights to the data they upload, granting Lighthouse Analytics only a non-exclusive, royalty-free license to process that data solely to provide the Service [1]. Lighthouse Analytics does not use uploaded data to train machine learning models without explicit written consent [1].",
+          "retrieval": {
+            "hit_at_k": true,
+            "rank": 1,
+            "mrr": 1
+          },
+          "judge": {
+            "faithfulness": {
+              "score": 5,
+              "rationale": "Both statements are directly supported by passage [1] with no additions or contradictions."
+            },
+            "answer_relevance": {
+              "score": 5,
+              "rationale": "It concisely summarizes the data ownership terms in exactly two sentences, matching the request."
+            },
+            "citation_accuracy": {
+              "score": 5,
+              "rationale": "The single citation [1] fully supports both claims and is the correct, specific source."
+            }
+          },
+          "refusal_correct": null,
+          "cost_usd": 0.00027916000000000003,
+          "latency_ms": 2576
+        },
+        {
+          "item_id": "NA1",
+          "type": "no_answer",
+          "lang": "en",
+          "question": "Does the Helios H7 support Apple HomeKit?",
+          "answer": "I couldn't find any mention of Apple HomeKit in your documents. The retrieved guide covers Wi-Fi setup in the Helios app, HVAC system compatibility, and specifications, but it does not list HomeKit or any Apple smart-home integration [2][4].",
+          "retrieval": null,
+          "judge": null,
+          "refusal_correct": true,
+          "cost_usd": 0.00027342,
+          "latency_ms": 2169
+        },
+        {
+          "item_id": "NA2",
+          "type": "no_answer",
+          "lang": "en",
+          "question": "Who is the CEO of Northwind Logistics?",
+          "answer": "I couldn't find the CEO of Northwind Logistics mentioned in the provided documents.",
+          "retrieval": null,
+          "judge": null,
+          "refusal_correct": true,
+          "cost_usd": 0.00026250000000000004,
+          "latency_ms": 2044
+        },
+        {
+          "item_id": "NA3",
+          "type": "no_answer",
+          "lang": "en",
+          "question": "What is the price of the Lighthouse Analytics service?",
+          "answer": "I couldn't find any pricing information for Lighthouse Analytics in the provided documents. The terms mention subscriptions, billing periods, and monthly fees, but no actual price is listed [5].",
+          "retrieval": null,
+          "judge": null,
+          "refusal_correct": true,
+          "cost_usd": 0.00024150000000000002,
+          "latency_ms": 2529
+        },
+        {
+          "item_id": "NA4_ES",
+          "type": "no_answer",
+          "lang": "es",
+          "question": "¿Cuántas estaciones de carga habrá en zonas residenciales?",
+          "answer": "El documento no menciona estaciones de carga en zonas residenciales. Solo indica que se construirán cuatro estaciones de carga rápida, todas en terminales: Las Tortugas, Plaza Mayor, Estación Norte y Parque Industrial [1].",
+          "retrieval": null,
+          "judge": null,
+          "refusal_correct": true,
+          "cost_usd": 0.0002485,
+          "latency_ms": 2119
+        },
+        {
+          "item_id": "N1",
+          "type": "numeric",
+          "lang": "en",
+          "question": "What BLEU score does GSA achieve on the WMT-22 EN-ES benchmark?",
+          "answer": "GSA achieves 34.4 BLEU on the WMT-22 EN-ES benchmark, compared to 34.8 BLEU for the dense baseline [2].",
+          "retrieval": {
+            "hit_at_k": true,
+            "rank": 2,
+            "mrr": 0.5
+          },
+          "judge": {
+            "faithfulness": {
+              "score": 5,
+              "rationale": "The stated BLEU scores (34.4 for GSA and 34.8 for the baseline) are exactly supported by passage [2]."
+            },
+            "answer_relevance": {
+              "score": 5,
+              "rationale": "It directly answers the question by giving GSA's BLEU score on WMT-22 EN-ES."
+            },
+            "citation_accuracy": {
+              "score": 5,
+              "rationale": "It cites passage [2], which explicitly reports the 34.4 BLEU result."
+            }
+          },
+          "refusal_correct": null,
+          "cost_usd": 0.00024542,
+          "latency_ms": 1725
+        },
+        {
+          "item_id": "N2",
+          "type": "numeric",
+          "lang": "en",
+          "question": "How many heating and cooling stages does the Helios H7 support at maximum?",
+          "answer": "The Helios H7 supports up to 2 heating stages and 2 cooling stages [1].",
+          "retrieval": {
+            "hit_at_k": true,
+            "rank": 1,
+            "mrr": 1
+          },
+          "judge": {
+            "faithfulness": {
+              "score": 5,
+              "rationale": "The claim matches passage [1], which explicitly states “Up to 2 heating stages + 2 cooling stages.”"
+            },
+            "answer_relevance": {
+              "score": 5,
+              "rationale": "It directly answers the question about the maximum supported heating and cooling stages."
+            },
+            "citation_accuracy": {
+              "score": 5,
+              "rationale": "The single citation [1] precisely contains the specification used to support the answer."
+            }
+          },
+          "refusal_correct": null,
+          "cost_usd": 0.00025872000000000004,
+          "latency_ms": 1754
+        },
+        {
+          "item_id": "N3",
+          "type": "numeric",
+          "lang": "en",
+          "question": "What was Northwind's total revenue in Q1 2026?",
+          "answer": "Northwind’s total consolidated revenue in Q1 2026 was $148.2 million [1].",
+          "retrieval": {
+            "hit_at_k": true,
+            "rank": 1,
+            "mrr": 1
+          },
+          "judge": {
+            "faithfulness": {
+              "score": 5,
+              "rationale": "The answer exactly matches the figure reported in the cited passage and introduces no unsupported details."
+            },
+            "answer_relevance": {
+              "score": 5,
+              "rationale": "It directly provides Northwind's total revenue for Q1 2026 as requested."
+            },
+            "citation_accuracy": {
+              "score": 5,
+              "rationale": "Passage [1] explicitly states the consolidated Q1 2026 revenue of $148.2 million, precisely supporting the answer."
+            }
+          },
+          "refusal_correct": null,
+          "cost_usd": 0.00026894,
+          "latency_ms": 1769
+        },
+        {
+          "item_id": "C1",
+          "type": "contradiction_or_cross_doc",
+          "lang": "en",
+          "question": "Both the Helios H7 manual and the Lighthouse Analytics Terms of Service describe data the company collects from users. How do their data-ownership terms compare?",
+          "answer": "Based on the provided documents, a direct comparison isn't possible: the Helios H7 manual passages don't mention data ownership at all. They describe that the H7 generates a monthly energy report with runtime, kWh usage, ZIP-code comparisons, and a savings score [4], but they don't state who owns that data or how it may be used.\n\nThe Lighthouse Analytics Terms of Service, by contrast, explicitly address data ownership: users retain all rights to data they upload, and they grant Lighthouse Analytics a non-exclusive, royalty-free license to process that data solely to provide the Service [1]. The terms also state that uploaded data won't be used to train machine learning models without explicit written consent [1]. So while Lighthouse Analytics spells out data-ownership rules, your Helios H7 manual doesn't cover that topic in the passages provided.",
+          "retrieval": {
+            "hit_at_k": true,
+            "rank": 1,
+            "mrr": 1
+          },
+          "judge": {
+            "faithfulness": {
+              "score": 5,
+              "rationale": "All claims are grounded in the cited passages: [4] lists the energy report without ownership terms, and [1] states users retain rights, grant a limited license, and that ML training requires explicit consent."
+            },
+            "answer_relevance": {
+              "score": 5,
+              "rationale": "It directly compares the two documents on data-ownership terms, noting the ToS is explicit while the manual is silent, which addresses the question."
+            },
+            "citation_accuracy": {
+              "score": 5,
+              "rationale": "The answer correctly uses [4] to support what the manual contains and [1] for the specific data-ownership and ML training provisions, with no extraneous or missing citations."
+            }
+          },
+          "refusal_correct": null,
+          "cost_usd": 0.00035672000000000004,
+          "latency_ms": 4050
+        },
+        {
+          "item_id": "C2",
+          "type": "contradiction_or_cross_doc",
+          "lang": "en",
+          "question": "The Northwind report mentions improved route optimization. The Valdivia Norte plan mentions reducing CO emissions. Do both documents describe the same kind of operational change, and what is the key difference in scope?",
+          "answer": "No — the two documents describe different kinds of operational changes.\n\nNorthwind's improvement is a private fleet-efficiency measure: the company deployed the FleetSmart platform in 87% of its long-haul vehicles to optimize routes, which helped cut fuel costs as a percentage of revenue [5]. This is software-driven logistics optimization within an existing diesel-based freight operation [3][5].\n\nValdivia Norte's plan is a public-sector mobility transformation: it introduces a fleet of electric buses (with specs like 280 km range and charging stations at four terminals) and establishes low-emission zones in the historic center, aiming for an 18% reduction in CO emissions from urban transport [1][4]. It's a municipal pilot program involving new vehicle technology and regulatory zoning, not route-optimization software [1][2][4].\n\nKey difference in scope: Northwind's change is narrower and commercial — one company optimizing routes on its long-haul fleet for cost/fuel savings [5]. Valdivia Norte's change is broader and civic — a city-wide plan covering electric fleet infrastructure, low-emission zones, and an emissions-reduction target over a fixed pilot period [1][2][4].",
+          "retrieval": {
+            "hit_at_k": true,
+            "rank": 5,
+            "mrr": 0.2
+          },
+          "judge": {
+            "faithfulness": {
+              "score": 5,
+              "rationale": "All claims about FleetSmart deployment, fuel-cost reduction, and Valdivia’s EV buses, charging stations, low-emission zones, and 18% CO reduction target are directly supported by the cited passages."
+            },
+            "answer_relevance": {
+              "score": 5,
+              "rationale": "It clearly answers that the changes are different and concisely explains the key scope difference between a company-level optimization and a city-wide public pilot program."
+            },
+            "citation_accuracy": {
+              "score": 4,
+              "rationale": "Core points are correctly backed by [5] for Northwind and [1][4] for Valdivia, but [3] and [2] are somewhat unnecessary for the specific claims cited."
+            }
+          },
+          "refusal_correct": null,
+          "cost_usd": 0.00039298,
+          "latency_ms": 6477
+        }
+      ],
+      "summary": {
+        "hit_at_k": 0.9047619047619048,
+        "mrr": 0.7952380952380952,
+        "faithfulness_avg": 5,
+        "answer_relevance_avg": 5,
+        "citation_accuracy_avg": 4.904761904761905,
+        "refusal_correctness_rate": 1,
+        "total_cost_usd": 0.00704732,
+        "latency_p50_ms": 2097,
+        "latency_p95_ms": 5454
+      }
+    }
+  ]
+}

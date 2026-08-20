@@ -18,10 +18,6 @@
     "account": "Account",
     "uploadFirst": "Upload a document first"
   },
-  "banner": {
-    "message": "Demo in progress — some features are still being built.",
-    "dismiss": "Dismiss this notice"
-  },
   "help": {
     "summary": "What does this page do?"
   },

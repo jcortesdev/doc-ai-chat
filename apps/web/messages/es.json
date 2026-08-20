@@ -18,10 +18,6 @@
     "account": "Cuenta",
     "uploadFirst": "Debe subir un documento primero"
   },
-  "banner": {
-    "message": "Demo en construcción — algunas funciones todavía se están construyendo.",
-    "dismiss": "Cerrar este aviso"
-  },
   "help": {
     "summary": "¿Qué hace esta página?"
   },

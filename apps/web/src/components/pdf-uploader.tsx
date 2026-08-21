@@ -34,6 +34,11 @@ export function PdfUploader() {
     }
 
     setBusy(true);
+    // Debugging aid, not a UX change: presign → R2 PUT → finalize used to share
+    // one try/catch that swallowed every failure into the same generic message
+    // with no console output — invisible from an e2e test's point of view (it
+    // only watches for the redirect). Each step now logs which one failed and
+    // why before falling into the same user-facing 'generic' state.
     try {
       // BYOK: forward the user's key (sessionStorage) so a trial-expired BYOK user
       // can still upload. Read fresh each time; absent → free tier.
@@ -43,18 +48,25 @@ export function PdfUploader() {
         headers['x-user-api-key'] = byokKey;
       }
 
-      const presign = await fetch('/api/uploads/presign', {
-        method: 'POST',
-        headers,
-        body: JSON.stringify({
-          filename: file.name,
-          contentType: 'application/pdf',
-          size: file.size,
-        }),
-      });
+      let presign: Response;
+      try {
+        presign = await fetch('/api/uploads/presign', {
+          method: 'POST',
+          headers,
+          body: JSON.stringify({
+            filename: file.name,
+            contentType: 'application/pdf',
+            size: file.size,
+          }),
+        });
+      } catch (cause) {
+        console.error('[pdf-uploader] presign request failed (network error)', cause);
+        throw cause;
+      }
       if (!presign.ok) {
         const body = (await presign.json().catch(() => null)) as { error?: string } | null;
         const code = body?.error;
+        console.error('[pdf-uploader] presign rejected', presign.status, body);
         setError(
           code === 'weekly_lock' || code === 'project_over_capacity' || code === 'file_too_large'
             ? code
@@ -65,26 +77,49 @@ export function PdfUploader() {
       }
       const { documentId, uploadUrl } = (await presign.json()) as PresignResponse;
 
-      const upload = await fetch(uploadUrl, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/pdf' },
-        body: file,
-      });
+      let upload: Response;
+      try {
+        upload = await fetch(uploadUrl, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/pdf' },
+          body: file,
+        });
+      } catch (cause) {
+        // A CORS preflight rejection surfaces here as an opaque "Failed to
+        // fetch" with no status — that shape is the tell (M1's own history
+        // hit this exact class of bug: a bucket CORS policy only visible to a
+        // real browser, invisible to any server-side test).
+        console.error(
+          '[pdf-uploader] R2 upload PUT failed (network error — check R2 bucket CORS policy allows this origin)',
+          cause,
+        );
+        throw cause;
+      }
       if (!upload.ok) {
+        console.error('[pdf-uploader] R2 upload PUT rejected', upload.status, upload.statusText);
         throw new Error('upload');
       }
 
-      const finalize = await fetch('/api/ingest/finalize', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ documentId }),
-      });
+      let finalize: Response;
+      try {
+        finalize = await fetch('/api/ingest/finalize', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ documentId }),
+        });
+      } catch (cause) {
+        console.error('[pdf-uploader] finalize request failed (network error)', cause);
+        throw cause;
+      }
       if (!finalize.ok) {
+        const body = await finalize.json().catch(() => null);
+        console.error('[pdf-uploader] finalize rejected', finalize.status, body);
         throw new Error('finalize');
       }
 
       router.push(`/ingest/${documentId}`);
-    } catch {
+    } catch (cause) {
+      console.error('[pdf-uploader] upload flow failed', cause);
       setError('generic');
       setBusy(false);
     }

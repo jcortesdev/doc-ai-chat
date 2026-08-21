@@ -166,7 +166,7 @@ function ToolStepCard({
     state === 'output-error'
       ? 'text-red-500'
       : state === 'output-available'
-        ? 'text-foreground/50'
+        ? 'text-foreground/70' // was /50 (3.37:1, axe AA needs 4.5:1) — pre-existing M6 debt, found live
         : 'text-foreground/70';
 
   const searchInput = input as { query?: string } | undefined;
@@ -193,12 +193,12 @@ function ToolStepCard({
             >
               <div className="flex items-center gap-2 font-medium text-foreground/80">
                 <span className="truncate">{hit.documentLabel}</span>
-                {hit.page !== null && <span className="text-foreground/50">p.{hit.page}</span>}
-                <span className="ml-auto shrink-0 font-mono text-foreground/40">
+                {hit.page !== null && <span className="text-foreground/70">p.{hit.page}</span>}
+                <span className="ml-auto shrink-0 font-mono text-foreground/70">
                   {hit.relevance.toFixed(2)}
                 </span>
               </div>
-              <p className="text-foreground/50 leading-relaxed">{hit.snippet.slice(0, 200)}…</p>
+              <p className="text-foreground/70 leading-relaxed">{hit.snippet.slice(0, 200)}…</p>
             </li>
           ))}
         </ul>
@@ -213,10 +213,10 @@ function ToolStepCard({
               <div className="font-medium text-foreground/80">
                 #{chunk.chunkIndex}
                 {chunk.page !== null && (
-                  <span className="text-foreground/50"> · p.{chunk.page}</span>
+                  <span className="text-foreground/70"> · p.{chunk.page}</span>
                 )}
               </div>
-              <p className="text-foreground/50 leading-relaxed">{chunk.content.slice(0, 200)}…</p>
+              <p className="text-foreground/70 leading-relaxed">{chunk.content.slice(0, 200)}…</p>
             </li>
           ))}
         </ul>
@@ -330,11 +330,13 @@ export function AgentBox({ documents, userId }: { documents: ReadyDocument[]; us
           </button>
         )}
         {tier && maxIterations !== undefined && (
-          <p className="text-foreground/50 text-xs">
+          // was /50 (3.4:1) — same pre-existing M6 contrast debt as the other
+          // fixes in this file, caught by the same axe sweep run.
+          <p className="text-foreground/70 text-xs">
             {tier === 'pro'
               ? t('tierPro', { n: maxIterations })
               : t('tierFree', { n: maxIterations })}
-            {model && <span className="block font-mono text-foreground/40">{model}</span>}
+            {model && <span className="block font-mono text-foreground/70">{model}</span>}
           </p>
         )}
         <AvailableDocuments documents={documents} />
@@ -401,7 +403,12 @@ export function AgentBox({ documents, userId }: { documents: ReadyDocument[]; us
                   })}
                   {capped && <CapBadge reason={message.metadata?.capReason} />}
                   {usage && (
-                    <p className="text-foreground/40 text-xs">
+                    // /40 measured 2.55:1 against a white background — axe AA
+                    // needs 4.5:1 (same fix pattern the rest of the app has
+                    // applied repeatedly since M1: /50 → /70; this one just
+                    // hadn't been caught by the M6 axe sweep yet, not an M7
+                    // regression).
+                    <p className="text-foreground/70 text-xs">
                       {t('usageCost')} ${usage.costUsd.toFixed(6)} · {t('usageLatency')}{' '}
                       {(usage.latencyMs / 1000).toFixed(1)}s
                     </p>

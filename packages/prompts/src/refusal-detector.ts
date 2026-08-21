@@ -22,6 +22,13 @@ const REFUSAL_PATTERNS: RegExp[] = [
   // No trailing \b: JS word boundaries are ASCII-only, so \b fails right after an
   // accented char like the "é" in "encontré".
   /\bno (?:lo |la )?(?:encontr[ée]|encuentro)/i,
+  // "no pude encontrar" (I couldn't find) — a DeepSeek e2e run (2026-08-20)
+  // phrased a genuine refusal this way twice in a row ("No pude encontrar esa
+  // información en los documentos proporcionados"); the pattern above needs
+  // "no" immediately followed by "encontr[ée]", so the inserted "pude" broke
+  // it. This is the direct Spanish equivalent of the English "i couldn't
+  // find" pattern above, which the Spanish list never had a counterpart for.
+  /\bno (?:pude|pudo|pudimos|puedo) (?:encontrar|hallar)\b/i,
   // "no menciona" (document as active subject, e.g. "El documento no
   // menciona...") alongside the reflexive "no se menciona" — both are natural
   // Spanish refusal phrasings (M5 golden-set run, NA4_ES: both models used

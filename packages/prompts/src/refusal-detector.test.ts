@@ -35,6 +35,22 @@ describe('isRefusal', () => {
     expect(isRefusal('El documento no contiene información sobre ese tema.')).toBe(true);
   });
 
+  // Found live in an e2e run (2026-08-20, DeepSeek): the "no encontr[ée]"
+  // pattern needs "no" immediately before "encontr-", so "no pude encontrar"
+  // (I couldn't find) slipped through twice with the inserted "pude". Pinned
+  // to the exact text from that run, plus the other person/tense forms.
+  it('detects "no pude encontrar" as a Spanish refusal (found live, 2026-08-20)', () => {
+    expect(isRefusal('No pude encontrar esa información en los documentos proporcionados.')).toBe(
+      true,
+    );
+    expect(
+      isRefusal(
+        'No pude encontrar eso en tus documentos: el contexto recuperado está vacío, así que no tengo información para responder.',
+      ),
+    ).toBe(true);
+    expect(isRefusal('No pudimos encontrar esa información.')).toBe(true);
+  });
+
   it('does not flag a grounded answer', () => {
     expect(isRefusal('The low-emission zones start on July 1, 2026 [1].')).toBe(false);
     expect(isRefusal('Las zonas de bajas emisiones empiezan el 1 de julio de 2026 [1].')).toBe(

@@ -13,22 +13,22 @@ Designed deliberately as an AI-Engineer-shaped project: built without LangChain,
 
 ## Stack
 
-| Layer           | Tech                                                                                   | Why                                                                                           |
-| --------------- | -------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
-| Frontend        | Next.js 16 App Router · React 19 · TypeScript strict · Tailwind v4 · next-intl (en/es) | Recruiter-recognizable + i18n for LATAM + US markets.                                         |
-| API             | Next.js Route Handlers (in `apps/web`)                                                 | Lean for ~10 endpoints; no NestJS overhead.                                                   |
-| Background jobs | Inngest functions, served from `/api/inngest`                                          | Managed queue + retry + cron; no separate worker host.                                        |
-| Database        | Neon Postgres + pgvector with HNSW                                                     | Hybrid search (BM25 via tsvector + cosine via pgvector + RRF) hand-built — no vendor lock-in. |
-| File storage    | Cloudflare R2 (project-scoped quota, LRU eviction)                                     | No egress fees; PDFs power the click-to-source UX.                                            |
-| Auth            | Clerk (GitHub + Google + magic link)                                                   | Multi-provider, en/es email templates.                                                        |
-| Embeddings      | Voyage-3                                                                               | Anthropic-recommended; best quality/$.                                                        |
-| Reranking       | Cohere rerank-v3.5                                                                     | Dedicated cross-encoder beats LLM reranking; multilingual for en+es.                          |
-| Chat (prod)     | Claude Sonnet 4.6                                                                      | Quality + Spanish + tool use.                                                                 |
-| Chat (dev)      | DeepSeek V4-Flash                                                                      | 10× cheaper for iteration.                                                                    |
-| Eval judge      | OpenAI GPT-5-mini                                                                      | Capable for structured rubrics, 75% cheaper than Opus.                                        |
-| Observability   | Custom `/usage` dashboard, backed by a `usage_events` row per model call               | Built by hand instead of a hosted tracing tool — per-call cost/latency logging plus the eval scorecards (M5) cover debugging without another dependency. |
-| Rate limit      | Upstash Redis                                                                          | Sub-5ms atomic counters for the chat hot path.                                                |
-| Tests           | Vitest + Playwright + @axe-core/playwright + Lighthouse                                | Same bar as the rest of the portfolio.                                                        |
+| Layer           | Tech                                                                                   | Why                                                                                                                                                                    |
+| --------------- | -------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Frontend        | Next.js 16 App Router · React 19 · TypeScript strict · Tailwind v4 · next-intl (en/es) | Recruiter-recognizable + i18n for LATAM + US markets.                                                                                                                  |
+| API             | Next.js Route Handlers (in `apps/web`)                                                 | Lean for ~10 endpoints; no NestJS overhead.                                                                                                                            |
+| Background jobs | Inngest functions, served from `/api/inngest`                                          | Managed queue + retry + cron; no separate worker host.                                                                                                                 |
+| Database        | Neon Postgres + pgvector with HNSW                                                     | Hybrid search (BM25 via tsvector + cosine via pgvector + RRF) hand-built — no vendor lock-in.                                                                          |
+| File storage    | Cloudflare R2 (project-scoped quota, LRU eviction)                                     | No egress fees; PDFs power the click-to-source UX.                                                                                                                     |
+| Auth            | Clerk (GitHub + Google + magic link)                                                   | Multi-provider, en/es email templates.                                                                                                                                 |
+| Embeddings      | Voyage-3                                                                               | Anthropic-recommended; best quality/$.                                                                                                                                 |
+| Reranking       | Cohere rerank-v3.5                                                                     | Dedicated cross-encoder beats LLM reranking; multilingual for en+es.                                                                                                   |
+| Chat (prod)     | DeepSeek V4-Flash (currently — same as dev; see below)                                 | The benchmark was performed and I found that the model has good quality at a good price.                                                                               |
+| Chat (dev)      | DeepSeek V4-Flash                                                                      | 10× cheaper for iteration.                                                                                                                                             |
+| Eval judge      | OpenAI GPT-5                                                                           | Deliberately not GPT-5-mini once the M7 benchmark put GPT-5-mini itself under test as a chat model — the judge has to be a model that's never also a row being graded. |
+| Observability   | Custom `/usage` dashboard, backed by a `usage_events` row per model call               | Built by hand instead of a hosted tracing tool — per-call cost/latency logging plus the eval scorecards (M5) cover debugging without another dependency.               |
+| Rate limit      | Upstash Redis                                                                          | Sub-5ms atomic counters for the chat hot path.                                                                                                                         |
+| Tests           | Vitest + Playwright + @axe-core/playwright + Lighthouse                                | Same bar as the rest of the portfolio.                                                                                                                                 |
 
 ## How it works
 
@@ -36,7 +36,7 @@ Designed deliberately as an AI-Engineer-shaped project: built without LangChain,
 1. INGEST   ✅ upload PDF → parse → chunk → Voyage-3 embed → Postgres + R2
 2. RETRIEVE ✅ question → hybrid search (BM25 + cosine + RRF) → Cohere rerank → top-5
 3. ANSWER   ✅ LLM with retrieved context in <retrieved_context> tags → streamed → citations
-4. EVAL     ✅ golden set (25 Q&A, en+es) → GPT-5-mini judge → scorecard (CI gate not wired yet)
+4. EVAL     ✅ golden set (25 Q&A, en+es) → GPT-5 judge → scorecard (CI gate not wired yet)
 5. AGENT    ✅ "compare two PDFs" → tool-using loop (search_chunks, get_full_passage) → visible transcript + cost, capped with a partial-answer fallback
 6. BENCH    ✅ same golden set across 3 providers × 2 tiers → data-derived report
 ```

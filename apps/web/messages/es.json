@@ -14,12 +14,9 @@
     "search": "Búsqueda",
     "chat": "Chat",
     "agent": "Agente",
+    "benchmark": "Benchmark",
     "account": "Cuenta",
     "uploadFirst": "Debe subir un documento primero"
-  },
-  "banner": {
-    "message": "Demo en construcción — algunas funciones todavía se están construyendo.",
-    "dismiss": "Cerrar este aviso"
   },
   "help": {
     "summary": "¿Qué hace esta página?"
@@ -31,6 +28,7 @@
     "send": "Enviar",
     "thinking": "Pensando…",
     "empty": "Hacé una pregunta para empezar.",
+    "barModel": "Modelo",
     "barCost": "Costo de la conversación",
     "barTokensPerSec": "Tokens/s",
     "barLatency": "Latencia p50/p95",
@@ -75,6 +73,29 @@
     "tierPro": "Plan pro — hasta {n} pasos",
     "usageCost": "Costo",
     "usageLatency": "Latencia"
+  },
+  "benchmark": {
+    "title": "Benchmark",
+    "hint": "El mismo golden set, corrido contra cada modelo configurado, evaluado de la misma manera — vea cómo se comparan los proveedores en la práctica.",
+    "help": "Este reporte corre el golden set de 25 preguntas (packages/evals) contra cada modelo de chat configurado, puntuado por fidelidad, relevancia, precisión de citas, corrección de rechazo, costo y latencia. Es un artefacto commiteado que se regenera a mano, no una demo en vivo que pueda disparar — vea la nota debajo de la tabla para saber cómo leerlo.",
+    "empty": "El benchmark todavía no se corrió — vuelva pronto.",
+    "best": "mejor",
+    "meta": "Generado el {date} · golden set v{goldenSetVersion} · evaluado por {judgeModel}",
+    "leaderNote": "{model} lideró en {count} de {total} métricas medidas en esta corrida.",
+    "leaderNoteTied": "{models} empataron en el liderazgo, cada uno ganando {count} de {total} métricas medidas en esta corrida.",
+    "methodologyNote": "Léalo como un dato, no como un veredicto sobre ningún proveedor. El golden set es un corpus chico y controlado de 25 preguntas — los puntajes de calidad pueden agruparse cerca del máximo cuando varios modelos responden bien (un efecto techo ya marcado en el trabajo de evals de M5), y la columna de corrección de rechazo se basa en apenas un puñado de preguntas sin respuesta, así que una sola pregunta mueve mucho el número. Compare costo y latencia teniendo en cuenta su volumen real de uso. Una sustitución deliberada: la fila económica de OpenAI corre GPT-5-mini en vez de GPT-5, porque GPT-5 es el modelo juez de este reporte — calificar sus propias respuestas sesgaría esa comparación.",
+    "col": {
+      "model": "Modelo",
+      "hit_at_k": "Hit@k",
+      "mrr": "MRR",
+      "faithfulness_avg": "Fidelidad",
+      "answer_relevance_avg": "Relevancia",
+      "citation_accuracy_avg": "Citas",
+      "refusal_correctness_rate": "Rechazo",
+      "total_cost_usd": "Costo",
+      "latency_p50_ms": "p50",
+      "latency_p95_ms": "p95"
+    }
   },
   "search": {
     "title": "Búsqueda",
@@ -143,15 +164,20 @@
   },
   "settings": {
     "title": "Ajustes",
-    "hint": "Usá tu propia key de Anthropic para chatear sin los límites del free-tier.",
-    "byokTitle": "API key de Anthropic (BYOK)",
-    "byokHint": "Con tu propia key, el chat corre en Claude y se saltea la cuota diaria, el bloqueo del trial semanal y el presupuesto del proyecto — las llamadas las paga tu key.",
-    "placeholder": "sk-ant-…",
+    "hint": "Usá tu propia key de cualquier proveedor para chatear sin los límites del free-tier, y elegí qué tier de modelo usar.",
+    "byokTitle": "API keys (BYOK)",
+    "byokHint": "Agregá tu propia key de Anthropic, OpenAI o DeepSeek. Una vez guardada, el chat en ese proveedor se saltea la cuota diaria, el bloqueo del trial semanal y el presupuesto del proyecto — las llamadas las paga tu key.",
+    "placeholder": "sk-…",
     "save": "Guardar key",
     "clear": "Quitar key",
     "active": "Key activa:",
-    "invalid": "Eso no parece una key de Anthropic (debería empezar con «sk-ant-»).",
-    "securityNote": "Se guarda solo en esta pestaña del navegador (sessionStorage), se envía con cada request y se borra al cerrar la pestaña. Nunca la guardamos ni la logueamos."
+    "keyLabel": "API key de {provider}",
+    "invalid": "Eso no parece una key válida de {provider}.",
+    "tierPicker": "Tier de modelo",
+    "tierLocked": "Agregá tu key de {provider} para desbloquear este tier.",
+    "currentlyUsing": "El chat está usando {model}.",
+    "noSelection": "Usando el modelo default del free-tier — agregá una key arriba y elegí un tier para usar la tuya.",
+    "securityNote": "Cada key se guarda solo en esta pestaña del navegador (sessionStorage), se envía con cada request y se borra al cerrar la pestaña o cambiar de cuenta. Nunca las guardamos ni las logueamos."
   },
   "account": {
     "title": "Cuenta",
@@ -215,7 +241,7 @@
     },
     "invalid_byok": {
       "title": "API key inválida",
-      "body": "Anthropic rechazó esa key. Revisala en ajustes y probá de nuevo."
+      "body": "Esa key fue rechazada. Fijate que coincida con el proveedor que elegiste, revisala en ajustes y probá de nuevo."
     },
     "model_overload": {
       "title": "Modelo ocupado",

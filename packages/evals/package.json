@@ -12,7 +12,10 @@
     "./refusal-correctness": "./src/refusal-correctness.ts",
     "./judge": "./src/judge.ts",
     "./runner": "./src/runner.ts",
-    "./diff": "./src/diff.ts"
+    "./benchmark": "./src/benchmark.ts",
+    "./leaderboard": "./src/leaderboard.ts",
+    "./diff": "./src/diff.ts",
+    "./benchmark-results/latest.json": "./benchmark-results/latest.json"
   },
   "scripts": {
     "typecheck": "tsc --noEmit",

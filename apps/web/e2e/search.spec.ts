@@ -36,11 +36,19 @@ test('signs in, searches an ingested PDF, shows scored results, passes axe', asy
   await page.getByRole('searchbox').fill('autonomía de la flota eléctrica');
   await page.getByRole('button', { name: 'Search' }).click();
 
-  // At least one scored result card appears.
-  await expect(page.getByRole('listitem').first()).toBeVisible({ timeout: 30_000 });
-  await expect(page.getByText('Rerank').first()).toBeVisible();
-  await expect(page.getByText('Cosine').first()).toBeVisible();
-  await expect(page.getByText('BM25').first()).toBeVisible();
+  // At least one scored result card appears. Scoped to the results <ol>, not a
+  // bare `getByRole('listitem')` or a page-wide text search — two other things
+  // on this page also render <li> or matching text: `AvailableDocuments`
+  // (a <ul> of document badges, above the results) and the per-page help
+  // tooltip's body text, which contains "reranker" and collides with a loose
+  // case-insensitive `getByText('Rerank')`. Both found live — test-locator
+  // bugs (wrong element matched), not product bugs.
+  const resultsList = page.locator('ol');
+  const firstResult = resultsList.getByRole('listitem').first();
+  await expect(firstResult).toBeVisible({ timeout: 30_000 });
+  await expect(firstResult.getByText('Rerank')).toBeVisible();
+  await expect(firstResult.getByText('Cosine')).toBeVisible();
+  await expect(firstResult.getByText('BM25')).toBeVisible();
 
   // Accessibility: zero violations on the search page with results rendered.
   const results = await new AxeBuilder({ page }).analyze();

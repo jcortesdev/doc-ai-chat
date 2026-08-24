@@ -121,3 +121,18 @@ export const Scorecard = z.object({
   }),
 });
 export type Scorecard = z.infer<typeof Scorecard>;
+
+// The M7 benchmark's committed report artifact (packages/evals/benchmark-results/
+// latest.json) — one Scorecard per provider:model_id combo, all judged by the
+// same judge_model so the summaries are comparable to each other. Parsed with
+// `.safeParse` wherever it's read (the /benchmark page) rather than trusted as
+// `Scorecard[]` directly — it's a committed file, not a compile-time constant,
+// so a manually-edited or stale-shaped file should degrade to "no report yet"
+// instead of crashing the page.
+export const BenchmarkReport = z.object({
+  generated_at: z.string(),
+  golden_set_version: z.string(),
+  judge_model: z.string(),
+  runs: z.array(Scorecard),
+});
+export type BenchmarkReport = z.infer<typeof BenchmarkReport>;

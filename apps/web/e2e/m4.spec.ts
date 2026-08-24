@@ -4,10 +4,12 @@ import { type Page, expect, test } from '@playwright/test';
 import { TEST_EMAIL } from './test-user';
 
 // M4 e2e: the surfaces that don't need the Inngest dev server or a live model
-// call, so they stay fast and deterministic — BYOK settings, the /usage
-// dashboard, and a client-side ErrorState — each with an axe sweep. Rate-limit /
-// quota enforcement is verified via the env knobs in RUNTIME_CONFIG (it depends on
+// call, so they stay fast and deterministic — the /usage dashboard and a
+// client-side ErrorState — each with an axe sweep. Rate-limit / quota
+// enforcement is verified via the env knobs in RUNTIME_CONFIG (it depends on
 // shared Redis counter state, which is not deterministic in an automated run).
+// The BYOK settings test moved to m7.spec.ts (M7 generalized the single
+// Anthropic-only form into three provider cards + a tier picker).
 
 async function signIn(page: Page) {
   await setupClerkTestingToken({ page });
@@ -17,32 +19,6 @@ async function signIn(page: Page) {
     signInParams: { strategy: 'email_code', identifier: TEST_EMAIL },
   });
 }
-
-test('BYOK: saving a key stores it in sessionStorage and shows the active state', async ({
-  page,
-}) => {
-  await signIn(page);
-  await page.goto('/en/settings');
-
-  const key = 'sk-ant-e2e-0123456789abcdefghij';
-  await page.locator('input[type="password"]').fill(key);
-  await page.getByRole('button', { name: 'Save key' }).click();
-
-  // Active state: masked key + a Remove button, and the raw key in sessionStorage.
-  await expect(page.getByText(/Key active/)).toBeVisible();
-  await expect(page.getByRole('button', { name: 'Remove key' })).toBeVisible();
-  const stored = await page.evaluate(() => sessionStorage.getItem('docai-byok-anthropic'));
-  expect(stored).toBe(key);
-
-  const axe = await new AxeBuilder({ page }).analyze();
-  expect(axe.violations).toEqual([]);
-
-  // Removing it clears storage and returns the form.
-  await page.getByRole('button', { name: 'Remove key' }).click();
-  await expect(page.locator('input[type="password"]')).toBeVisible();
-  const cleared = await page.evaluate(() => sessionStorage.getItem('docai-byok-anthropic'));
-  expect(cleared).toBeNull();
-});
 
 test('usage dashboard renders the summary and passes axe', async ({ page }) => {
   await signIn(page);

@@ -1,6 +1,5 @@
 import { ByokSessionGuard } from '@/components/byok-session-guard';
 import { Topbar } from '@/components/topbar';
-import { UnderConstructionBanner } from '@/components/under-construction-banner';
 import { routing } from '@/i18n/routing';
 import { getClerkLocalization } from '@/lib/clerk-localization';
 import { ClerkProvider } from '@clerk/nextjs';
@@ -50,7 +49,6 @@ export default async function LocaleLayout({ children, params }: Props) {
           <NextIntlClientProvider>
             <ByokSessionGuard />
             <Topbar />
-            <UnderConstructionBanner />
             {children}
           </NextIntlClientProvider>
         </body>

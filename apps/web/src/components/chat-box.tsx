@@ -4,7 +4,7 @@ import { AvailableDocuments } from '@/components/available-documents';
 import { CitationPanel } from '@/components/citation-panel';
 import { type ChatUsage, CostLatencyBar } from '@/components/cost-latency-bar';
 import { ErrorState, type ErrorVariant } from '@/components/error-state';
-import { BYOK_STORAGE_KEY } from '@/lib/byok';
+import { byokRequestHeaders } from '@/lib/byok';
 import type { ReadyDocument } from '@/lib/documents';
 import { rehypeCitations } from '@/lib/rehype-citations';
 import { useChat } from '@ai-sdk/react';
@@ -63,15 +63,10 @@ function messageText(message: ChatUIMessage): string {
 // history (text only). History lives client-side and is sent each request.
 const transport = new DefaultChatTransport<ChatUIMessage>({
   api: '/api/chat',
-  // BYOK: attach the user's Anthropic key from sessionStorage as a per-request
-  // header (read fresh each send). Never stored server-side; absent → free tier.
-  headers: (): Record<string, string> => {
-    if (typeof window === 'undefined') {
-      return {};
-    }
-    const key = window.sessionStorage.getItem(BYOK_STORAGE_KEY);
-    return key ? { 'x-user-api-key': key } : {};
-  },
+  // BYOK: attach the user's selected provider's key + chosen model ref from
+  // sessionStorage as per-request headers (read fresh each send, M7). Never
+  // stored server-side; absent → free tier / project default.
+  headers: byokRequestHeaders,
   prepareSendMessagesRequest: ({ messages }) => {
     const last = messages.at(-1);
     const history = messages

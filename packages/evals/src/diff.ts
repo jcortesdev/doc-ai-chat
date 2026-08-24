@@ -1,6 +1,6 @@
 import type { Scorecard } from './schema';
 
-type SummaryKey = keyof Scorecard['summary'];
+export type SummaryKey = keyof Scorecard['summary'];
 
 export type SummaryDelta = {
   key: SummaryKey;
@@ -20,7 +20,11 @@ export type ScorecardDiff = {
 // before diffScorecards flags it as a regression. This is the CI gate's
 // tolerance policy (task 10) — loose enough to absorb judge-model noise
 // between runs, tight enough to catch a real prompt/retrieval regression.
-const HIGHER_IS_WORSE: ReadonlySet<SummaryKey> = new Set([
+// Exported (M7) — the benchmark leaderboard (leaderboard.ts) reuses this exact
+// list to decide which run "wins" a metric (lowest cost/latency, highest
+// everything else). One list, two consumers: the CI regression gate and the
+// public benchmark report should never disagree about which direction is good.
+export const HIGHER_IS_WORSE: ReadonlySet<SummaryKey> = new Set([
   'total_cost_usd',
   'latency_p50_ms',
   'latency_p95_ms',

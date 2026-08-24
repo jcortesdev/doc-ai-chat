@@ -14,17 +14,27 @@ const PRICE_TABLE: Record<string, ModelPrice> = {
   'claude-sonnet-4-6': { inputPerMillion: 3.0, outputPerMillion: 15.0 },
   // DeepSeek V4-Flash — dev iteration (and currently prod while benchmarking);
   // the "mid" tier in the M7 benchmark.
-  'deepseek-v4-flash': { inputPerMillion: 0.14, outputPerMillion: 0.28 },
+  // DeepSeek moved to peak/off-peak pricing on 2026-08-17 (off-peak = 50% of
+  // peak; see api-docs.deepseek.com/quick_start/pricing). Found live 2026-08-24
+  // while re-verifying prices for the flagship-tier benchmark expansion — this
+  // flat table has no time-of-day axis, so we deliberately use the PEAK rate
+  // (the conservative/worst-case number) rather than off-peak, matching the
+  // project's cost-conscious default (ADR-006, ADR-015 budget caps). Verified
+  // 2026-08-24 against DeepSeek's own pricing page.
+  'deepseek-v4-flash': { inputPerMillion: 0.44, outputPerMillion: 1.32 },
   // OpenAI GPT-5-mini — eval judge (M5, ADR-016 EVAL_JUDGE_MODEL default).
+  // Verified 2026-08-24 against OpenRouter's rate card.
   'gpt-5-mini': { inputPerMillion: 0.25, outputPerMillion: 2.0 },
   // --- M7: the "flagship" tier per provider (model selector + benchmark). ---
-  // TODO verify against each provider's pricing page before the benchmark run
-  // this feeds into `/benchmark` is treated as final — these are placeholders
-  // entered at M7 kickoff, not yet confirmed live prices.
-  'claude-opus-4-7': { inputPerMillion: 15.0, outputPerMillion: 75.0 },
+  // Verified 2026-08-24 against OpenRouter's rate card (Anthropic/OpenAI) and
+  // DeepSeek's own pricing page (peak rate, see the v4-flash note above) ahead
+  // of the 6-model benchmark run. `gpt-5` matched its M7-kickoff placeholder
+  // exactly; `claude-opus-4-7`, `gpt-5.5`, and `deepseek-v4-pro` did not and are
+  // corrected below.
+  'claude-opus-4-7': { inputPerMillion: 5.0, outputPerMillion: 25.0 },
   'gpt-5': { inputPerMillion: 1.25, outputPerMillion: 10.0 },
-  'gpt-5.5': { inputPerMillion: 3.0, outputPerMillion: 15.0 },
-  'deepseek-v4-pro': { inputPerMillion: 0.55, outputPerMillion: 2.19 },
+  'gpt-5.5': { inputPerMillion: 5.0, outputPerMillion: 30.0 },
+  'deepseek-v4-pro': { inputPerMillion: 1.32, outputPerMillion: 3.96 },
 };
 
 export function getModelPrice(model: string): ModelPrice {

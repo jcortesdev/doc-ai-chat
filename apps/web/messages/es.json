@@ -83,7 +83,7 @@
     "meta": "Generado el {date} · golden set v{goldenSetVersion} · evaluado por {judgeModel}",
     "leaderNote": "{model} lideró en {count} de {total} métricas medidas en esta corrida.",
     "leaderNoteTied": "{models} empataron en el liderazgo, cada uno ganando {count} de {total} métricas medidas en esta corrida.",
-    "methodologyNote": "Léalo como un dato, no como un veredicto sobre ningún proveedor. El golden set es un corpus chico y controlado de 25 preguntas — los puntajes de calidad pueden agruparse cerca del máximo cuando varios modelos responden bien (un efecto techo ya marcado en el trabajo de evals de M5), y la columna de corrección de rechazo se basa en apenas un puñado de preguntas sin respuesta, así que una sola pregunta mueve mucho el número. Compare costo y latencia teniendo en cuenta su volumen real de uso.",
+    "methodologyNote": "Léalo como un dato, no como un veredicto sobre ningún proveedor. El golden set es un corpus chico y controlado de 25 preguntas — los puntajes de calidad pueden agruparse cerca del máximo cuando varios modelos responden bien (un efecto techo ya marcado en el trabajo de evals de M5), y la columna de corrección de rechazo se basa en apenas un puñado de preguntas sin respuesta, así que una sola pregunta mueve mucho el número. Compare costo y latencia teniendo en cuenta su volumen real de uso. Una sustitución deliberada: la fila económica de OpenAI corre GPT-5-mini en vez de GPT-5, porque GPT-5 es el modelo juez de este reporte — calificar sus propias respuestas sesgaría esa comparación.",
     "col": {
       "model": "Modelo",
       "hit_at_k": "Hit@k",

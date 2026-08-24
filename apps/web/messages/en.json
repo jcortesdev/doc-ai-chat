@@ -83,7 +83,7 @@
     "meta": "Generated {date} · golden set v{goldenSetVersion} · judged by {judgeModel}",
     "leaderNote": "{model} led on {count} of {total} measured metrics in this run.",
     "leaderNoteTied": "{models} tied for the lead, each winning {count} of {total} measured metrics in this run.",
-    "methodologyNote": "Read this as one data point, not a verdict on any provider. The golden set is a small, controlled 25-question corpus — quality scores can cluster near the top when several models handle it well (a ceiling effect flagged during the M5 evals work), and the refusal-correctness column is based on just a handful of no-answer questions, so a single question swings it a lot. Weigh cost and latency against your own real workload volume.",
+    "methodologyNote": "Read this as one data point, not a verdict on any provider. The golden set is a small, controlled 25-question corpus — quality scores can cluster near the top when several models handle it well (a ceiling effect flagged during the M5 evals work), and the refusal-correctness column is based on just a handful of no-answer questions, so a single question swings it a lot. Weigh cost and latency against your own real workload volume. One deliberate substitution: OpenAI's economy row runs GPT-5-mini rather than GPT-5, because GPT-5 is this report's judge model — grading its own answers would bias that comparison.",
     "col": {
       "model": "Model",
       "hit_at_k": "Hit@k",

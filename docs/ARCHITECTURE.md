@@ -49,17 +49,16 @@ For *why* each piece was chosen, see [DECISIONS.md](DECISIONS.md). For threat mo
         ┌─────────────────────────────────────────────┐
         │              External AI APIs                │
         │                                              │
-        │  Anthropic   OpenAI   DeepSeek   Voyage   Cohere
-        │   (chat,    (judge,   (dev      (embed)   (rerank)
-        │    agent)    bench)    chat)                  │
+        │  Anthropic      OpenAI         DeepSeek    Voyage   Cohere
+        │   (chat,     (judge, bench,     (dev       (embed)   (rerank)
+        │    agent)     BYOK chat)         chat)                  │
         └─────────────────────────────────────────────┘
                                 │
                                 ▼
-                        ┌───────────────┐
-                        │   Langfuse    │
-                        │  cloud trace  │
-                        │  + custom UI  │
-                        └───────────────┘
+                  every model call writes a usage_events
+                  row (model, tokens, cost, latency) into
+                  the Neon Postgres box above — no separate
+                  observability service; `/usage` reads it
 ```
 
 **Repository.** Single pnpm monorepo with one app (`web`) and four packages (`db`, `prompts`, `providers`, `evals`). Inngest functions live inside `apps/web/src/inngest/` and are exposed via the `/api/inngest` Route Handler — no separate worker process or host.
@@ -118,23 +117,29 @@ For *why* each piece was chosen, see [DECISIONS.md](DECISIONS.md). For threat mo
 └─────────────────────────────────────────────────────────────────────────┘
 
 ┌─────────────────────────────────────────────────────────────────────────┐
-│ FASE 6: M7 BENCHMARK — tier-matched, diplomatic reporting               │
+│ FASE 6: M7 BENCHMARK — tier-matched, data-derived reporting             │
 │                                                                         │
-│              Mid tier            Top tier                               │
-│              ────────            ────────                               │
-│  Anthropic:  Sonnet 4.6          Opus 4.7                               │
-│  OpenAI:     GPT-5               GPT-5.5                                │
-│  DeepSeek:   V4-Flash            V4-Pro                                 │
+│              Mid tier              Top tier                             │
+│              ────────              ────────                             │
+│  Anthropic:  Sonnet 4.6            Opus 4.7                             │
+│  OpenAI:     GPT-5-mini*           GPT-5.5                              │
+│  DeepSeek:   V4-Flash              V4-Pro                               │
 │                                                                         │
-│  GPT-5-mini judges all 6 runs. Report surfaces:                         │
-│   - cost-per-correct-answer (DeepSeek wins)                             │
-│   - p95 latency (GPT-5 + Sonnet win)                                    │
-│   - faithfulness (Sonnet wins slightly)                                 │
-│   - Spanish quality (Sonnet wins clearly)                               │
-│   - citation accuracy (technical tie)                                   │
+│  * OpenAI's economy row runs GPT-5-mini, not tier-models.ts's canonical │
+│    "mid" (GPT-5) — the judge is GPT-5, so grading its own answers would │
+│    be exactly the "model shouldn't grade its own homework" problem the  │
+│    eval judge itself exists to avoid (see M5, ADR-018). A benchmark-run │
+│    substitution via BENCHMARK_MODEL_REFS, not a change to the selector's│
+│    tier definitions — /account still offers the real GPT-5 as "mid."    │
 │                                                                         │
-│  Conclusion published: "Each provider wins on a different axis.         │
-│  Pick by use case, not absolute score." (Senior take, evita sesgo.)    │
+│  GPT-5 (EVAL_JUDGE_MODEL) judges all 6 runs, 25 questions each. The     │
+│  /benchmark report's comparison table and "who's ahead" callouts are   │
+│  computed live from the committed scorecard data at render time        │
+│  (findMetricWinners, packages/evals/src/leaderboard.ts) — never        │
+│  hand-written prose — so the numbers stay honest if a re-run changes    │
+│  them. See ADR-021 for why the benchmark is a CLI-run artifact rather   │
+│  than a live-triggered job, and /benchmark on the live site for the     │
+│  current numbers.                                                       │
 └─────────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -156,6 +161,7 @@ All model selection lives in environment variables, not source constants. Each r
 | Eval judge | `EVAL_JUDGE_MODEL` | M5 |
 | Embeddings | `EMBEDDINGS_MODEL` | M1 |
 | Reranker | `RERANK_MODEL` | M2 |
+| Benchmark — chat models under test (CSV of refs) | `BENCHMARK_MODEL_REFS` | M7 |
 
 `AGENT_SUBTASK_MODEL` was reserved at M0 planning time for a sub-agent dispatch pattern (a cheaper model handling isolated sub-tasks under the main reasoner). M6 shipped a single-reasoner loop instead — two tools, one model per run — so the env var exists but nothing reads it yet (same category as M5's `GATE_SANITY_MODEL`: designed, not wired).
 
@@ -182,7 +188,6 @@ Cost protection lives in two layers: account-level spend caps configured on each
 | Upstash (from M4) | Free plan, no payment method |
 | Clerk | Development mode until ship |
 | Cloudflare R2 | No payment method |
-| Langfuse cloud | No payment method |
 | Voyage AI | Prepay balance, no auto-recharge |
 | Anthropic | Monthly spend limit configured on dashboard |
 | DeepSeek | Prepay balance, no auto-recharge |

@@ -2,7 +2,7 @@
 
 > Ask questions of your PDFs. Get answers grounded in the documents, with clickable citations that open the exact passage.
 
-**Status:** 🚧 **Live demo, still building in public.** Shipped & deployed: M1 ingest pipeline · M2 hybrid search · M3 RAG chat (streaming + citations + guardrails) · M4 BYOK + rate limiting + cost/latency dashboard + retention + error states. Plus a UX polish pass: unified account page, file management (list/delete), in-panel citation highlight, UI-locale-aware answers, local chat persistence, and per-page help. M5 evals: golden-set runner, LLM-as-judge rubric (faithfulness / relevance / citation accuracy), retrieval metrics (hit@k, MRR), refusal correctness, and a scorecard diff gate — landed and run against a live-seeded workspace (see [packages/evals](packages/evals)); CI gate not wired yet. M6 agent loop: tool-using multi-step reasoner (`search_chunks` + `get_full_passage`) with a visible tool-call transcript, tiered caps (DeepSeek/free, Sonnet/BYOK+owner), and a graceful partial-answer fallback when a cap fires — live at `/agent`. Next: wire the CI gate · M7 multi-provider benchmark.
+**Status:** Shipped & deployed: M1 ingest pipeline · M2 hybrid search · M3 RAG chat (streaming + citations + guardrails) · M4 BYOK + rate limiting + cost/latency dashboard + retention + error states. Plus a UX polish pass: unified account page, file management (list/delete), in-panel citation highlight, UI-locale-aware answers, local chat persistence, and per-page help. M5 evals: golden-set runner, LLM-as-judge rubric (faithfulness / relevance / citation accuracy), retrieval metrics (hit@k, MRR), refusal correctness, and a scorecard diff gate — landed and run against a live-seeded workspace (see [packages/evals](packages/evals)); CI gate not wired yet. M6 agent loop: tool-using multi-step reasoner (`search_chunks` + `get_full_passage`) with a visible tool-call transcript, tiered caps (DeepSeek/free, Sonnet/BYOK+owner), and a graceful partial-answer fallback when a cap fires — live at `/agent`. M7: OpenAI joins Anthropic and DeepSeek as a full BYOK chat provider, a model selector in `/account` (3 providers × 2 tiers, gated by your own key), and a `/benchmark` report running the golden set across all 6 combos with a data-derived comparison table — live at `/benchmark`. Nice-to-have, no commitment to build it: a CI gate wiring the M5 eval suite into PR checks.
 **Demo:** [demo-docai.jcortes.dev](https://demo-docai.jcortes.dev)
 
 ## What this is
@@ -13,22 +13,22 @@ Designed deliberately as an AI-Engineer-shaped project: built without LangChain,
 
 ## Stack
 
-| Layer | Tech | Why |
-|---|---|---|
-| Frontend | Next.js 16 App Router · React 19 · TypeScript strict · Tailwind v4 · next-intl (en/es) | Recruiter-recognizable + i18n for LATAM + US markets. |
-| API | Next.js Route Handlers (in `apps/web`) | Lean for ~10 endpoints; no NestJS overhead. |
-| Background jobs | Inngest functions, served from `/api/inngest` | Managed queue + retry + cron; no separate worker host. |
-| Database | Neon Postgres + pgvector with HNSW | Hybrid search (BM25 via tsvector + cosine via pgvector + RRF) hand-built — no vendor lock-in. |
-| File storage | Cloudflare R2 (project-scoped quota, LRU eviction) | No egress fees; PDFs power the click-to-source UX. |
-| Auth | Clerk (GitHub + Google + magic link) | Multi-provider, en/es email templates. |
-| Embeddings | Voyage-3 | Anthropic-recommended; best quality/$. |
-| Reranking | Cohere rerank-v3.5 | Dedicated cross-encoder beats LLM reranking; multilingual for en+es. |
-| Chat (prod) | Claude Sonnet 4.6 | Quality + Spanish + tool use. |
-| Chat (dev) | DeepSeek V4-Flash | 10× cheaper for iteration. |
-| Eval judge | OpenAI GPT-5-mini | Capable for structured rubrics, 75% cheaper than Opus. |
-| Observability | Langfuse cloud + custom `/usage` dashboard | Industry-standard plus a from-scratch view. |
-| Rate limit | Upstash Redis | Sub-5ms atomic counters for the chat hot path. |
-| Tests | Vitest + Playwright + @axe-core/playwright + Lighthouse | Same bar as the rest of the portfolio. |
+| Layer           | Tech                                                                                   | Why                                                                                           |
+| --------------- | -------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
+| Frontend        | Next.js 16 App Router · React 19 · TypeScript strict · Tailwind v4 · next-intl (en/es) | Recruiter-recognizable + i18n for LATAM + US markets.                                         |
+| API             | Next.js Route Handlers (in `apps/web`)                                                 | Lean for ~10 endpoints; no NestJS overhead.                                                   |
+| Background jobs | Inngest functions, served from `/api/inngest`                                          | Managed queue + retry + cron; no separate worker host.                                        |
+| Database        | Neon Postgres + pgvector with HNSW                                                     | Hybrid search (BM25 via tsvector + cosine via pgvector + RRF) hand-built — no vendor lock-in. |
+| File storage    | Cloudflare R2 (project-scoped quota, LRU eviction)                                     | No egress fees; PDFs power the click-to-source UX.                                            |
+| Auth            | Clerk (GitHub + Google + magic link)                                                   | Multi-provider, en/es email templates.                                                        |
+| Embeddings      | Voyage-3                                                                               | Anthropic-recommended; best quality/$.                                                        |
+| Reranking       | Cohere rerank-v3.5                                                                     | Dedicated cross-encoder beats LLM reranking; multilingual for en+es.                          |
+| Chat (prod)     | Claude Sonnet 4.6                                                                      | Quality + Spanish + tool use.                                                                 |
+| Chat (dev)      | DeepSeek V4-Flash                                                                      | 10× cheaper for iteration.                                                                    |
+| Eval judge      | OpenAI GPT-5-mini                                                                      | Capable for structured rubrics, 75% cheaper than Opus.                                        |
+| Observability   | Custom `/usage` dashboard, backed by a `usage_events` row per model call               | Built by hand instead of a hosted tracing tool — per-call cost/latency logging plus the eval scorecards (M5) cover debugging without another dependency. |
+| Rate limit      | Upstash Redis                                                                          | Sub-5ms atomic counters for the chat hot path.                                                |
+| Tests           | Vitest + Playwright + @axe-core/playwright + Lighthouse                                | Same bar as the rest of the portfolio.                                                        |
 
 ## How it works
 
@@ -38,7 +38,7 @@ Designed deliberately as an AI-Engineer-shaped project: built without LangChain,
 3. ANSWER   ✅ LLM with retrieved context in <retrieved_context> tags → streamed → citations
 4. EVAL     ✅ golden set (25 Q&A, en+es) → GPT-5-mini judge → scorecard (CI gate not wired yet)
 5. AGENT    ✅ "compare two PDFs" → tool-using loop (search_chunks, get_full_passage) → visible transcript + cost, capped with a partial-answer fallback
-6. BENCH       same golden set across 3 providers × 2 tiers → diplomatic report
+6. BENCH    ✅ same golden set across 3 providers × 2 tiers → data-derived report
 ```
 
 See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the full pipeline diagram with model placement.
@@ -47,22 +47,23 @@ See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the full pipeline diagram w
 
 This is a portfolio demo, so resources are capped. Sign-in is required to upload.
 
-| | Logged in (free) | BYOK |
-|---|---|---|
-| Files | 3 (10 MB / 50 pages) | 3 (10 MB / 50 pages) |
-| Chat | 10/day for a 7-day trial, then locked | Unlimited — your key pays for it |
-| Agent (`/agent`) | 2 runs/day, 3 tool calls max, DeepSeek | Unlimited runs, 5 tool calls max, Claude Sonnet |
-| Search / upload | During the trial | Continues past the trial |
-| Retention | 7 days | 7 days |
+|                   | Logged in (free)                                             | BYOK                                                                                                               |
+| ----------------- | ------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------ |
+| Files             | 3 (10 MB / 50 pages)                                         | 3 (10 MB / 50 pages)                                                                                               |
+| Chat              | 10/day for a 7-day trial, then locked — fixed provider/model | Unlimited — your key pays for it                                                                                   |
+| Chat model choice | Fixed default                                                | Pick Anthropic / OpenAI / DeepSeek × mid/flagship tier in `/account`, once you've supplied that provider's own key |
+| Agent (`/agent`)  | 2 runs/day, 3 tool calls max, DeepSeek                       | Unlimited runs, 5 tool calls max, Claude Sonnet                                                                    |
+| Search / upload   | During the trial                                             | Continues past the trial                                                                                           |
+| Retention         | 7 days                                                       | 7 days                                                                                                             |
 
-Owner accounts are unlimited. Anonymous access (1 file, 24 h) is designed but not enabled yet. BYOK's benefit today is unlimited chat and continued access past the trial — it shares the free-tier file and retention limits; on the agent it also unlocks the larger reasoner and tool-call budget.
+Owner accounts are unlimited. Anonymous access (1 file, 24 h) is designed but not enabled yet. BYOK's benefit today is unlimited chat, continued access past the trial, and — new in M7 — a per-provider model choice; it shares the free-tier file and retention limits; on the agent it also unlocks the larger reasoner and tool-call budget.
 
 Need higher quotas, custom ingestion pipelines, or a tailored RAG build for your team? **I'm available for contract work.** → [Contact](mailto:jcortesdev@gmail.com)
 
 ## Documentation
 
 - [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) — system shape, pipeline diagram, model-by-role table
-- [docs/DECISIONS.md](docs/DECISIONS.md) — 19 ADRs covering every non-obvious choice
+- [docs/DECISIONS.md](docs/DECISIONS.md) — 21 ADRs covering every non-obvious choice
 - [docs/SECURITY.md](docs/SECURITY.md) — threat model, BYOK security architecture, data handling
 
 ## Local development
